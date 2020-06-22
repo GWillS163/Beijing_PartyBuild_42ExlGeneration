@@ -1,0 +1,39 @@
+请求 URL: https://qytsystem.qytang.com/accounts/login/
+请求方法: POST
+状态代码: 302
+远程地址: 172.16.66.166:443
+引用站点策略: no-referrer-when-downgrade
+access-control-allow-headers: DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+access-control-allow-methods: GET, POST, OPTIONS
+access-control-allow-origin: *
+content-length: 0
+content-type: text/html; charset=utf-8
+date: Fri, 29 May 2020 06:40:20 GMT
+location: /
+server: nginx/1.12.2
+set-cookie: sessionid=xldds6jpsmvahrt0lxvsvptakf23zh7b; HttpOnly; Path=/; SameSite=Lax
+status: 302
+vary: Cookie
+x-frame-options: SAMEORIGIN
+:authority: qytsystem.qytang.com
+:method: POST
+:path: /accounts/login/
+:scheme: https
+accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+accept-encoding: gzip, deflate, br
+accept-language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+cache-control: max-age=0
+content-length: 122
+content-type: application/x-www-form-urlencoded
+cookie: Hm_lvt_24b7d5cc1b26f24f256b6869b069278e=1584086880; csrftoken=eF12MZZBwLWpZ7gR5TlsaewbOZuwjL2B8RMkvpqNOuZVUJjBv6TjoNB83YEO4S53; _qddaz=QD.262ikh.fvqj7o.k7agwjs0; UM_distinctid=1709b51fe8896-0883a495068352-71415a3b-14043d-1709b51fe89264; pgv_pvi=9560422400; sessionid=xldds6jpsmvahrt0lxvsvptakf23zh7b; pgv_si=s3328542720
+origin: https://qytsystem.qytang.com
+referer: https://qytsystem.qytang.com/accounts/login/
+sec-fetch-dest: document
+sec-fetch-mode: navigate
+sec-fetch-site: same-origin
+sec-fetch-user: ?1
+upgrade-insecure-requests: 1
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36 Edg/83.0.478.37
+csrfmiddlewaretoken: JG2WqxFqaAMBb8dLeljfNHCK2PgCxeULDSNe9X6CsjP76KgvEyR61gHHhOqUilXd
+username: rsec-mengjq
+password: 7Qz-8Zu
