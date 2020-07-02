@@ -1,0 +1,37 @@
+[
+	{'domain': 'www.cisco.com',
+	 'expiry': 2379404230,
+	 'httpOnly': False,
+	  'name': 'cdc.cookie.newUser',
+	   'path': '/',
+	   'secure': False,
+	   'value': '1591609030259'
+	   },
+
+	 {'domain': '.cisco.com', 'httpOnly': False,
+	  'name': 'authorization', 'path': '/',
+	  'secure': False, 'value': 'RegisteredGuest'},
+
+	  {'domain': 'www.cisco.com', 'expiry': 1591004258,
+	  'httpOnly': False, 'name': 'ADRUM_BT1',
+	   'path': '/', 'secure': False, 'value': 'R:174|i:83898|e:62'
+	   },
+	  {'domain': '.cisco.com', 'httpOnly': True, 'name': 'wamsessiontracker',
+	   'path': '/', 'sameSite': 'None', 'secure': True,
+	   'value': 'T1RLAQI1XeHaWf-PApWFRfFIJ6Ih8SONKxADkl-qryUcWjhYNr1MIeqJAACAJ5lctaZUyPaLwhZI0mSouHSYj1t8Z__UP10fKPSvCH83DhTG0UtZxC48olsPiHv59Ix0XP1HRPyo7ST7qudQdw3rvhNA40jBCk63XKaTKgQ7elmqtlp_FFVQ1xIxYz6_51TMtj4J6ElYYUx3LBuRTLLan0MUEPexL-7dbo1EXpQ*'}, {'domain': '.cisco.com', 'expiry': 1654076217, 'httpOnly': False, 'name': 'AMCV_B8D07FF4520E94C10A490D4C%40AdobeOrg', 'path': '/', 'secure': False, 'value': '281789898%7CMCIDTS%7C18415%7CMCMID%7C46027211240557358442766652883265078455%7CMCAAMLH-1591609016%7C11%7CMCAAMB-1591609016%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1591011417s%7CNONE%7CMCAID%7CNONE%7CvVersion%7C4.1.0'}, {'domain': 'www.cisco.com', 'httpOnly': True, 'name': 'CSPROD.CDCprod', 'path': '/', 'sameSite': 'None', 'secure': True,
+	   'value': 'eyJraWQiOiJrZCIsImFsZyI6IkVTMjU2IiwicGkuc3JpIjoidnZLMzFoVlA1YmYzOUZONkN6clF3cHpmR2JZIn0.eyJzdWIiOiIxMjc0NjY3MTEzQHFxLmNvbSIsImlhdCI6MTU5MTAwNDIyOCwiaXNzIjoiY2lzY28iLCJhdWQiOiJDRENwcm9kIiwianRpIjoiN2JiYzBmOTgtNjdlNi00MzVkLTg0ODctYmMzYTI4YWJkOTg0IiwiZXhwIjoxNTkxMDQwMjMwLCJwaS5wYS5yYXQiOjE1OTEwMDQyMzAsImFjY2Vzc190b2tlbiI6IjBMbEh2bnVjVERKeHdHS295a3lSbzBTQVNoZTEiLCJhY3IiOiJzdGRub21mYSIsInBpLnBhLmF0dHJfZXhwIjoxNTkxMDA0MjkwfQ.ImPb92skqZhN-6-ok655cXkCBxqb8TbsneQK2A3WyNdgyhGaFC2RtXNfSxbDMy8twz_-01ZJLxr7iTQriIAwgQ'}, {'domain': '.cisco.com', 'httpOnly': False, 'name': 'AMCVS_B8D07FF4520E94C10A490D4C%40AdobeOrg', 'path': '/', 'secure': False, 'value': '1'}, {'domain': '.cisco.com', 'expiry': 1591040230, 'httpOnly': False, 'name': 'cdcSsoTimer', 'path': '/', 'secure': True, 'value': 'LoggedIn'}, {'domain': '.cisco.com', 'expiry': 1748684228, 'httpOnly': False, 'name': 'CP_GUTC', 'path': '/', 'secure': False, 'value': '173.37.145.90.1591004228259357'}, {'domain': '.cisco.com', 'httpOnly': False, 'name': 'ObSSOCookie', 'path': '/',
+	   'sameSite': 'None',
+	   'secure': True,
+	    'value': 'ksstDflF9xp%2BSOV6SQnYXu9v%2Bi93jkoDfQ2C1htiCtQgAynsou1Wz0oZ0rsNefeDpodD3XoKmK7jIBRKPeIY4XsjYJHFgA5bihLA%2F5h%2Bu72AD6H9rupsGdO40Jc5l%2BdlMxNeZpSZUWf%2BPvBSjXSgTZPwx%2FaO9hzVns3bOpFMwQkHEPUVadL4n%2FIqrkl62KmuXkbUybVGV6UMuDaktV0K%2Biqe%2BcJWptuXgl0O%2F0GYpmGKYE3QJUQxo4HIcGYZV1oPXY4qhpQniWburRaMPNUH8vMiAr9uqK8LnHwMeMyI7NzjHRzuLwf%2BOkU%2FGU0oOV0AJ2GMFwvrMDSiZhZyqRqVUO4hZN%2B%2BqNXZifgUTt5keYkzmrwUN6Imx%2BwP%2FCw8JFyRI3un8bcNYbfpzZfFvN1kFWsSkALBoPV4WnptQNfqeNM%3D'}, {'domain': '.cisco.com', 'httpOnly': True, 'name': 'discovery', 'path': '/', 'sameSite': 'None', 'secure': True, 'value': 'T1RLAQLrfplmNdrnHNhARj-nBISCcZtspxAidzNY5wUvQlGI01du5FtcAACgFcwmz_VRfXpJTKzCUhbXNmf-krzH_9oEsWWJmvdxc30Igz8VXdOVRKZdr1UGwdUEjpDILKfw646BhWNLheaDPgnn6Rk8NSmRd7rXEjELyBprlwvYXSsYnUaAS-xdGxeMEnopJmk_uByL3ylRmKxhf1fxwoBhP3sbeGIqW-vuunfybLmPqwN8pCqzuTKmyMCQc7nGHy8mixOW4OSgWuSdTA**'
+	    },
+	    {
+	    'domain': '.cisco.com',
+	    'httpOnly': False,
+	    'name': 'anchorvalue',
+	    'path': '/',
+	     'secure': False,
+	      'value': ''
+	      },
+	      {'domain': '.cisco.com',
+	      'httpOnly': False, 'name': 'wasOnLoginPage', 'path': '/', 'secure': False, 'value': 'false'}, {'domain': '.cisco.com', 'expiry': 1591007814, 'httpOnly': True, 'name': 'AKA_A2', 'path': '/', 'secure': True, 'value': 'A'}, {'domain': '.cisco.com', 'httpOnly': False, 'name': 'ADRUM', 'path': '/', 'secure': True, 'value': 's=1591004224508&r=https%3A%2F%2Fidentity.cisco.com%2Fapi%2Ftenants%2Fglobal%2Fv1%2Fam%2Flogin-actions%2Fauthenticate%3F-544477881'}, {'domain': '.cisco.com', 'httpOnly': False, 'name': 'loginPageReferrer', 'path': '/', 'secure': False, 'value': ''}, {'domain': 'www.cisco.com', 'expiry': 1591004258, 'httpOnly': False, 'name': 'ADRUM_BTa', 'path': '/', 'secure': False, 'value': 'R:174|g:32baf858-fccc-430e-8ea3-20f13a0cb6dd|n:cisco1_d5ce4a50-0e7c-4e42-a5a5-4c7d1bcfcd74'}, {'domain': '.cisco.com', 'httpOnly': False, 'name': 'cdcUniqueKey', 'path': '/', 'secure': False, 'value': 'jhhei74afj0f5'}]
+
