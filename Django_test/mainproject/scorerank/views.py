@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from scorerank.models import cal
 from django.http import HttpResponse
+import json
+
 # Create your views here.
 rank_list = []
 
@@ -66,7 +68,6 @@ def receive_query_rank(request):
         current_client = request.POST['current_client']
         print(down_strict, up_strict)
 
-
         # 排序+rank号
         data = cal.objects.order_by('score')
         current_client_data = data.filter(client__exact=current_client)[0]
@@ -94,3 +95,38 @@ def receive_query_rank(request):
     except:
         pass
     return render(request, 'query_rank_range.html', )
+
+
+# API
+def api_alllist(request):
+    data = cal.objects.all().order_by('score')
+    n = 0
+    dict = {}
+    for i in data:
+        n += 1
+        i.rank = n
+        dict.update({i.pk: {'rank': i.rank,
+                            'client': i.client,
+                            'score': i.score}, })
+    return HttpResponse(json.dumps(dict))
+
+def api_getRank(request, down_strict, up_strict, client):
+    print(down_strict, up_strict, client)
+
+    # 排序+rank号
+    data = cal.objects.order_by('score')
+    current_client_data = data.filter(client__exact=client)[0]
+    data_new = []
+    n = 0
+    for i in data:
+        n += 1
+        i.rank = n
+        # 筛选rank区间 - 1
+        if i.rank >= down_strict and i.rank <= up_strict:
+            data_new.append({'client': i.client, 'score': i.score, 'rank': i.rank})
+            print('收录', i.client, i.score, i.rank)
+
+    print(data_new)
+    all_data = data_new + current_client_data
+    return HttpResponse(json.dumps(all_data))
+

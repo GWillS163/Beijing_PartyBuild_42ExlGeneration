@@ -29,4 +29,9 @@ urlpatterns = [
     url(r'^receive$', views.receive),
     url(r'^alllist', views.alllist),
     url(r'^del', views.DelData),
+
+    # API
+    url(r'^getalllist', views.api_alllist),
+    url(r'^api_getRank/from=<int:down_strict>-to=<int:up_strict>-by=<str:client>/', views.api_getRank, name="api_getRank"),
+
 ]

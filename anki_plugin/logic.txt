@@ -1,0 +1,26 @@
+Ver1.0 同步之前要首先本地备份一下, 然后再进行云端覆盖本地
+
+Ver2.0 在云端覆盖之前进行一次和本地的对比 或将冲突项单独保存
+
+Ver3.0 手动择取保留项
+
+# 进入虚拟环境 venv\scripts\activate
+
+
+1.创建虚拟环境, 记得禁用继承全局 inherit global
+pip install --upgrade pip --user
+pip install anki
+pip install mypy aqt --user
+# 测试
+from anki import hooks
+hooks
+
+Please note that you can not run your add-on from within PyCharm - you will get errors.
+
+2.monkey例子:
+% /usr/local/bin/python3.8 -m venv pyenv
+% cd pyenv && . bin/activate
+(pyenv) % pip install aqt monkeytype
+(pyenv) % monkeytype run bin/anki  # 卡在这步,3.26
+
+https://addon-docs.ankiweb.net/#/getting-started
