@@ -1,7 +1,0 @@
-D:\python_scripts\merge_m3u8\mergevenv\Scripts\activate.bat
-
-pip install pycryptodome
-
-virtualenv -p python3 env
-
-pyinstaller -F -i decrypto.ico sigua_decrypter[please_drag_dir_to_me].py
