@@ -18,7 +18,7 @@ exlMain = Excel_Operation(
     sht1Name, sht2Name, sht3Name, sht4Name,
 
     # Sheet1 生成配置 : F, G
-    sht1IndexScpFromSht0, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol,
+    sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol,
     # Sheet2 生成配置: C1:J1, D
     sht2DeleteCopiedColScp, sht2MdlTltStt,
     # Sheet3 生成配置:  "L", "J", "K"

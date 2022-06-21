@@ -681,8 +681,8 @@ def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean, lv1Str):
         lv2PartsSum = 0
         lv2StaffSum = 0
         for lv3 in allStaffNum[lv2]:
-            parts, staffs, ratio = getParticipatesData(lv2, lv3)
-            basicParticipates[lv2].update({lv3: [parts, staffs, ratio]})
+            staffs, parts, ratio = getParticipatesData(lv2, lv3)
+            basicParticipates[lv2].update({lv3: getParticipatesData(lv2, lv3)})
             lv2PartsSum += parts
             lv2StaffSum += staffs
         basicParticipates[lv2].update({lv2Mean: calcParticipateRatioCore(lv2PartsSum, lv2StaffSum)})
@@ -735,12 +735,12 @@ def combineShtRatioCore2(shtWithLv, basicRatio, lv2MeanStr, lv1Str):
     lv1AllParts = 0
     for lv2 in shtWithLv:
         if lv2 == lv1Str:
+            newShtWithLv[lv1Str] = basicRatio[lv1Str] + shtWithLv[lv1Str]
             continue
         # 对所有三级单位新增参与率部分。没有值则为空
         extendRatio = basicRatio[lv2][lv2MeanStr] if lv2 in basicRatio else defaultRatio
         newShtWithLv[lv2] = extendRatio + shtWithLv[lv2]
         lv1AllParts += extendRatio[1] if extendRatio[1] else 0
-    newShtWithLv[lv1Str] = basicRatio[lv1Str] + shtWithLv[lv1Str]
     return newShtWithLv
 
 
@@ -751,9 +751,6 @@ def combineSht3Ratio(sht3WithLv, basicRatio, lv2MeanStr, lv1Str):
 def getLv2Class(lv2, sht4Hie):
     """
     获取二级单位的类别
-    :param lv2:
-    :param sht4Hie:
-    :return:
     """
     for row in sht4Hie:
         if lv2 == row[1]:
@@ -769,6 +766,7 @@ def turnSht4Ratio(basicRatio, sht4Hie, lv1Str, lv2Mean):
     :
     : return {分公司:{城区一分公司，城区二分公司}, 北京公司:{平均分}}
     """
+    meanStr = "平均分"
     sht4Ratio = {}
     for lv2 in basicRatio:  # 拿出来每个lv2的总数
         if lv2 == lv1Str:
@@ -781,24 +779,21 @@ def turnSht4Ratio(basicRatio, sht4Hie, lv1Str, lv2Mean):
 
         sht4Ratio[lv2Class].update({lv2: basicRatio[lv2][lv2Mean]})
 
-    def getListMean(lst: List[int]) -> float:
-        return sum(lst) / len(lst)
-
     # 新增每个分类的总数, 分公司的平均分
-    # lv2ClassParts = []
-    # lv2ClassStaffs = []
-    # for lv2Class in sht4Ratio:
-    #     for lv2 in sht4Ratio[lv2Class]:
-    #         lv2ClassParts.append(sht4Ratio[lv2Class][lv2][0])
-    #         lv2ClassStaffs.append(sht4Ratio[lv2Class][lv2][1])
+    for lv2Class in sht4Ratio:
+        lv2ClassParts = []
+        lv2ClassStaffs = []
+        for lv2 in sht4Ratio[lv2Class]:
+            lv2ClassParts.append(sht4Ratio[lv2Class][lv2][0])
+            lv2ClassStaffs.append(sht4Ratio[lv2Class][lv2][1])
+        # 新增每个lv2Class的 汇总值
+        sht4Ratio[lv2Class].update({meanStr: calcParticipateRatioCore(
+            sum(lv2ClassStaffs),
+            sum(lv2ClassParts)
+        )})
+    # 一级单位 北京的平均分
     sht4Ratio.update({lv1Str: {}})
-    sht4Ratio[lv1Str].update({"平均分": basicRatio[lv1Str]
-    #     [
-    #     lv2ClassParts,
-    #     lv2ClassStaffs,
-    #     round((lv2ClassParts / lv2ClassStaffs), 2)
-    # ]
-    })
+    sht4Ratio[lv1Str].update({meanStr: basicRatio[lv1Str]})
 
     return sht4Ratio
 
@@ -816,7 +811,7 @@ def combineSht4Ratio(sht4WithLv, sht4Ratio, lv2MeanStr, lv1Str):
             newShtWithLv[lv1Str][meanStr] = sht4Ratio[lv1Str][meanStr] + sht4WithLv[lv1Str][meanStr]
             continue
         for lv2 in sht4WithLv[lv2Class]:
-            if lv2 == meanStr:
+            if lv2 == lv1Str:
                 # 取出来basicRatio的平均分
                 newShtWithLv.update({lv1Str: {meanStr: []}})
                 newShtWithLv[lv1Str][meanStr] = sht4Ratio[lv1Str][meanStr] + sht4WithLv[lv1Str][meanStr]
@@ -843,8 +838,10 @@ def getSht3Ratio(basicParticipateRatio: dict, lv1Name, lv2Mean: str) -> dict:
                 continue
             lv1Parts += basicParticipateRatio[lv2][lv3][0]
             lv1Staffs += basicParticipateRatio[lv2][lv3][1]
-    sht3Ratio.update({lv1Name: [lv1Parts, lv1Staffs,
-                                calcParticipateRatioCore(lv1Parts, lv1Staffs)]})
+    sht3Ratio.update({lv1Name:  # [lv1Parts, lv1Staffs,
+                                calcParticipateRatioCore(lv1Parts, lv1Staffs)
+                      # ]
+                      })
     return sht3Ratio
 #
 #

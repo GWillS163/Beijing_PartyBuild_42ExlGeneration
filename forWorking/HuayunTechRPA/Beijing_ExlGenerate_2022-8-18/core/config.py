@@ -51,7 +51,7 @@ sht3Name = "公司整体调研结果"
 sht4Name = "公司整体调研成绩"
 
 # Sheet1 生成配置 : F, G
-sht1IndexScpFromSht0 = "A1:F31"
+# sht1IndexScpFromSht0 = "A1:F31"
 sht1TitleCopyFromSttCol = "F"
 sht1TitleCopyToSttCol = "G"
 # Sheet2 生成配置: "C1:J1", "D"

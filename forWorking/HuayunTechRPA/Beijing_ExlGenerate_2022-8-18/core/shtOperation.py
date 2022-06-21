@@ -20,7 +20,7 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     sht1.range(sht1Scp).api.Copy()
     # judge whether clipboard is empty
     # retry 3 times
-    e = None
+    error = None
     for _ in range(3):
         try:
             sht2.activate()
@@ -30,10 +30,11 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
             #     Paste=-4163, Operation=2, SkipBlanks=False, Transpose=False)
             return
         except Exception as e:
-            print(f"\t{sht1.name} - {sht1Scp} - 复制失败 - {e}")
+            error = e
+            print(f"\t{sht1.name} - {sht1Scp} - 复制失败 - {error}")
             time.sleep(0.3)
             continue  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel',
-    raise e
+    raise error
 
 
 def getLastColCell(sht):

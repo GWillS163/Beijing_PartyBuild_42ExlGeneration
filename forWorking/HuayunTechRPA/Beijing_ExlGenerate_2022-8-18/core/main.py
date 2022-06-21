@@ -21,8 +21,7 @@ class Excel_Operation:
                  # ResultExl 配置
                  sht1Name, sht2Name, sht3Name, sht4Name,
                  # Sheet1 配置 : "F", "G"
-                 # TODO: 去除不需要的单位范围
-                 sht1IndexScpFromSht0, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol,
+                 sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol,
                  # Sheet2 配置:  "C1:J1", "D"
                  sht2DeleteCopiedColScp, sht2MdlTltStt,
                  # Sheet3 配置:  "L", "J", "K"
@@ -79,14 +78,14 @@ class Excel_Operation:
         self.sht0DeleteCopiedRowScp, sht0LastValidRow = getSht0DeleteCopiedRowScp(
             self.sht0TestSurvey, self.deletedUnitList)
         self.surveyQuesCol, self.surveyRuleCol, \
-        self.surveyQuesTypeCol, self.sht0QuestionScp = \
+            self.surveyQuesTypeCol, self.sht0QuestionScp = \
             autoGetSht0Params(self.sht0TestSurvey, sht0LastValidRow)
 
         # Sheet1  每次更改模板表后之后请留意
         self.sht1MdlPartRatioRowScp = "A3:D5"  # 新增的参与率区域 参与率粘贴的位置，一般不需要修改
         self.sht1PartitionInsertPoint = "A3"  # 插入，无法自动获取
         self.sht1TitleCopyFromMdlScp, self.sht1DeptTltRan, \
-        self.sht1DataColRan, self.sht1IndexScpFromSht0 = \
+            self.sht1DataColRan, self.sht1IndexScpFromSht0 = \
             autoGetSht1Params(self.sht1Mdl,
                               sht1TitleCopyFromSttCol,
                               sht1TitleCopyToSttCol, sht0LastValidRow)
@@ -96,7 +95,7 @@ class Excel_Operation:
 
         self.sht2TitleCopyTo = None  # 自动获取sheet2 title 起始点
         self.sht2DeleteCopiedColScp, self.sht2TitleCopyFromMdlScp, \
-        self.sht2DeptTltRan, self.sht2IndexCopyFromSvyScp, self.sht2IndexCopyTo = \
+            self.sht2DeptTltRan, self.sht2IndexCopyFromSvyScp, self.sht2IndexCopyTo = \
             autoGetSht2Params(self.sht2Mdl, self.sht0TestSurvey,
                               sht2DeleteCopiedColScp,  # ="C1:J1"
                               sht2MdlTltStt)  # ="D"
@@ -107,7 +106,7 @@ class Excel_Operation:
         self.sht3TitleCopyTo = None  # 自动获取sheet3 title 起始点
         self.sht3IndexCopyFromSvyScp, self.sht3DataColRan, self.sht3TitleCopyFromMdlScp = \
             autoGetSht3Params(self.sht3Mdl, self.sht0TestSurvey, sht3MdlTltStt, sht0SurLastCol,
-                              sht3ResTltStt)  # "L", "J", "K"
+                              sht3ResTltStt, sht0LastValidRow)  # "L", "J", "K"
 
         # Sheet4:
         self.sht4TitleCopyTo = None  # 自动获取sheet4 title 起始点

@@ -116,7 +116,7 @@ def getSht0DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> list:
             break
         row += 1
     lastRow = sht2_lv2Score.used_range.last_cell.row
-    sht0LastValidRow = row
+    sht0LastValidRow = row - 1
     return [f"A{row}:A{lastRow}  ", sht0LastValidRow]  # f"A32:A52"
 
 

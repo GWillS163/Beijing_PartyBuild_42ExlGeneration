@@ -42,8 +42,8 @@ def autoGetSht0Params(sht0, sht0LastValidRow):
     sht0QuestionScp = f"{surveyQuesTypeCol}3:" \
                       f"{surveyQuesTypeCol}{sht0LastValidRow}"  # "E3:E31" 问题列 问题题目.
 
-    return printAutoParamSht0(surveyQuesCol, surveyRuleCol, surveyQuesTypeCol, \
-                              sht0QuestionScp
+    return printAutoParamSht0(surveyQuesCol, surveyRuleCol,
+                              surveyQuesTypeCol, sht0QuestionScp
                               )
 
 
@@ -109,7 +109,7 @@ def autoGetSht2Params(sht2Mdl, sht0Sur, sht2DeleteCopiedColScp, mdlTltStt):
     return sht2DeleteCopiedColScp, sht2TitleCopyFromMdlScp, sht2DeptTltRan, sht2IndexCopyFromSvyScp, sht2IndexCopyTo
 
 
-def autoGetSht3Params(sht3Mdl, sht0Sur, mdlTltStt, surLastCol, resTltStt):
+def autoGetSht3Params(sht3Mdl, sht0Sur, mdlTltStt, surLastCol, resTltStt, vaildLastRow):
     """
     通过少量用户输入, 自动获取sht3问卷模板的参数
     :param sht3Mdl: sht3模板
@@ -124,10 +124,10 @@ def autoGetSht3Params(sht3Mdl, sht0Sur, mdlTltStt, surLastCol, resTltStt):
     mdlTltEnd = sht3Mdl.used_range.last_cell.address.split("$")[1]  # "BA"
     sht3TitleCopyFromMdlScp = f"{mdlTltStt}1:{mdlTltEnd}2"
 
-    # index侧栏 - 从测试问卷中获取 TODO: 用户指定
+    # index侧栏 - 从测试问卷中获取
     # surLastCol = "J"
-    surLastRow = sht0Sur.used_range.last_cell.address.split("$")[2]  # 54不是 "32"
-    sht3IndexCopyFromSvyScp = f"A1:{surLastCol}32"  # TODO: 这个32是两个大单元的行数
+    # surLastRow = sht0Sur.used_range.last_cell.address.split("$")[2]  # 54不是 "32"
+    sht3IndexCopyFromSvyScp = f"A1:{surLastCol}{vaildLastRow}"  # 这个32是两个大单元的行数
 
     # result结果表 - 粘贴的起始点
     # resTltStt = "K"
