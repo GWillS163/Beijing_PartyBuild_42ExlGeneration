@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/python scripts.iml" filepath="$PROJECT_DIR$/.idea/python scripts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/qq_msg_tool/.idea/qq_msg_TCP.iml" filepath="$PROJECT_DIR$/qq_msg_tool/.idea/qq_msg_TCP.iml" />
     </modules>
   </component>
 </project>

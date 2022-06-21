@@ -2,5 +2,10 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/[expire]/docker_devnet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/[expire]/qyt-海报自动生成" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/docker_devnet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/project" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/qq_msg_tool" vcs="Git" />
   </component>
 </project>
