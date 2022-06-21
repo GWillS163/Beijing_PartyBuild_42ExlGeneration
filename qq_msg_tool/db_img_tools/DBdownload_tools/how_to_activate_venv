@@ -1,7 +1,0 @@
-D:\python_scripts\venv\Scripts\activate.bat
-
-D:\python_scripts\qq_msg_tool\msg_tool_downdb\Scripts\activate.bat
-
-
-
-pyinstaller -F -i download.ico download-db.py
