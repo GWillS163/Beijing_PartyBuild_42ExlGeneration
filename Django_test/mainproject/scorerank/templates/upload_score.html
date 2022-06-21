@@ -1,0 +1,15 @@
+
+{% extends 'nav_bar.html' %}
+{% block title %}calpage{% endblock %}
+{% block body %}
+upload页面
+
+<form method="POST" action="/receive">
+ {% csrf_token %}
+    客户端:<input type="text" name="client_num">
+    分数:<input type="number" name="score">
+    <input type="submit" value="提交">
+</form>
+{{ data }}
+
+{% endblock %}

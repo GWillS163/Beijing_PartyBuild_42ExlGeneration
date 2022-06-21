@@ -1,0 +1,10 @@
+https://cdn.jinbobz.com/videos/202010/hls/b57f3b84-f852-48a3-921f-3efc52a7f8af/index.m3u8?id=4802&sign=6c3472412131aac5724c0573f38031e5&t=1616031900
+# 略
+
+https://sgjk3.com/api/video/4802/key?sign=184485166d97d3267729133345c70cd3&t=1616031900
+key:df538e25a9c989b8
+
+
+https://cdn.jinbobz.com/videos/202010/hls/b57f3b84-f852-48a3-921f-3efc52a7f8af/j6df0XMh2995000.ts
+
+https://cdn.jinbobz.com/videos/202010/hls/b57f3b84-f852-48a3-921f-3efc52a7f8af/j6df0XMh2995001.ts

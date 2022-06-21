@@ -1,0 +1,2 @@
+pyinstaller -F -i video.ico merge_UI.py
+pyinstaller -F -w -i video.ico merge_UI.py

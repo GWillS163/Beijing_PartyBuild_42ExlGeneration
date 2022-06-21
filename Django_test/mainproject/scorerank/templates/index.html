@@ -1,0 +1,29 @@
+
+{% extends 'nav_bar.html' %}
+{% block title %}index{% endblock %}
+{% block body %}
+<h1> index 页面</h1>
+<form action="del" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="清库">
+</form>
+<table border="1">
+    <thead>
+    <tr>
+        <th>client</th>
+        <th>score</th>
+        <th>Rank</th>
+    </tr>
+    </thead>
+
+    {% for i in data %}
+    <tr>
+        <td>{{ i.client }}</td><td>{{ i.score }}</td><td>{{ i.rank }}</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+
+{% endblock %}
