@@ -9,6 +9,7 @@ output = {"Thread_1": '[loading]',
           "Thread_2": '-',
           }
 
+
 def Thread_1():
     n = 0
     while n < 9:
@@ -16,19 +17,20 @@ def Thread_1():
         n += 1
         time.sleep(5)
 
+
 def Thread_2():
     n = 0
     while n < 8:
         output["Thread_2"] = status_2[n]
         n += 1
         time.sleep(1.8)
+
+
 # 后台两个任务启动
 threading.Thread(target=Thread_1, daemon=True).start()
 threading.Thread(target=Thread_2, daemon=True).start()
 
-
 print(f'{"Thread":^10}|{"Status":^10}|{"Thread":^10}|{"Status":^10}')
 while output["Thread_1"] != 'shutdown':
-    print(f'{"Thread_1":^10}|{output["Thread_1"]:^10}|{"Thread_2":^10}|{output["Thread_2"]:^10}|',end='\r')
+    print(f'{"Thread_1":^10}|{output["Thread_1"]:^10}|{"Thread_2":^10}|{output["Thread_2"]:^10}|', end='\r')
     # time.sleep(1)
-
