@@ -1,0 +1,20 @@
+$(document).on("click", ".js-landing-page-link", function(event) {
+  const $linkLocation = $(this).data('link-location');
+  const $linkTargetType = $(this).data('link-target-type');
+  const $linkTarget = $(this).attr('href');
+  let $linkText = $(this).text();
+  if ($linkText == "")
+      $linkText =  $(this).attr("text")
+
+  $.ajax({
+    type: 'POST',
+    url: '/publish_hydro_event',
+    data: {
+      link_location: $linkLocation,
+      link_target: $linkTarget,
+      link_text: $linkText,
+      link_target_type: $linkTargetType,
+    }
+  });
+});
+
