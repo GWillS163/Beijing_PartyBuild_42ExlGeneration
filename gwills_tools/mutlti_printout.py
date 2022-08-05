@@ -26,7 +26,11 @@ def Thread_2():
         time.sleep(1.8)
 
 
-# 后台两个任务启动
+
+
+
+
+# start two tasks at backstage
 threading.Thread(target=Thread_1, daemon=True).start()
 threading.Thread(target=Thread_2, daemon=True).start()
 
@@ -34,3 +38,5 @@ print(f'{"Thread":^10}|{"Status":^10}|{"Thread":^10}|{"Status":^10}')
 while output["Thread_1"] != 'shutdown':
     print(f'{"Thread_1":^10}|{output["Thread_1"]:^10}|{"Thread_2":^10}|{output["Thread_2"]:^10}|', end='\r')
     # time.sleep(1)
+
+

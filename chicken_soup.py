@@ -2,6 +2,7 @@ import json
 import requests
 import time
 
+
 def drink_chiken_soup():
     """
     通过 api url 返回鸡汤文并打印
