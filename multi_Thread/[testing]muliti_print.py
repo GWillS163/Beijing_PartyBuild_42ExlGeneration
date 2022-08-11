@@ -1,3 +1,6 @@
+#  Author : Github: @GWillS163
+#  Time: $(Date)
+
 import time
 import random
 
@@ -58,6 +61,10 @@ def signle_thread_demo():
 
 
 if __name__ == '__main__':
-    signle_thread_demo()
+    # signle_thread_demo()
+    # run()
+    fake_multi_demo()
+    # fake_multi_demo2()
 
+    # dis-understandably
 

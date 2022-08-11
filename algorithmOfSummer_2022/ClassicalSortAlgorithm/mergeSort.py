@@ -1,3 +1,7 @@
+from operator import eq
+from typing import overload
+
+
 def mergeSort(arr: list) -> list:
     if len(arr) < 2:
         return arr
@@ -9,18 +13,21 @@ def mergeSort(arr: list) -> list:
 
 def merge(left, right):
     """
-
-    :param left:
-    :param right:
-    :return:
+    gradually merge two sorted list, and return the sorted list
+    :param left: like [1, 3, 5]
+    :param right: like [4, 2, 6]
+    :return: [1, 2, 3, 4, 5, 6]
     """
-    l_index = 0
-    r_index = 0
     result = []
-    while left[l_index] and right[r_index]:
-        if left[l_index] < right[r_index]:
-            result.pop(0)
+    while left and right:
+        if left[0] < right[0]:
+            result.append(left.pop(0))
         else:
-            result.pop(0)
+            result.append(right.pop(0))
 
     return result + left + right
+
+
+if __name__ == '__main__':
+    print(eq('srts', "srts"))
+    print("srts".__eq__("srts"))
