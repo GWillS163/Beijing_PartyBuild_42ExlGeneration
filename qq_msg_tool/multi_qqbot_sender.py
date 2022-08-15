@@ -34,7 +34,7 @@ def queue():
         # print('current_ queue', queue_lst)
         if queue_lst:
             t = queue_lst.pop()
-            t.start()
+            t.coord()
             t.join()
 # lst = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 # s = Interactive("172.16.66.170", 8404, 2934289319)
