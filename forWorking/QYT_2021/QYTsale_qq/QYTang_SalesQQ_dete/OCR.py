@@ -49,5 +49,5 @@ def run_ocr(path,picname):
     return text
     #print("OCR_DONe")
 if __name__ == '__main__':
-    run_ocr('./','2.png')
+    run_ocr('/', '2.png')
 

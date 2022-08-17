@@ -1,4 +1,4 @@
-from QYTang_SalesQQ_dete import imgHistogram,qytang_QQ_requests,OCR
+from QYTang_SalesQQ_dete import imgHistogram
 from pykeyboard import *  # 模拟键盘所使用的包
 import os, re, time
 
@@ -16,7 +16,7 @@ def file_Rec():
     for i in os.listdir(path):
         if re.match(bdcam_pic, i):
             print(i)  # 打印文件名
-            confidence = imgHistogram.Compare(path + benchmark,path +i)
+            confidence = imgHistogram.Compare(path + benchmark, path + i)
             print('\t\t(pre_confid:', previous_confidence, ')')
             if confidence > 0.55:  # 如果达到阈值，发送
                 if confidence != previous_confidence:
