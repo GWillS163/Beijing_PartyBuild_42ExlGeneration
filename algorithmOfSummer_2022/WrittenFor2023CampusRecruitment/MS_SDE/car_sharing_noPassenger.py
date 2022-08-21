@@ -3,13 +3,6 @@
 from pprint import pprint
 
 
-class TreeNode():
-    def __init__(self, val=0, children=None):
-        self.val = val
-        self.cost = 0
-        self.children = children
-
-
 def solution(A=[0, 1, 1], B=[1, 2, 3]):
     pathDct = {}
     costDct = {}
