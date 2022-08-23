@@ -1,81 +1,207 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
-from pprint import pprint
+import os.path
+import time
 
 import xlwings as xw
-import pandas as pd
+
+
+def mergeSht2SummarizeCells(sht2_WithWeight, mergeCells, columns):
+    columnLst = []
+    if type(columns) == str:
+        columnLst.append(columns)
+    elif type(columns) == list:
+        columnLst = columns
+    else:
+        raise Exception("the parameter columns type error, should be String or list")
+    for column in columnLst:
+        # show the merged cells gradually with step 2
+        for i in range(0, len(mergeCells), 2):
+            # print(mergeCells[i:i + 1])
+            sht2_WithWeight.range(f"{column}{mergeCells[i]}:{column}{mergeCells[i + 1]}").merge()
+
+
+def placeDepartmentTitle(sht, departmentLst, titleStart="K1"):
+    """
+    place the department title in the sht
+    :param sht:
+    :param departmentLst:
+    :param titleStart:
+    :return:
+    """
+    sht.range(titleStart).value = departmentLst
+    # get merge info
+    startRow = titleStart[1]
+    endLetter = chr(ord(titleStart[0]) + len(departmentLst[1]) - 1)
+    # merge K1:L1 cells
+    # TODO: record index position
+    sht.range(f"{titleStart}:{endLetter}{startRow}").merge()
+
+
+def getMergeZoneDynamically(sht2_WithWeight):
+    """
+    for Sheet2
+    :return:
+    """
+    # get merge cells scope dynamically
+    mergeCells = []
+    temp = None
+    n = 3
+    while True:
+        if not sht2_WithWeight.range(f"B{n}").value:
+            # print(temp)
+            mergeCells.append(temp)
+            break
+        if sht2_WithWeight.range(f"A{n}").value:
+            if temp:
+                # print(temp)
+                mergeCells.append(temp)
+            # print(f"A{n}")
+            mergeCells.append(f"A{n}")
+        else:
+            temp = f"A{n}"
+        n += 1
+
+    # show the merged cells gradually with step 2
+    for i in range(0, len(mergeCells), 2):
+        print(mergeCells[i:i + 2])
+        sht2_WithWeight.range(mergeCells[i][0], ).merge()
+    return mergeCells
 
 
 class Excel_Operation():
-    def __init__(self, surveyExlPath, scoreExlPath):
+    def __init__(self, surveyExlPath, scrExlPh, resultExlPh):
         self.surveyExlPath = surveyExlPath
-        self.scoreExlPath = scoreExlPath
+        self.scoreExlPath = scrExlPh
+        self.testExlPh = resultExlPh
 
-        self.app4Attach1 = xw.App(visible=False, add_book=False)
-        self.app4Attach2 = xw.App(visible=False, add_book=False)
+        self.app4Survey1 = xw.App(visible=True, add_book=False)
+        self.app4Score2 = xw.App(visible=True, add_book=False)
+        self.app4Survey1.display_alerts = False
+        self.app4Score2.display_alerts = False
 
         # open the survey file with xlwings
-        self.surveyExl = self.app4Attach1.books.open(surveyExlPath)
-        self.scoreExl = self.app4Attach2.books.open(scoreExlPath)
+        self.surveyExl = self.app4Survey1.books.open(surveyExlPath)
+        self.scoreExl = self.app4Score2.books.open(scrExlPh)
 
+        # public variable
+        self.surveyTestSht = self.surveyExl.sheets["测试问卷"]
         self.departmentDict = {}
+        self.sht1ScoreDct = {}
+        self.sht2ScoreDct = {}
+
+        # settings
+        self.summarizeFileName = "汇总文件"  # without extension ".xlsx"
+        self.savePath = ".\\"
+        self.sht1Name = "调研问卷(未加权)"
+        self.sht2Name = "调研问卷(加权)"
+        self.otherTitle = "其他人员"
+        self.lv2AvgTitle = "二级单位成绩"
 
     def close_excel(self):
         self.surveyExl.close()
         self.scoreExl.close()
-        self.app4Attach1.quit()
-        self.app4Attach2.quit()
+        self.app4Survey1.quit()
+        self.app4Score2.quit()
 
-    def genSheet1_surveyWithoutWeight(self, surveySht, departmentLst,
-                                      newSheetName,
-                                      copy_scope="A1:J32",
-                                      titleStart="K1"):
+    def __convertDict2Lst(self, departmentDict):
+        """
+        convert Dict 2 List
+        :param avg:
+        :param other:
+        :param departmentDict:
+        :param department: dict
+        :return: [["二级部门", "二级部门", "二级部门"],
+                 ["三级部门1","三级部门2"]]
+        """
+        # Step2: convertDict2Lst
+        result_lst = [[], []]
+        for layer2 in departmentDict:
+            for layer3 in departmentDict[layer2]:
+                if not layer3:
+                    continue
+                result_lst[0].append(layer2)
+                result_lst[1].append(layer3)
+            # add other items
+            result_lst[0].append("")
+            result_lst[1].append(self.otherTitle)
+            result_lst[0].append("")
+            result_lst[1].append(self.lv2AvgTitle)
+        return result_lst
+
+    def genSheet1_surveyWithoutWeight(self, departmentLst, scoreLst,
+                                      columnScope="A1:J32", titleStart="K1", dataStart="K3"):
         """
         generate sheet1 of the surveyExl, which is the survey without weight
+        :param dataStart:
+        :param scoreLst:
+        :param columnScope:
         :param departmentLst:
-        :param surveySht:
-        :param newSheetName:
-        :param copy_scope:
         :param titleStart:
         :return:
         """
-        sht1 = self.surveyExl.sheets.add(newSheetName)
+        # Step1: add new sheet
+        sht1_NoWeight = self.surveyExl.sheets.add(self.sht1Name)
 
-        # Step1: copy left column the surveySht to sht1
-        sht1.range(copy_scope).value = \
-            surveySht.range(copy_scope).value
+        # Step2: copy left column the surveySht to sht1 partially with style
+        self.surveyTestSht.range(columnScope).api.Copy()
+        sht1_NoWeight.range(columnScope.split(":")[0]).api.Select()
+        sht1_NoWeight.api.Paste()
+        self.app4Survey1.api.CutCopyMode = False
 
-        # Step2: place title
-        sht1.range(titleStart).value = departmentLst
-        # get merge info
-        startRow = titleStart[1]
-        endLetter = chr(ord(titleStart[0]) + len(departmentLst[1]) - 1)
-        # merge K1:L1 cells
-        # TODO: record index position
-        sht1.range(f"{titleStart}:{endLetter}{startRow}").merge()
+        # Step3: place title
+        placeDepartmentTitle(sht1_NoWeight, departmentLst, titleStart)
 
-        # save
-        self.surveyExl.save("test.xlsx")
+        # Step4: place score below title
+        sht1_NoWeight.range(dataStart).value = scoreLst
 
-    def genSheet2_surveyWithWeight(self, surveySht, departmentLst, sht2Name):
+    def genSheet2_surveyWithWeight(self, departmentLst, scoreLst,
+                                   columnScope="A1:B32", titleStart="C1", dataStart="C3"):
         """
         generate sheet2 of the surveyExl, which is the survey with weight
-        :return:
+        :return: None
         """
-        # Area 1: copy partial scope
-        # department:
+        # Step1: add new sheet
+        sht2_WithWeight = self.surveyExl.sheets.add(self.sht2Name, after=self.sht1Name)
 
-        # Area 2:
-        # department
+        # Step2: copy left column the surveySht to sht1, with style
+        self.surveyTestSht.range(columnScope).api.Copy()
+        sht2_WithWeight.range(columnScope.split(":")[0]).api.Select()
+        sht2_WithWeight.api.Paste()
+        self.app4Score2.api.CutCopyMode = False
 
-    def __setAllDepartmentTitle(self, departmentScope="A1:F10"):
+        # Step3: delete the row redundantly
+        deleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
+        for row in deleteRowLst:
+            sht2_WithWeight.range(f"B{row}").api.EntireRow.Delete()
+        sht2_WithWeight.range("B1").column_width = 18.8
+
+        # Step3.1: place title
+        # TODO:get the next letter of C
+
+        departLst = departmentLst[1].remove(self.otherTitle)
+        departLst = departLst.remove(self.lv2AvgTitle)
+        titleInsertStart = chr(ord(titleStart[0]) + 1)
+        placeDepartmentTitle(sht2_WithWeight, departmentLst, titleStart)
+
+        # Step3.2: insert the summarize column
+        sht2_WithWeight.range("D1").api.EntireRow.Insert()
+
+        # Step3.2: merge the cell below title
+        mergeScope = getMergeZoneDynamically(sht2_WithWeight, titleInsertStart)
+
+        # Step4: place score below title
+        sht2_WithWeight.range(dataStart).value = scoreLst
+
+
+    def __setAllDepartmentDict(self, departmentScope="A1:F10"):
         """
         set the departments title from the surveyExl, can be inserted
         :param departmentScope:
-        :no return: {"二级部门": ["三级部门"], ...}
+        :no return but set: {"二级部门": ["三级部门","三级部门"], ...}
         """
         self.departmentDict = {}
-        content = self.app4Attach2.range(departmentScope).value
+        content = self.app4Score2.range(departmentScope).value
         for i in content:
             # print the 0th, 1st, 2nd,4th elements of i with format inline
             print(i[2], i[4])
@@ -85,44 +211,23 @@ class Excel_Operation():
             if i[4] not in self.departmentDict[i[2]]:
                 self.departmentDict[i[2]].append(i[4])
 
-    @staticmethod
-    def __convertDict2Lst(departmentDict, other="其他人员", avg="二级单位成绩"):
+    def genOneDepartFile(self, savePath, departTitleLst, sht1ScoreLst, sht2ScoreLst):
         """
-        convert Dict 2 List
-        :param department: dict
-        :return: [["二级部门"],
-                 ["三级部门1","三级部门2"]]
-        """
-        # Step2: convertDict2Lst
-        result_lst = [[], []]
-        for layer3 in departmentDict:
-            for layer2 in departmentDict[layer3]:
-                if result_lst[0].__len__() == 0:
-                    result_lst[0].append(layer2)
-                else:
-                    result_lst[0].append("")
-                result_lst[1].append(layer3)
-            result_lst[0].append("")
-            result_lst[1].append(other)
-            result_lst[0].append("")
-            result_lst[1].append(avg)
-        return result_lst
-
-    def genOneDepartFile(self, surveySht, departmentLst,  copy_scope="A1:J32", titleStart="K1", sht1Name="调研分数（未加权）", sht2Name="调研分数（加权）"):
-        """
-        generate one department file
-        :param surveySht:
-        :param titleStart:
-        :param copy_scope:
-        :param departmentLst:
+        generate one department file, the summarize File Data is different from the single department data
+        :param savePath:
+        :param sht1ScoreLst: the score content list of sheet1
+        :param sht2ScoreLst:  the score content list of sheet2
+        :param departTitleLst: the department title list
         :return:
         """
-        # open the sheet named "测试问卷" of surveyPath
-        # TODO: 基础功能OK, 还差一个合并单元格的功能，颜色等演示。
-        self.genSheet1_surveyWithoutWeight(surveySht, departmentLst, sht1Name, copy_scope=copy_scope, titleStart=titleStart)
+        # TODO: 还需Score & Title 的样式
+        self.genSheet1_surveyWithoutWeight(departTitleLst, sht1ScoreLst)
 
-        # TODO: 两个area 都没实现
-        self.genSheet2_surveyWithWeight(surveySht, departmentLst, sht2Name)
+        # TODO: 汇总列
+        self.genSheet2_surveyWithWeight(departTitleLst, sht2ScoreLst)
+
+        # save
+        self.surveyExl.save(savePath)
 
     def genAllDepartFile(self):
         """
@@ -130,44 +235,69 @@ class Excel_Operation():
         :return:
         """
         allDepartmentLst = [[], []]
+        allSht1ScoreTb = []  # many rows
+        allSht2ScoreTb = []  # many rows
+        summarizeFileName = os.path.join(self.savePath, self.summarizeFileName + ".xlsx")
         for department in self.departmentDict:
             departmentLst = self.__convertDict2Lst(department)
+            fileName = os.path.join(self.savePath, departmentLst[0][0] + ".xlsx")
+            sht1ScoreTb = self.__getSht1ScoreTb()
+            sht2ScoreTb = self.__getSht2ScoreTb()
+            self.genOneDepartFile(fileName, departmentLst, sht1ScoreTb, sht2ScoreTb)
+
+            # merge single Data to all
             allDepartmentLst[0] += departmentLst[0]
             allDepartmentLst[1] += departmentLst[1]
+            # merge sht1ScoreTb to allSht1ScoreTb
+            for Tb in [allSht1ScoreTb, allSht2ScoreTb]:
+                for row in range(len(Tb)):
+                    Tb.append(sht1ScoreTb[row] + sht1ScoreTb[row])
 
-            self.genOneDepartFile(departmentLst)
-        self.genOneDepartFile(allDepartmentLst)
+        # use all Data to generate summarize File
+        self.genOneDepartFile(summarizeFileName, allDepartmentLst, allSht1ScoreTb, allSht2ScoreTb)
 
     def run(self):
         """
         run the whole process, the main function.
         :return:
         """
-        # 1. get the all department title
-        self.__setAllDepartmentTitle()
-        surveySht = self.surveyExl.sheets["测试问卷"]
-        # TODO:3. get level 3 index columns
-        self.level3_index = surveySht.range("A1:J32")
-        # TODO:2. get level 2 index columns
-        self.level4_index = surveySht.range("A1:B32")
+        # fake data
+
+        # self.genOneDepartFile([["二级部门", "二级部门"], ["三级部门", "三级部门"]],
+        #                       [["1", "2"], ["3", "4"]],
+        #                       [["5", "6"], ["7", "8"]])
+
+        # # 1. get the all department title
+        self.__setAllDepartmentDict()
+        # 2. generate all sht score
+        sht1ScoreTb = self.__getSht1ScoreTb()
+        sht2ScoreTb = self.__getSht2ScoreTb()
 
         # test, 获得单个部门
         departmentLst = []
         for key in self.departmentDict:
             if "二级部门" in key:
                 continue
-            print(key, self.departmentDict[key])
             departmentLst = self.__convertDict2Lst({key: self.departmentDict[key]})
             break
-        print("写入 单个文件：departmentLst:", departmentLst)
-        self.genOneDepartFile(surveySht, departmentLst)
+        print("正在写入 单个文件，假分数，departmentLst:", departmentLst)
+        self.genOneDepartFile(self.testExlPh, departmentLst, sht1ScoreTb, sht2ScoreTb)
 
         self.close_excel()
         print("All done")
 
+    def __getSht1ScoreTb(self, ):
+        return [["1", "2"], ["3", "4"]]
+
+    def __getSht2ScoreTb(self, ):
+        return [["5", "6"], ["7", "8"]]
+
 
 if __name__ == '__main__':
+    # if result.xlsx is exist, resultExlPh named as result + time.xlsx
+    resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
+
     surveyExlPh = "D:\work\考核RPA_Exl\Input\附件1：【测试问卷】中国移动北京公司2021年度党建工作成效调研—20220816.xlsx"
     scoreExlPh = "D:\work\考核RPA_Exl\Input\附件2：党办调研问卷测试-8.15答题结果_20220815.xlsx"
-
-    Excel_Operation(surveyExlPh, scoreExlPh).run()
+    # resultExlPh = ".\\result.xlsx"
+    Excel_Operation(surveyExlPh, scoreExlPh, resultExlPh).run()
