@@ -57,16 +57,46 @@ def getMergeZoneDynamically(sht2_WithWeight):
                 # print(temp)
                 mergeCells.append(temp)
             # print(f"A{n}")
-            mergeCells.append(f"A{n}")
+            mergeCells.append(n)
         else:
-            temp = f"A{n}"
+            temp = n
         n += 1
-
-    # show the merged cells gradually with step 2
-    for i in range(0, len(mergeCells), 2):
-        print(mergeCells[i:i + 2])
-        sht2_WithWeight.range(mergeCells[i][0], ).merge()
     return mergeCells
+
+
+def mergeSht2Lv3Title(sht2_WithWeight, departmentLen, startLv2="C2"):
+    """
+    merge the title of the third level in the sht2.
+    Need Concern about Multi-department situation.
+    :param startLv2:
+    :param sht2_WithWeight:
+    :param departmentLen:
+    :return:
+    """
+    startCol = startLv2[0]
+    startRow = startLv2[1]
+    for gap in range(0, departmentLen + 1, 2):
+        startRowLetter = chr(ord(startCol) + gap)
+        endRowLetter = chr(ord(startRowLetter) + 1)
+        # print(f"{startRowLetter}{startRow}:"
+        #       f"{endRowLetter}{startRow}")
+        sht2_WithWeight.range(f"{startRowLetter}{startRow}:"
+                              f"{endRowLetter}{startRow}").merge()
+
+
+class Stuff:
+    def __init__(self, name, lv2Depart, lv2Code, lv3Depart, lv3Code, ID, scoreLst=[]):
+        self.name = name
+        self.department = lv2Depart
+        self.position = lv2Code
+        self.weight = lv3Depart
+        self.code = lv3Code
+        self.ID = ID
+        self.scoreLst = scoreLst
+
+    def __str__(self):
+        return f"{self.name} {self.department} {self.position} {self.weight}"
+
 
 
 class Excel_Operation():
@@ -93,8 +123,10 @@ class Excel_Operation():
         # settings
         self.summarizeFileName = "汇总文件"  # without extension ".xlsx"
         self.savePath = ".\\"
-        self.sht1Name = "调研问卷(未加权)"
-        self.sht2Name = "调研问卷(加权)"
+        self.sht1Name = "调研结果"  # "调研问卷(未加权)"
+        self.sht2Name = "调研成绩"  # "调研问卷(加权)"
+        self.sht3Name = "调研结果（2022年）"
+        self.sht4Name = "调研成绩（2022年）"
         self.otherTitle = "其他人员"
         self.lv2AvgTitle = "二级单位成绩"
 
@@ -170,29 +202,40 @@ class Excel_Operation():
         sht2_WithWeight.api.Paste()
         self.app4Score2.api.CutCopyMode = False
 
-        # Step3: delete the row redundantly
+        # Step3: delete the row of left column redundantly
         deleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
         for row in deleteRowLst:
             sht2_WithWeight.range(f"B{row}").api.EntireRow.Delete()
         sht2_WithWeight.range("B1").column_width = 18.8
 
-        # Step3.1: place title
-        # TODO:get the next letter of C
-
-        departLst = departmentLst[1].remove(self.otherTitle)
-        departLst = departLst.remove(self.lv2AvgTitle)
-        titleInsertStart = chr(ord(titleStart[0]) + 1)
+        # Step3.1: place basic title
         placeDepartmentTitle(sht2_WithWeight, departmentLst, titleStart)
 
-        # Step3.2: insert the summarize column
-        sht2_WithWeight.range("D1").api.EntireRow.Insert()
+        # Step3.2: merge the summary cell below title
+        mergeScope = getMergeZoneDynamically(sht2_WithWeight)
 
-        # Step3.2: merge the cell below title
-        mergeScope = getMergeZoneDynamically(sht2_WithWeight, titleInsertStart)
+        # Step3.3: insert the summarize column
+        # Step3.3.1 Get insert Column index info
+        # in order to get the summary column index letter after the department column, get index letter iteratively
+        # the insert start position of department lv3 is column "C",
+        # e.g. the department is ["1", "2", "3"] (C D E), so the gap insert column is ["D", "F", "H"]
+        departLst = departmentLst[1]
+        departLst.remove(self.otherTitle)
+        departLst.remove(self.lv2AvgTitle)
+        summaryGapColLst = [chr(ord(titleStart[0]) + i * 2 + 1) for i in range(len(departLst))]
+        print("summaryGapColLst: ", summaryGapColLst)
+        # Step3.3.2 Insert the summarize column bt summaryGapColLst
+        for col in summaryGapColLst:
+            sht2_WithWeight.range(f"{col}1").api.EntireColumn.Insert()
+            # Step3.3.3 Merge the summary column
+        print("mergeScope", mergeScope)
+        mergeSht2SummarizeCells(sht2_WithWeight, mergeScope, summaryGapColLst)
+        # Step3.4: merge the lv3 title
+        lv2titleStart = titleStart[0] + str(int(titleStart[0]) + 1)
+        mergeSht2Lv3Title(sht2_WithWeight, len(departmentLst[1]), lv2titleStart)
 
         # Step4: place score below title
         sht2_WithWeight.range(dataStart).value = scoreLst
-
 
     def __setAllDepartmentDict(self, departmentScope="A1:F10"):
         """
@@ -283,7 +326,7 @@ class Excel_Operation():
         print("正在写入 单个文件，假分数，departmentLst:", departmentLst)
         self.genOneDepartFile(self.testExlPh, departmentLst, sht1ScoreTb, sht2ScoreTb)
 
-        self.close_excel()
+        # self.close_excel()
         print("All done")
 
     def __getSht1ScoreTb(self, ):
