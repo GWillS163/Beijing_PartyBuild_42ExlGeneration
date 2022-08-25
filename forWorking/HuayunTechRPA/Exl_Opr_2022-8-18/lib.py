@@ -85,34 +85,47 @@ def judgeAnswerGrade(answer, rule, type):
     if "开放题" in type:
         return 0
     elif "单项" in type:
-        # 1.1分
+        # 1:1分
         # 2.2分
-        # 3.3分
-        # 4.4分
-        # 5.5分
-        # 6.6分
-        # 7.7分
-        # 8.8分
-        # 9.9分
+        # 9:9分
         # 10.10分
-        if ":" in rule:
-            pass
-        elif "." in rule:
-            pass
-        else:
-            print("不能处理此规则请检查！将处理为0分 :", answer, rule, type)
+
+        # get the number of digital and dot by regex
+        numOfAnswerDigitalList = re.findall(r"(\d\d?)\..*?", answer)
+        if len(numOfAnswerDigitalList) != 1:
+            print("识别到的数字不止一个，请检查！", end="")
+            print(f"answer: {answer}")
+            return 0
+        for ruleP in rule.split("\n"):
+            if not ruleP:
+                continue
+            if ":" in rule:
+                ruleNum, ruleScore = ruleP.split(":")
+            elif "：" in rule:
+                ruleNum, ruleScore = ruleP.split("：")
+            elif "." in rule:
+                ruleNum, ruleScore = ruleP.split(".")
+            else:
+                print("没有找到匹配的规则，将处理为0分 :")
+                print(f"answer: {answer}\n"
+                      f"rule: {rule}\n"
+                      f"type: {type}")
+                return 0
+            if numOfAnswerDigitalList[0] == ruleNum:
+                return int(ruleScore.strip("分"))
+        print("没有找到匹配的规则，将处理为0分 :")
+        print(f"answer: {answer}\n"
+              f"rule: {rule}\n"
+              f"type: {type}")
+        return 0
+
     elif "不定项选择" in type:
         # 已适配规则:
         # 10分：1-4全选
-        # 8分：1-4任选3个
-        # 6分：1-4任选2个
-        # 4分：1-4任选1个
-        # 0分：5
-
         # 10分：1-6任选5个及以上
+        # 8分：1-4任选3个
         # 8分：1-6任选3-4个
-        # 6分：1-6任选2个
-        # 4分：1-6任选1个
+        # 0分：5
 
         # get the number of digital and dot by regex
         numOfAnswerDigitalList = re.findall(r"(\d)\..*?", answer)
@@ -131,7 +144,11 @@ def judgeAnswerGrade(answer, rule, type):
                     return 0
 
             # get the two digit before "全选" by regex
-            startNum, endNum = re.findall(r"(\d)-(\d)?.选", scopeStr)[0]
+            scopeRan = re.findall(r"(\d)-(\d)?.选", scopeStr)
+            if scopeRan:
+                startNum, endNum = re.findall(r"(\d)-(\d)?.选", scopeStr)[0]
+            else:
+                startNum, endNum = 1, 99  # default
             permitScopeLst = [i for i in range(int(startNum), int(endNum) + 1)]
 
             # judge the score if is not permit scope

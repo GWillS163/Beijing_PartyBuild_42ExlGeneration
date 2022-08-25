@@ -49,37 +49,47 @@ scoreExlPh = "D:\work\考核RPA_Exl\Input\附件2：党办调研问卷测试-8.1
 
 def scoreTest():
     selection1 = """
-    1. 及时编发党员学习材料，组织党员学习
-    2. 对基层党员、群众积极引导和帮助
-    3. 工作大体可以按时按计划推进，但标准化、规范化水平有待提高
-    4. 组织相关主题实践活动的创新性稍显不足
-    5. 带头学习，勤勉敬业
-    6. 在“抓实党业深度融合，以党建促进高质量发展方面”有待提高
+1. 及时编发党员学习材料，组织党员学习
+2. 对基层党员、群众积极引导和帮助
+3. 工作大体可以按时按计划推进，但标准化、规范化水平有待提高
+4. 组织相关主题实践活动的创新性稍显不足
+5. 带头学习，勤勉敬业
+6. 在“抓实党业深度融合，以党建促进高质量发展方面”有待提高
     """
     selection2 = "5. 带头学习，勤勉敬业"
     rule1 = """
-    10分：1-6任选5个及以上
-    8分：1-6任选3-4个
-    6分：1-6任选2个
-    4分：1-6任选1个"""
+10分：1-6任选5个及以上
+8分：1-6任选3-4个
+6分：1-6任选2个
+4分：1-6任选1个"""
 
     rule2 = """
-    10分：1-4全选
+10分：1-4全选
 8分：1-4任选3个
 6分：1-4任选2个
 4分：1-4任选1个
 0分：5"""
-    print(judgeAnswerGrade(selection1, rule1, "不定项选择题"))
-    print(judgeAnswerGrade(selection2, rule1, "不定项选择题"))
-    print(judgeAnswerGrade(selection2, rule2, "不定项选择题"))
+
+    selection_single = "1. 及时编发党员学习材料，组织党员学习"
+    rule_single = """
+1.1分
+2.2分
+3.3分
+4.4分
+5.5分
+6.6分
+7.7分
+8.8分
+9.9分
+10.10分"""
+    selection_single2 = "10. 带头学习，勤勉敬业"
+    selection_single_error = "1.组织学习, 10. 带头学习，勤勉敬业"
+    print(judgeAnswerGrade(selection1, rule1, "不定项选择题"), 10)
+    print(judgeAnswerGrade(selection2, rule1, "不定项选择题"), 4)
+    print(judgeAnswerGrade(selection2, rule2, "不定项选择题"), 0)
+    print(judgeAnswerGrade(selection_single, rule_single, "单项"), 1)
+    print(judgeAnswerGrade(selection_single2, rule_single, "单项"), 10)
+    print(judgeAnswerGrade(selection_single_error, rule_single, "单项"), "报错")
 
 
 scoreTest()
-
-
-# judge a string is digit or letter only or not.
-def isDigitOrLetter(string):
-    for char in string:
-        if not (char.isdigit() or char.isalpha()):
-            return False
-    return True
