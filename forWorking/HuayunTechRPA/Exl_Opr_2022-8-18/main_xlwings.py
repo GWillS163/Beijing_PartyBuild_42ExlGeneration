@@ -1,5 +1,6 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+import csv
 import os.path
 import re
 import time
@@ -41,6 +42,7 @@ class Excel_Operation():
         self.otherTitle = "其他人员"
         self.lv2AvgTitle = "二级单位成绩"
         self.ruleCol = "I"  # 赋分规则列
+        self.ruleTypeCol = "G"  # 题目类型列
 
     def close_excel(self):
         self.surveyExl.close()
@@ -220,39 +222,70 @@ class Excel_Operation():
         stuffLst = []
         content = self.app4Score2.range(departmentScope).value
         for i in content:
-            print(i)
+            if not all(i):
+                continue
             if i[0] == "序号":
                 self.scoreExlTitle = Stuff(i[1], i[2], i[3], i[4], i[5], i[6], i[9:])
+                continue
             stu = Stuff(i[1], i[2], i[3], i[4], i[5], i[6], i[9:])
+            # print(stu)
             stuffLst.append(stu)
         return stuffLst
 
-    def getScore(self, stuffLst):
+    def getStuffAllScore(self, stuffLst, debug=True):
         print("getScore function Start ------------------------------")
-        # get question
-        questionNum = 0
-        question = self.scoreExlTitle.answerLst[questionNum]
-        print("question", question)
 
-        # get demo answer
-        demoAnswer = stuffLst[0].answerLst[1]
-        print("demoAnswer: ", demoAnswer)
+        debugScoreLst = []  # store [name, question, answer, rule, score] for debug
+        # get the score of each stuff
+        for stuff in stuffLst:
+            # every stuff need to get the all score
+            for questionNum in range(len(self.scoreExlTitle.answerLst)):
+                if not stuff.answerLst[questionNum]:
+                    continue
+                # get every question by question num
+                question = self.scoreExlTitle.answerLst[questionNum]
+                # get stuff answer
+                answer = stuff.answerLst[questionNum]
+                # print(f"question: {question}\n"
+                #       f"answer: {answer}\n")
 
-        # locate which row is rule
-        answerRow = 0
-        for row in range(3, 40):
-            # find the cell in the surveyExl by demoAnswer
-            cellQuestion = self.surveyTestSht.range(f"E{row}").value
-            print("cellQuestion: ", cellQuestion)
-            if cellQuestion in question:
-                answerRow = row
-                break
-        print("answerRow: ", answerRow)
+                # get rule of question
+                # locate which row is rule
+                answerRow = -1
+                for row in range(3, 40):
+                    # find the cell in the surveyExl by answer
+                    cellQuestion = self.surveyTestSht.range(f"E{row}").value
+                    if cellQuestion is None:
+                        continue
+                    if cellQuestion in question:
+                        # print("Check_cellQuestion: ", cellQuestion)
+                        answerRow = row
+                        break
+                if answerRow == -1:
+                    print(f"{question} not found in surveyExl")
+                    continue
+                # print("answerRow: ", answerRow)
+                # print(f"rule: {self.ruleCol}{answerRow}")
 
-        # get rule
-        rule = self.surveyExl.range(f"{self.ruleCol}{answerRow}").value
+                # get rule in the surveyExl App
+                rule = self.app4Survey1.range(f"{self.ruleCol}{answerRow}").value
+                quesType = self.app4Survey1.range(f"{self.ruleTypeCol}{answerRow}").value
+                stuff.scoreLst[questionNum] = judgeAnswerGrade(answer, rule, quesType)
 
-        score = judgeAnswerGrade(demoAnswer, rule)
+                if stuff.scoreLst[questionNum] == -1:
+                    print(answer, rule, quesType)
+                    print("score", stuff.scoreLst[questionNum])
+
+                debugScoreLst.append([stuff.name, question, quesType, answer, rule, stuff.scoreLst[questionNum]])
+
+        # if debug on, save the debugScoreLst to csv with current time
+        if debug:
+            with open(f"debugScoreLst_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows([["name", "question", "quesType", "answer", "rule", "score"]])
+                writer.writerows(debugScoreLst)
+
+        return stuffLst
 
     def __setAllDepartmentDict(self, departmentScope="A1:F10"):
         """
