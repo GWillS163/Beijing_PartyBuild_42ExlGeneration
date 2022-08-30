@@ -81,156 +81,180 @@ def mergeSht2Lv3Title(sht2_WithWeight, departmentLen, startLv2="C2"):
                               f"{endRowLetter}{startRow}").merge()
 
 
-def judgeAnswerGrade(answer, rule, type):
-    if "开放题" in type:
-        return 0
-    elif "单项" in type or "单选" in type:
-        # 1:1分
-        # 2.2分
-        # 9:9分
-        # 10.10分
-
-        # get the number of digital and dot by regex
-        numOfAnswerDigitalList = re.findall(r"(\d{,3}?)\..*?", answer)
-        if len(numOfAnswerDigitalList) != 1:
-            print("识别到的数字不止一个，请检查！", end="")
-            print(f"answer: {answer}")
-            return -1
-        for ruleP in rule.split("\n"):
-            if not ruleP:
-                continue
-            if ":" in rule:
-                ruleL, ruleR = ruleP.split(":")
-            elif "：" in rule:
-                ruleL, ruleR = ruleP.split("：")
-            elif "." in rule:
-                ruleL, ruleR = ruleP.split(".")
-            else:
-                print("没有找到匹配的规则，将处理为-1分 :")
-                print(f"answer: {answer}\n"
-                      f"rule: {rule}\n"
-                      f"type: {type}")
-                return -1
-            # get permit scope
-            if "分" in ruleL:
-                ruleScore = int(ruleL.strip("分"))
-                ruleSelect = ruleR
-            elif "分" in ruleR:
-                ruleScore = int(ruleR.strip("分"))
-                ruleSelect = ruleL
-            else:
-                print("无法分辨哪边是分数! 将处理为-1分 :")
-                print(f"answer: {answer}\n"
-                      f"rule: {rule}\n"
-                      f"type: {type}")
-                return -1
-            # get the number of digital in ruleSelect by regex
-            numOfRuleDig = re.search(r"(\d{,3})-?(\d{,3})?", ruleSelect).groups()
-            if not numOfRuleDig[1]:  # only one number
-                if numOfAnswerDigitalList[0] == numOfRuleDig[0]:
-                    return ruleScore
-            else:  # two numbers
-                if int(numOfAnswerDigitalList[0]) in range(int(numOfRuleDig[0]), int(numOfRuleDig[1]) + 1):
-                    return ruleScore
-
-        print("没有找到匹配的规则，将处理为-1分 :")
-        print(f"answer: {answer}\n"
-              f"rule: {rule}\n"
-              f"type: {type}")
+def judgeGradeSingle(answerIntLst, debugPrint, ruleSelect, ruleScore):
+    # 1分:1
+    # 2.2分
+    # 9:9分
+    # 10.10分
+    if len(answerIntLst) != 1:
+        # print("识别到的数字不止一个，请检查！", end="")
+        # print(debugPrint)
         return -1
 
-    elif "不定项" in type:
-        # 已适配规则:
-        # 10分：1-4全选
-        # 10分：1-6任选5个及以上
-        # 8分：1-4任选3个
-        # 8分：1-6任选3-4个
-        # 0分：5
+    # get the number in ruleSelect by regex
+    numOfRuleDig = re.search(r"(\d{,3})([-|或])?(\d{,3})?", ruleSelect).groups()
+    if not numOfRuleDig[1]:  # only one number
+        if answerIntLst[0] == int(numOfRuleDig[0]):
+            return ruleScore
+    else:  # present scope or "或"
+        if numOfRuleDig[1] == "或":
+            if answerIntLst[0] == int(numOfRuleDig[0]) or answerIntLst[0] == int(numOfRuleDig[2]):
+                return ruleScore
+        elif numOfRuleDig[1] == "-":
+            if int(numOfRuleDig[0]) <= answerIntLst[0] <= int(numOfRuleDig[2]):
+                return ruleScore
 
-        # get the number of digital and dot by regex
-        numOfAnswerDigitalList = re.findall(r"(\d{,3})\..*?", answer)
-        # compare answerLst with standard answerLst
-        for ruleP in rule.split("\n"):
-            permitStart, permitEnd = 1, 99  # default
-            if not ruleP:
-                continue
-            scoreStr, scopeStr = ruleP.split("：")
+    return -1
 
-            # # judge the score if only digital
-            # if scopeStr.strip().isdigit():
-            #     if scopeStr in numOfAnswerDigitalList:
-            #         return int(scoreStr.strip("分"))
-            #     else:
-            #         print("[数字判断]无法处理此规则, 请检查！将处理为-1分 :", answer, rule, type)
-            #         return -1
 
-            # 单个选择: 4
-            # 全部选择: 全选
-            # 局部全选: 1-4全选
+def judgeGradeMulti(answerIntLst, debugPrint, ruleSelect, ruleScore):
+            # 已覆盖效果 (2022-8-29)
+            # 单个选择: 10分：4
+            # 单个任意: 10分：4或5
+            # 全部选择: 8分：全选
+            # 局部全选: 8分：1-4
+            # 局部全选: 0分：1-4全选
             # 全局多选: 任选3个
             # 局部多选: 1-4任选3个
             # 局部多选以上: 1-4任选3个及以上
 
+            # 识别效果(下行为标题):
+            # 单选，4或5, 选择范围开始, 选择范围结束, 全选，任选，n个，n个及以上
+            # ('4', None, None, None, None, None, None, None)
+            # (None, '4或5', None, None, None, None, None, None)
+            # (None, '4或5或20', None, None, None, None, None, None)
+            # (None, None, None, None, '全选', None, None, None)
+            # (None, None, '1', '4', None, None, None, None)
+            # (None, None, '1', '4', '全选', None, None, None)
+            # (None, None, None, None, None, '任选', '3', None)
+            # (None, None, '1', '4', None, '任选', '3', None)
+            # (None, None, '1', '4', None, '任选', '3', '及以上')
 
-            # 4
-            # 全选
-            # 1-4全选
-            # 任选3个
-            # 1-4任选3个
-            # 1-4任选3个及以上
-            # write a regex to identify above case
-            scopeRan = re.search(r"(?:(?:((\d{,3}))|((\d{,3}))-((\d{,3}))))?(全选|任选)?"
-                                 r"(?:(?:((\d{,3}))|((\d{,3}))-((\d{,3})))个)?(?:及以上)?", scopeStr).groups()
-            sglSelect, permitStart, permitEnd, selectType, permitQty, permitQtySt, permitQtyEd, scopeRan = scopeRan
-        # TODO: 使用以上参数进行 重写下面代码
-            if selectType == '任选' and permitStart and permitEnd:
-                permitStart, permitEnd = int(scopeRan[1]), int(scopeRan[2])
+    # write a regex to identify above case
+    scopeRan = re.search(
+        r"(^\d{,3})$|(^\d{,3}(?:或\d{,3})+$)|(?:^(\d{,3})-(\d{,3}))?(?:(全选)|(任选)(\d{,3})-?(\d{,3})?个)?(及以上)?",
+        ruleSelect).groups()
+    sglSlt, dblSlts, permitNumStart, permitNumEnd, isAllSlt, isAnySlt, permitQtyMin, permitQtyMax, isMore = scopeRan
 
-            permitScp = range(int(permitStart), int(permitEnd) + 1)
-
-            # judge each score if is not in permit scope
-            isInScope = False
-            for num in numOfAnswerDigitalList:
-                if int(num) in permitScp:
-                    isInScope = True
-            if not isInScope:
-                print("答案不在范围！")
-                print(  f"permitScp: {permitScp}\n"
-                        f"answer: {answer}\n"
-                        f"rule: {rule}\n"
-                        f"type: {type}")
-                continue
-
-            # In scope
-            if scopeRan[3] == "全选":
-                if len(permitScp) == len(numOfAnswerDigitalList):
-                    return int(scoreStr.strip("分"))
-            elif scopeRan[3] == '任选':
-                # get the number between "任选" and "个" by regex
-                permitQuantity = re.search(r"任选(?:(\d{,3})|(\d{,3})-(\d{,3}))个", ruleP).groups()
-                if permitQuantity[0]:
-                    if "及以上" in scopeStr:
-                        if len(numOfAnswerDigitalList) >= int(permitQuantity[0]):
-                            return int(scoreStr.strip("分"))
-                    elif len(numOfAnswerDigitalList) == int(permitQuantity[0]):
-                        return int(scoreStr.strip("分"))
-                elif permitQuantity[1] and permitQuantity[2]:
-                    if int(permitQuantity[1]) <= len(numOfAnswerDigitalList) <= int(permitQuantity[2]):
-                        return int(scoreStr.strip("分"))
-            else:
-                print("[不定项选择模块]:不能分辨此规则类型. ")
-                print(f"Answer:{answer}\n"
-                      f"rule:{rule},"
-                      f"type:{type}")
-                return -1
-        print("[不定项选择模块]:不能处理此规则请检查！将处理为-1分 :", answer, rule, type)
-        return -1
+    # judge each score if is not in permit scope
+    if not permitNumStart and not permitNumEnd:
+        permitNumStart, permitNumEnd = 1, 99  # default
     else:
-        print("不能判断此题分数请留意! 将处理为-1分 :")
-        print(f"Answer:{answer}\n"
-              f"rule:{rule},"
-              f"type:{type}")
-        return -1
+        permitScp = range(int(permitNumStart), int(permitNumEnd) + 1)
+        isInScope = False
+        for num in answerIntLst:
+            if int(num) in permitScp:
+                isInScope = True
+        if not isInScope:
+            return -1
+
+    # e.g. 单个选择的规则: 4
+    if sglSlt and len(answerIntLst) == 1:
+        if answerIntLst[0] == int(sglSlt):
+            return ruleScore
+
+    # 单个任选: e.g. 4或5, 一旦选了就给分
+    elif dblSlts:
+        permitNumLst = list(map(int, dblSlts.split("或")))
+        # check some element of the answerIntLst is duplicate with permitNumLst
+        for num in answerIntLst:
+            if int(num) in permitNumLst:
+                return ruleScore
+
+    # 全部选择与部分全选:
+    # e.g. 全选, 1-5, 1-5全选  (默认1-99)
+    elif isAllSlt or (not isAllSlt and not isAnySlt):
+        # return "多选 或部分全选"
+        if not permitNumStart and permitNumEnd:
+            print("全部选择与部分全选，需要指定范围！")
+            return -1
+            # TODO: 如何统计题目的数量
+        # 选择的数量与范围一致
+        if len(answerIntLst) == len(range(int(permitNumStart), int(permitNumEnd) + 1)):
+            return ruleScore
+
+    # 局部  (默认1-99)
+    # 全局多选: 任选3个
+    # 局部多选: 1-4任选3个
+    # 局部多选: 1-4任选3-4个
+    # 局部多选以上: 1-4任选3个及以上
+    elif isAnySlt:
+        # 判断数量是否足够
+        # 匹配两种格式： 任选n(-m)个及以上
+        if not permitQtyMax:
+            permitQtyMax = permitQtyMin
+
+        # 任选n个及以上
+        if isMore:
+            if len(answerIntLst) >= int(permitQtyMin):
+                return ruleScore
+        # 任选n(-m)个
+        else:
+            if int(permitQtyMin) <= len(answerIntLst) <= int(permitQtyMax):
+                return ruleScore
+
+    return -1
+
+
+def judgeRulePreProcess(ruleP, debugPrint):
+    ruleL, ruleR = 0, 0
+    for char in [':', "：", "."]:
+        if char in ruleP:
+            ruleL, ruleR = ruleP.split(char)
+            break
+
+    if not (ruleL and ruleR):
+        print("没有找到匹配的分隔字符，将处理为-1分 :")
+        print(debugPrint)
+        return -1, -1
+
+    # get permit scope
+    if "分" in ruleL:
+        ruleScore = int(ruleL.strip("分"))
+        ruleSelect = ruleR
+    elif "分" in ruleR:
+        ruleScore = int(ruleR.strip("分"))
+        ruleSelect = ruleL
+    else:
+        print("无法分辨哪边是分数! 将处理为-1分 :", debugPrint)
+        return -1, -1
+
+    return ruleScore, ruleSelect
+
+
+def judgeAnswerGrade(answer, rule, quesType):
+    debugPrint = f"answer: {answer}\n"\
+                 f"rule: {rule}\n"\
+                  f"quesType: {quesType}"
+    # match the number of digital in answer by regex, form is a number+分
+    answerInt = re.findall(r"(\d{,3}?)分", answer.strip())
+    if answerInt and answerInt[0]:
+        return int(answerInt[0])
+
+    if "开放题" in quesType:
+        return 0
+
+    # get RuleL & RuleR and verify
+    answerIntLst = list(map(int, re.findall(r"(\d{,3})\..*?", answer)))
+    # check each rule to answer
+    for ruleP in rule.split("\n"):
+        if not ruleP:
+            continue
+        ruleScore, ruleSelect = judgeRulePreProcess(ruleP, debugPrint)
+        if ruleScore == -1 or ruleSelect == -1:
+            continue
+
+        # get answer scope with different type of ques
+        score = -1
+        if "单项" in quesType or "单选" in quesType:
+            score = judgeGradeSingle(answerIntLst, debugPrint, ruleSelect, ruleScore)
+        elif "不定项" in quesType:
+            score = judgeGradeMulti(answerIntLst, debugPrint, ruleSelect, ruleScore)
+
+        if score != -1:
+            return score
+
+    return -1
 
 
 class Stuff:

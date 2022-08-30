@@ -232,57 +232,65 @@ class Excel_Operation():
             stuffLst.append(stu)
         return stuffLst
 
+    @staticmethod
+    def test():
+        ans4 = """
+        4.每季度3次及以上"""
+        rule4 = """10分：3或4
+        9分：2
+        0分：1"""
+        print(judgeAnswerGrade(ans4, rule4, "不定项选择题"), 10)
+
     def getStuffAllScore(self, stuffLst, debug=True):
         print("getScore function Start ------------------------------")
 
-        debugScoreLst = []  # store [name, question, answer, rule, score] for debug
+        debugScoreLst = []  # store [name, questTitle, answer, rule, score] for debug
         # get the score of each stuff
         for stuff in stuffLst:
             # every stuff need to get the all score
             for questionNum in range(len(self.scoreExlTitle.answerLst)):
                 if not stuff.answerLst[questionNum]:
                     continue
-                # get every question by question num
-                question = self.scoreExlTitle.answerLst[questionNum]
+                # get every questTitle by questTitle num
+                questTitle = self.scoreExlTitle.answerLst[questionNum]
                 # get stuff answer
                 answer = stuff.answerLst[questionNum]
-                # print(f"question: {question}\n"
-                #       f"answer: {answer}\n")
-
-                # get rule of question
-                # locate which row is rule
+                # locate which row is rule by questTitle in scoreExl
                 answerRow = -1
                 for row in range(3, 40):
                     # find the cell in the surveyExl by answer
-                    cellQuestion = self.surveyTestSht.range(f"E{row}").value
-                    if cellQuestion is None:
+                    ruleQuest = self.surveyTestSht.range(f"E{row}").value
+                    if ruleQuest is None:
                         continue
-                    if cellQuestion in question:
-                        # print("Check_cellQuestion: ", cellQuestion)
+                    if ruleQuest in questTitle:
+                        # print("Check_cellQuestion: ", ruleQuest)
                         answerRow = row
                         break
                 if answerRow == -1:
-                    print(f"{question} not found in surveyExl")
+                    print(f"{questTitle} not found in surveyExl")
                     continue
-                # print("answerRow: ", answerRow)
-                # print(f"rule: {self.ruleCol}{answerRow}")
 
                 # get rule in the surveyExl App
                 rule = self.app4Survey1.range(f"{self.ruleCol}{answerRow}").value
                 quesType = self.app4Survey1.range(f"{self.ruleTypeCol}{answerRow}").value
+                # TODO: 判分的时候总是用旧数据
                 stuff.scoreLst[questionNum] = judgeAnswerGrade(answer, rule, quesType)
 
                 if stuff.scoreLst[questionNum] == -1:
-                    print(answer, rule, quesType)
-                    print("score", stuff.scoreLst[questionNum])
+                    print(f"answer: {answer}\n"
+                          f"rule: {rule}\n"
+                          f"questTitle: {questTitle}\n"
+                          f"answerRow: {answerRow}\n"
+                          f"quesType: {quesType}\n"
+                          f"score: {stuff.scoreLst[questionNum]}")
 
-                debugScoreLst.append([stuff.name, question, quesType, answer, rule, stuff.scoreLst[questionNum]])
+                debugScoreLst.append([stuff.name, questTitle, quesType, answer, rule, stuff.scoreLst[questionNum]])
 
         # if debug on, save the debugScoreLst to csv with current time
         if debug:
             with open(f"debugScoreLst_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerows([["name", "question", "quesType", "answer", "rule", "score"]])
+                writer.writerows([["name", "questTitle", "quesType", "answer", "rule", "score"]])
                 writer.writerows(debugScoreLst)
 
         return stuffLst
