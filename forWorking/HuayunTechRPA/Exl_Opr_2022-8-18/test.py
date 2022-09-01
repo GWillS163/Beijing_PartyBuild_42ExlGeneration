@@ -1,53 +1,28 @@
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-import re
+sta = ''
+staAvg = 'sum(sta)/len(sta)'
+staAvgUnit = 'staAvg + staAvg'
+staffWithLv = {"lv2_0": {"lv3_0": [sta, sta],
+                         "lv3_1": [sta, sta]},
+               "lv2_1": {"lv3_0": [sta, sta],
+                         "lv3_1": [sta, sta]}
+               }
+
+sht1WithLv = {"lv2_0": {"lv3_0": [staAvg],
+                        "lv3_1": [staAvg],
+                        "二级单位": [staAvg]},
+              "lv2_1": {"lv3_0": [staAvg],
+                        "lv3_1": [staAvg],
+                        "二级单位": [staAvg]},
+              }
+
+# 用的时候 需要 * weight
+sht2WithLv = {"lv2_0": {"lv3_0": [staAvgUnit],
+                        "lv3_1": [staAvgUnit],
+                        "二级单位成绩": [],
+                        "本线条排名": [],
+                        "全公司排名": [],
+                        },
+              }
 
 
-def regexTest():
-    scopeStrs = """4
-4或5
-4或5或20
-全选
-1-4
-1-4全选 
-任选3个
-1-4任选3个
-1-4任选3个及以上"""
-    # [1-4][全选|任选]\d个及以上
-    # 纯数字: 4
-    # [4或5]
-    # ('4', None, None, None, None, None, None, None, None)
-    # (None, '4', '5', None, None, None, None, None, None)
-    # (None, None, None, None, None, '全选', None, None, None)
-    # (None, None, None, '1', '4', None, None, None, None)
-    # (None, None, None, '1', '4', '全选', None, None, None)
-    # (None, None, None, None, None, None, '任选', '3', None)
-    # (None, None, None, '1', '4', None, '任选', '3', None)
-    # (None, None, None, '1', '4', None, '任选', '3', '及以上')
-    for strs in scopeStrs.split('\n'):
-        scopeRan = re.search(r"(?:^(\d{,3})$)|"
-                             r"(^\d{,3}(?:或\d{,3})+$)|"
-                             r"(?:^(\d{,3})-(\d{,3}))?(?:(全选)|(?:(任选)(\d{,3}))个(及以上)?$)?"
-                             , strs).groups()
-
-        scopeRan = re.search(r"(^\d{,3})$|(^\d{,3}(?:或\d{,3})+$)|(?:^(\d{,3})-(\d{,3}))?(?:(全选)|(任选)(\d{,3})-?(\d{,3})?个)?(及以上)?",
-                             strs).groups()
-        print(scopeRan)
-
-
-def regexTest2():
-    strings = """
-4
-23
-4或5或20
-4或5"""
-    for strs in strings.split('\n'):
-        if not strs:
-            continue
-        scopeRan = re.search(r"(?:(\d{1,3})(?:或(\d{1,3}))?)", strs).groups()
-        print(scopeRan)
-
-
-if __name__ == '__main__':
-    regexTest()
-    # regexTest2()
+sht3WithLv = {"lv2_0": {"lv3_0": [staAvgUnit],

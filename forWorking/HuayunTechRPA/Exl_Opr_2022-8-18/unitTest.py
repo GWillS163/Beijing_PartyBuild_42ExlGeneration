@@ -152,29 +152,6 @@ def ScoreJudgeBugFixCase():
     print(judgeAnswerGrade(ans6, rule6, "不定项选择题"), 10)
     
 
-def main():
-    # if result.xlsx is exist, resultExlPh named as result + time.xlsx
-    resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
-
-    surveyExlPh = "D:\work\考核RPA_Exl\Input\附件1：【测试问卷】标准模板示例（原文件修改）.xlsx"
-    scoreExlPh = "D:\work\考核RPA_Exl\Input\附件2：党办调研问卷测试-8.15答题结果_（模板）.xlsx"
-
-    test = TestExcel_Opr(surveyExlPh, scoreExlPh, resultExlPh)
-    # test.test()
-
-    stuffLst = test.getStuffLst()
-    for stu in stuffLst:
-        print(stu)
-    print(test.scoreExlTitle)
-    stuffLst = test.getStuffAllScore(stuffLst)
-
-    print("展示分数：")
-    for stu in stuffLst:
-        print(stu.name,
-              # stu.answerLst,
-              stu.scoreLst)
-
-
 def ScoreJudgeBugFixCase2():
     ans = """
 14.以上全部【互斥】"""
@@ -211,11 +188,36 @@ def ScoreJudgeBugFixCase2():
     print(judgeAnswerGrade(ans5, rule4, "不定项选择题"), 10)
 
 
+def main():
+    # if result.xlsx is exist, resultExlPh named as result + time.xlsx
+    resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
+
+    surveyExlPh = "D:\work\考核RPA_Exl\Input\模板1：【测试问卷】标准模板示例（原文件修改）_2022-8-30.xlsx"
+    scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.15答题结果_（模板）_2022-8-30.xlsx"
+    moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18\origin\【RPA模板表(测试)】中国移动北京公司2021年度党建工作成效调研.xlsx"
+    test = TestExcel_Opr(surveyExlPh, scoreExlPh, moduleExlPh, resultExlPh)
+    # test.test()
+
+    stuffLst = test.getStuffDict()
+    for stu in stuffLst:
+        print(stu)
+    print(test.scoreExlTitle)
+    stuffLst = test.getStuffAllScore(stuffLst)
+
+    print("展示分数：")
+    for stu in stuffLst:
+        print(stu.name,
+              # stu.answerLst,
+              stu.scoreLst)
+
+    test.addSheet1_surveyResult(stuffLst)
+
+
 if __name__ == '__main__':
-    scoreTest()
-    ScoreJudgeBugFixCase()
-    ScoreJudgeBugFixCase2()
-    # main()
+    # scoreTest()
+    # ScoreJudgeBugFixCase()
+    # ScoreJudgeBugFixCase2()
+    main()
 
 # 8分：4
 # 8分：12
