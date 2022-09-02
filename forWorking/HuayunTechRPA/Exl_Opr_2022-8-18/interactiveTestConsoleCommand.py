@@ -8,6 +8,9 @@ import time
 import xlwings as xw
 
 from lib import *
+from shtOpr import *
+from shtDataCalc import *
+from scoreJudge import *
 
 # if result.xlsx is exist, resultExlPh named as result + time.xlsx
 resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
@@ -25,6 +28,7 @@ for stu in staffWithLv:
     print(stu)
 print(test.scoreExlTitle)
 staffWithLv = test.getStuffAllScore(staffWithLv)
+scoreWithLv = getScoreWithLv(staffWithLv)
 print("展示分数：")
 # print(stuffWithLv) all score
 for lv2 in staffWithLv:
@@ -32,35 +36,30 @@ for lv2 in staffWithLv:
         for stu in staffWithLv[lv2][lv3]:
             print(stu.name, stu.scoreLst)
 
+# TODO: get score
+scoreWithLv = getScoreWithLv(staffWithLv)
+sht1WithLv = getSht1WithLv(scoreWithLv)   # 2022-9-2 OK
+lv2Unit = getSht2Lv2UnitScope(test.surveyTestSht)
+sht2WithLv = getSht2WithLv(sht1WithLv, lv2Unit)  # TODO: 找到所有lv3部门，求平均
+
+# get current Lv2
+currLv2 = None
+for lv2 in sht2WithLv:
+# get all lv3 of lv2
+# summarize score of lv3
+# get mean score of lv2
+sht3WithLv = getSht3WithLv(sht1WithLv)
+
 
 # TODO: add Sheet2# Step1: add new sheet
-columnScope="A1:J32"  # but at soon , C to I will be deleted
-titleStart="C1"
-dataStart="C3"
-sht2_lv2Score = test.surveyExl.sheets.add(test.sht2NameGrade, after=test.sht1NameRes)
+sht2_lv2Score = test.surveyExl.sheets.add(test.sht2NameGrade )
 
-# Step2: copy left column the surveySht to sht1, with style
-test.surveyTestSht.range(columnScope).api.Copy()
-sht2_lv2Score.range(columnScope.split(":")[0]).api.Select()
-sht2_lv2Score.api.Paste()
-test.app4Score2.api.CutCopyMode = False
-
-# Step2.1: delete the row of left column redundantly
-deleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
-for row in deleteRowLst:
-    sht2_lv2Score.range(f"B{row}").api.EntireRow.Delete()
-sht2_lv2Score.range("B1").column_width = 18.8
-# Step2.2 delete the C to I column
-sht2_lv2Score.range("C1:I1").api.EntireColumn.Delete()
-sht2_lv2Score.range("A14:A19").api.EntireRow.Delete()
-# TODO: 放到程序后面？Step2.3 add summary row
-sht2OprAddSummaryRows(sht2_lv2Score)
-
-# Step3: copy title
 sht1_moduleSht = test.moduleExl.sheets["调研成绩"]
-sht1_moduleSht.range("D1:L2").api.Copy()
-sht2_lv2Score.range(titleStart).api.Select()
-sht2_lv2Score.api.Paste()
+sht2SetTitleIndex(test.surveyTestSht, sht2_lv2Score, sht1_moduleSht)
+
+dataStart = "C3"
+# TODO: 放到程序后面？Step2.3 add summary row
+sht2OprAddSummaryRows(sht2_lv2Score, {})
 test.app4Survey1.api.CutCopyMode = False
 
 # Step3.1： get grade cells position department mapping
@@ -94,9 +93,6 @@ for row in range(3, 40):
     wgt = sht2_lv2Score.range(f"{sht2WgtCol}{row}").value
     sht2_lv2Score.range(f"{sht2ScrCol}{row}").value = allUnitScore[currUnit]
 
-
-
-
 # TODO: add Sheet1
 titleStart = test.sht1MdlTltScope.split(":")[0]
 dataStart = titleStart[:1] + str(int(test.sht1TltStart.split(":")[1][-1]) + 1)
@@ -129,5 +125,3 @@ sht1_lv2Result.range(dataStart).value = sht1ValueDf
 # delete range G3:G6 and fill by right value
 sht1_lv2Result.range("G3:G33").api.Delete()
 sht1_lv2Result.range("G3:KZ3").api.Delete()
-
-
