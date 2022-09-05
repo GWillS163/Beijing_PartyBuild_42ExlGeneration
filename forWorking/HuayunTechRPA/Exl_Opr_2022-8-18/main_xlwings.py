@@ -1,15 +1,16 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+
+from lib import *
+from shtOperation import *
+from shtOprObsolete import *
+from shtDataCalc import *
+from scoreJudge import *
 import csv
 import os.path
 import re
 import time
 import xlwings as xw
-
-from lib import *
-from shtOpr import *
-from shtDataCalc import *
-from scoreJudge import *
 
 
 class Excel_Operation:
@@ -69,32 +70,32 @@ class Excel_Operation:
         self.app4Survey1.quit()
         self.app4Score2.quit()
 
-    def __convertDict2Lst(self, departmentDict):
-        """
-        convert Dict 2 List
-        :param departmentDict:
-        :param department: dict
-        :return: [["二级部门", "二级部门", "二级部门"],
-                 ["三级部门1","三级部门2"]]
-        """
-        # Step2: convertDict2Lst
-        result_lst = [[], []]
-        for layer2 in departmentDict:
-            for layer3 in departmentDict[layer2]:
-                if not layer3:
-                    continue
-                result_lst[0].append(layer2)
-                result_lst[1].append(layer3)
-            # add other items
-            result_lst[0].append("")
-            result_lst[1].append(self.otherTitle)
-            result_lst[0].append("")
-            result_lst[1].append(self.lv2AvgTitle)
-        return result_lst
-
-    def __getRawScoreTb(self, scope="A1:M10"):
-        # get all scoreExl sheet0 content
-        return self.scoreExl.sheets[0].range(scope).value
+    # def __convertDict2Lst(self, departmentDict):
+    #     """
+    #     convert Dict 2 List
+    #     :param departmentDict:
+    #     :param department: dict
+    #     :return: [["二级部门", "二级部门", "二级部门"],
+    #              ["三级部门1","三级部门2"]]
+    #     """
+    #     # Step2: convertDict2Lst
+    #     result_lst = [[], []]
+    #     for layer2 in departmentDict:
+    #         for layer3 in departmentDict[layer2]:
+    #             if not layer3:
+    #                 continue
+    #             result_lst[0].append(layer2)
+    #             result_lst[1].append(layer3)
+    #         # add other items
+    #         result_lst[0].append("")
+    #         result_lst[1].append(self.otherTitle)
+    #         result_lst[0].append("")
+    #         result_lst[1].append(self.lv2AvgTitle)
+    #     return result_lst
+    #
+    # def __getRawScoreTb(self, scope="A1:M10"):
+    #     # get all scoreExl sheet0 content
+    #     return self.scoreExl.sheets[0].range(scope).value
 
     def addSheet1_surveyResult(self, staffWithLv):
         """
@@ -116,55 +117,59 @@ class Excel_Operation:
         shtCopyTo(sht1_moduleSht, self.sht1MdlTltScope,
                   sht1_lv2Result, self.sht1TltStart)  # sht1_tltScope = "F1:KZ2"
 
-        # TODO: Step4: place score below title
+        # Step4: place score below title
         # TODO: need titleScope
-        titleMatrix = self.moduleExl.sheets['调研结果'].range(self.sht1MdlTltScope).value
-        # titleMatrix = sht1_lv2Result.range(self.sht1ModuleTltScope).value
-        titleDf = pd.DataFrame(titleMatrix)
-        sht1Value = sht1_calculate(staffWithLv, titleDf)
-        sht1ValueDf = pd.DataFrame(sht1Value).transpose()
-        # place sht1ValueDf to sht1_lv2Result at dataStart
-        sht1_lv2Result.range(dataStart).value = sht1ValueDf
-        # delete range G3:G6 and fill by right value
-        sht1_lv2Result.range("G3:G33").api.Delete()
-        sht1_lv2Result.range("G3:KZ3").api.Delete()
+        # titleMatrix = self.moduleExl.sheets['调研结果'].range(self.sht1MdlTltScope).value
+        # # titleMatrix = sht1_lv2Result.range(self.sht1ModuleTltScope).value
+        # titleDf = pd.DataFrame(titleMatrix)
+        # sht1Value = sht1_calculate(staffWithLv, titleDf)
+        # sht1ValueDf = pd.DataFrame(sht1Value).transpose()
+        # # place sht1ValueDf to sht1_lv2Result at dataStart
+        # sht1_lv2Result.range(dataStart).value = sht1ValueDf
+        # # delete range G3:G6 and fill by right value
+        # sht1_lv2Result.range("G3:G33").api.Delete()
+        # sht1_lv2Result.range("G3:KZ3").api.Delete()
 
-    def addSheet2_surveyScore(self, sht2WithLv, orgDict,
+    def addSheet2_surveyGrade(self, sht2WithLv, orgDict,
                               columnScope="A1:B32", titleStart="C1", dataStart="C3"):
         """
         generate sheet2 of the surveyExl, which is the survey with weight
         :return: None
         """
 
-        sht2_lv2Score = self.surveyExl.sheets.add(self.sht2NameGrade)
+        # Step1: add new sheet and define module sheet
+        sht2_lv2Score = self.surveyExl.sheets.add(self.sht2NameGrade, after=self.sht1NameRes)
         sht1_module = self.moduleExl.sheets["调研成绩"]
-        sht2SetTitleIndex(self.surveyTestSht, sht2_lv2Score, sht1_module,
-                          columnScope="A1:J32", titleStart="D1")
 
-        wgtLst = sht2_lv2Score.range("C3:C13").value
-        # iterate sheet2 each lv3 department
-        for col in range(3, 10):
-            colLtr = getColLtr(col)
-            lv3 = sht2_lv2Score.range(f"{colLtr}2").value
-            if lv3 in sht2WithLv:
-                # place score list vertically
-                wgtAnswer = listMultipy(sht2WithLv[lv3], wgtLst)
-                sht2_lv2Score.range(f"{colLtr}3").options(transpose=True).value = wgtAnswer
-
-        # TODO: 放到程序后面？Step2.3 add summary row
+        # Step2: Set title
+        sht2SetColumnTitle(self.surveyTestSht, sht2_lv2Score, sht1_module,
+                           columnScope="A1:J32", titleStart="D1")
+        # Step2.3 add summary row
         sht2OprAddSummaryRows(sht2_lv2Score, sht2WithLv)
 
-    def addSheet3_surveyResultByYear(self, departmentLst, scoreLst,
+        # TODO: Step3: Set data
+        # wgtLst = sht2_lv2Score.range("C3:C13").value
+        # # iterate sheet2 each lv3 department
+        # for col in range(3, 10):
+        #     colLtr = getColLtr(col)
+        #     lv3 = sht2_lv2Score.range(f"{colLtr}2").value
+        #     if lv3 in sht2WithLv:
+        #         # place score list vertically
+        #         wgtAnswer = listMultipy(sht2WithLv[lv3], wgtLst)
+        #         sht2_lv2Score.range(f"{colLtr}3").options(transpose=True).value = wgtAnswer
+
+    def addSheet3_surveyResultByYear(self, sht2WithLv, orgDict,
                                      columnScope="A1:J32", titleStart="K1", dataStart="K3"):
         """
         generate sheet3 of the surveyExl, which is the survey without weight
         :return: None
         """
-        # Step1: add new sheet
+
+        # Step1: add new sheet and define module sheet
         sht3_ResYear = self.surveyExl.sheets.add(self.sht3NameResYear, after=self.sht2NameGrade)
         sht3_module = self.moduleExl.sheets[self.sht3NameResYear]
 
-        # Step2: copy left column the surveySht to sht1, with style
+        # Step2: Set title
         shtCopyTo(self.surveyTestSht, columnScope, sht3_ResYear, columnScope.split(":")[0])
         shtCopyTo(sht3_module, "L1:BA2", sht3_ResYear, "K1")
         # Step2.1 delete the row of left column redundantly
@@ -174,22 +179,25 @@ class Excel_Operation:
         sht3_ResYear.range("I1").api.EntireColumn.Insert()
         # TODO: insert Data
 
-    def addSheet4_surveyScoreByYear(self, departmentLst, scoreLst,
+        #pass
+
+    def addSheet4_surveyGradeByYear(self, departmentLst, scoreLst,
                                     columnScope="A1:B32", titleStart="C1", dataStart="C3"):
         """
         generate sheet4 of the surveyExl, which is the survey with weight
         :return: None
         """
         # Step1: add new sheet
-        sht4_WithWeight = self.surveyExl.sheets.add(self.sht4NameScoreYear, after=self.sht3NameResYear)
+        sht4_surveyGradeByYear = self.surveyExl.sheets.add(self.sht4NameScoreYear, after=self.sht3NameResYear)
+        sht2_lv2Score = self.surveyExl.sheets[self.sht2NameGrade]
+        sht4_module = self.moduleExl.sheets[self.sht4NameScoreYear]
 
         # Step2: copy left column the surveySht to sht1, with style
-        self.surveyTestSht.range(columnScope).api.Copy()
-        sht4_WithWeight.range(columnScope.split(":")[0]).api.Select()
-        sht4_WithWeight.api.Paste()
-        self.app4Score2.api.CutCopyMode = False
-        # Step2.1 delete the row of left column redundantly
+        sht2_lv2Score.api.Range('A1:C15').Copy()
+        sht4_surveyGradeByYear.api.Range('A1').PasteSpecial(Transpose=True)
+        shtCopyTo(sht4_module, 'A4:B52', sht4_surveyGradeByYear, 'A4')
 
+        # Step2.1 delete the row of left column redundantly
         # Step3: copy title
         # TODO: insert Data
 
@@ -330,14 +338,15 @@ class Excel_Operation:
         # stuffWithLv[lv2][lv3] - > [stu1, stu2, ...]  -> [stu.scoreLst for stu in stuffWithLv[lv2][lv3]]
         # Step2: generate the summary file
         self.addSheet1_surveyResult(stuffWithLv)
-        self.addSheet2_surveyScore(stuffWithLv)
+        self.addSheet2_surveyGrade(stuffWithLv, [])
         self.addSheet3_surveyResultByYear(stuffWithLv)
-        self.addSheet4_surveyScoreByYear(stuffWithLv)
+        self.addSheet4_surveyGradeByYear(stuffWithLv)
 
         # save
         self.surveyExl.save("surveyResult.xlsx")
 
     def genDepartmentFile(self):
+        # TODO: 日后再写
         """
         generate the department file of the surveyExl
         :return: None
@@ -393,15 +402,15 @@ class Excel_Operation:
 
         # Data Process
         scoreWithLv = getScoreWithLv(staffWithLv)
-        sht1WithLv = getSht1WithLv(scoreWithLv)  # 2022-9-2 OK
+        sht1WithLv = getSht1WithLv(scoreWithLv)  # TODO:2022-9-5 数据填充方式改变
         lv2Unit = getSht2Lv2UnitScope(self.surveyTestSht)
         sht2WithLv = getSht2WithLv(sht1WithLv, lv2Unit)  # TODO: 找到所有lv3部门，求平均
 
         # Excel Process
         self.addSheet1_surveyResult(staffWithLv)
-        self.addSheet2_surveyScore(staffWithLv, orgDict)
-        self.addSheet3_surveyResultByYear(staffWithLv)
-        self.addSheet4_surveyScoreByYear(staffWithLv)
+        self.addSheet2_surveyGrade(staffWithLv, orgDict)
+        self.addSheet3_surveyResultByYear(staffWithLv, orgDict)
+        self.addSheet4_surveyGradeByYear(staffWithLv, orgDict)
 
 
     def run(self):
@@ -433,9 +442,3 @@ class Excel_Operation:
 
         # self.close_excel()
         print("All done")
-
-    def __getSht1ScoreTb(self, ):
-        return [["1", "2"], ["3", "4"]]
-
-    def __getSht2ScoreTb(self, ):
-        return [["5", "6"], ["7", "8"]]

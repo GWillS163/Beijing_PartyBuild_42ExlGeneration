@@ -8,7 +8,7 @@ import time
 import xlwings as xw
 
 from lib import *
-from shtOpr import *
+from shtOperation import *
 from shtDataCalc import *
 from scoreJudge import *
 
@@ -21,6 +21,8 @@ moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-
 
 # resultExlPh = ".\\result.xlsx"
 test = Excel_Operation(surveyExlPh, scoreExlPh, moduleExlPh, resultExlPh)
+
+# TODO: 1. 读取问卷表格，获取所有的单位名称
 
 # TODO: get score 注意切换到正确的sheet
 staffWithLv, scoreWithLv = test.getStuffDict()
@@ -43,6 +45,12 @@ lv2Unit = getSht2Lv2UnitScope(test.surveyTestSht)
 sht2WithLv = getSht2WithLv(sht1WithLv, lv2Unit)  # TODO: 找到所有lv3部门，求平均
 
 # get current Lv2
+
+test.addSheet1_surveyResult(staffWithLv)
+test.addSheet2_surveyGrade(staffWithLv, orgDict)
+test.addSheet3_surveyResultByYear(staffWithLv, orgDict)
+test.addSheet4_surveyGradeByYear(staffWithLv, orgDict)
+
 currLv2 = None
 for lv2 in sht2WithLv:
 # get all lv3 of lv2
@@ -55,7 +63,7 @@ sht3WithLv = getSht3WithLv(sht1WithLv)
 sht2_lv2Score = test.surveyExl.sheets.add(test.sht2NameGrade )
 
 sht1_moduleSht = test.moduleExl.sheets["调研成绩"]
-sht2SetTitleIndex(test.surveyTestSht, sht2_lv2Score, sht1_moduleSht)
+sht2SetColumnTitle(test.surveyTestSht, sht2_lv2Score, sht1_moduleSht)
 
 dataStart = "C3"
 # TODO: 放到程序后面？Step2.3 add summary row
