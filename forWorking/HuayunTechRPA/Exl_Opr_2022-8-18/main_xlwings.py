@@ -105,22 +105,16 @@ class Excel_Operation:
 
         titleStart = self.sht1MdlTltScope.split(":")[0]
         dataStart = titleStart[:1] + str(int(self.sht1MdlTltScope.split(":")[1][-1]) + 1)
-        # Step1: add new sheet
+        # Step1: add new sheet and define module sheet
         sht1_lv2Result = self.surveyExl.sheets.add(self.sht1NameRes)
-
-        # Step2: copy left column the surveySht to sht1 partially with style
-        self.surveyTestSht.range(self.sht1ColScope).api.Copy()
-        sht1_lv2Result.range(self.sht1ColScope.split(":")[0]).api.Select()
-        sht1_lv2Result.api.Paste()
-        self.app4Survey1.api.CutCopyMode = False
-
-        # Step3: copy title
-        # sht1_tltScope = "F1:KZ2"
         sht1_moduleSht = self.moduleExl.sheets[self.surveyResultName]
-        sht1_moduleSht.range(self.sht1MdlTltScope).api.Copy()
-        sht1_lv2Result.range(self.sht1TltStart).api.Select()
-        sht1_lv2Result.api.Paste()
-        self.app4Survey1.api.CutCopyMode = False
+
+        # Step2.1: copy left column the surveySht to sht1 partially with style
+        shtCopyTo(self.surveyTestSht, self.sht1ColScope,
+                  sht1_lv2Result, self.sht1ColScope.split(":")[0])
+        # Step2.2: copy title
+        shtCopyTo(sht1_moduleSht, self.sht1MdlTltScope,
+                  sht1_lv2Result, self.sht1TltStart)  # sht1_tltScope = "F1:KZ2"
 
         # TODO: Step4: place score below title
         # TODO: need titleScope
