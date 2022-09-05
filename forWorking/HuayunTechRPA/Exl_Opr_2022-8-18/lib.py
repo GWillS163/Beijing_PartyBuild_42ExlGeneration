@@ -3,10 +3,6 @@
 import re
 
 
-def listMultipy(lst1, lst2):
-    return list(map(lambda x, y: x * y, lst1, lst2))
-
-
 def readOrgDict(orgSht):
     """返回结构化的字典，key是部门名，value是部门下的子部门"""
     allOrg = {}

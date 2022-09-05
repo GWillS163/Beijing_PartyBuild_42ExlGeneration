@@ -198,38 +198,20 @@ def main():
     test = TestExcel_Opr(surveyExlPh, scoreExlPh, moduleExlPh, resultExlPh)
     # test.test()
 
-    stuffLst = test.getStuffDict()
-    for stu in stuffLst:
-        print(stu)
-    print(test.scoreExlTitle)
-    stuffLst = test.getStuffAllScore(stuffLst)
+    staffWithLv = test.getStuffDict()
+    scoreWithLv = test.getStuffAllScore(staffWithLv)
 
     print("展示分数：")
-    for stu in stuffLst:
-        print(stu.name,
-              # stu.answerLst,
-              stu.scoreLst)
+    for lv2 in staffWithLv:
+        for lv3 in staffWithLv[lv2]:
+            for sta in staffWithLv[lv2][lv3]:
+                print(sta.name, sta.scoreLst)
 
-    test.addSheet1_surveyResult(stuffLst)
-
+    # test.addSheet1_surveyResult(stuffLst)
+    # test.addSheet2_scoreResult(scoreWithLv)
 
 if __name__ == '__main__':
     # scoreTest()
     # ScoreJudgeBugFixCase()
     # ScoreJudgeBugFixCase2()
     main()
-
-# 8分：4
-# 8分：12
-# 8分：4或5
-# 8分：4或14或23或12
-# 8分：全选
-# 8分：1-4
-# 8分：1-4全选
-# 8分：任选3个
-# 8分：1-4任选3个
-# 8分：1-6任选3-4个
-# 8分：1-6任选5个及以上
-# 8分：1-6任选3-4个
-# 8分：1-6任选1个
-# 8分：1-13任选8-9个

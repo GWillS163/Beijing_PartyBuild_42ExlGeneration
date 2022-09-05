@@ -1,8 +1,11 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+from lib import *
 import numpy as np
 import pandas as pd
 
+def listMultipy(lst1, lst2):
+    return list(map(lambda x, y: x * y, lst1, lst2))
 
 def getMeanScore(stuffScoreLst):
     """return allLV3.mean() list"""
@@ -44,7 +47,6 @@ def sht1_calculate(staffWithLv, titleDf, answerLen=30):
     currentLv2 = None
     allInfo = []
     debugTitle = []
-    skipLv2 = []
     for colI in titleDf:
         if titleDf[colI][0]:
             currentLv2 = titleDf[colI][0]
@@ -62,7 +64,7 @@ def sht1_calculate(staffWithLv, titleDf, answerLen=30):
             debugTitle.append(currentLv3)
             continue
 
-        print(f"{currentLv2} {currentLv3} process")
+        # print(f"{currentLv2} {currentLv3} process")
         currentColRes = []
         # "二级部门" 单独处理
         if currentLv3 == "二级部门":
@@ -110,13 +112,33 @@ def getSht2Lv2UnitScope(sht2):
     return resultSpan
 
 
-def getSht2WithLv(scoreWithLv, lv2Unit):
-    """对指定单元格的分数进行求和处理"""
+def combineUnitScore(lv3ScoreLst, lv2Unit, sht2_wgt):
+    """
+    计算核心合并单元的分数
+    [0, 1,2,3,4,5,6] & [0,1],[2,4],[6,6] * [0.2, 0.3, 0.5]
+    -> [0+1, 2+4, 6]"""
+    if not lv3ScoreLst:
+        return []
+    res = []
+    for unitScp in lv2Unit:
+        if unitScp[0] == unitScp[1]:
+            res.append(lv3ScoreLst[unitScp[0]])
+        res.append(
+            sum(lv3ScoreLst[unitScp[0]:unitScp[1] + 1]))
+    return listMultipy(res, sht2_wgt)
+
+
+def getSht2WithLv(scoreWithLv, lv2Unit, sht2_wgt):
+    """对指定单元格的分数进行求和 * 权重"""
+    # TODO:  本线条排名计算 & 全公司排名计算
     sht2WithLv = {}
     for lv2 in scoreWithLv:
-        sht2WithLv.update({lv2: []})
-        for unitScp in lv2Unit:
-            sht2WithLv[lv2].append(sum(scoreWithLv[lv2]["二级单位"][unitScp[0]:unitScp[1] + 1]))
+        sht2WithLv.update({lv2: {}})
+        for lv3 in scoreWithLv[lv2]:
+            title = lv3 if lv3 != "二级单位" else "二级单位成绩"  # Rename
+            sht2WithLv[lv2].update({
+                title:
+                    combineUnitScore(scoreWithLv[lv2][lv3], lv2Unit, sht2_wgt)})
     return sht2WithLv
 
 
@@ -126,3 +148,10 @@ def getSht3WithLv(sht1WithLv):
     for lv2 in sht1WithLv:
         sht3WithLv.update({lv2: sht1WithLv[lv2]['二级单位']})
     return sht3WithLv
+
+
+def getSht4WithLv(sht2WithLv):
+    """通过sht2 转置
+    :return:  {lv2: {lv3: [score, sum, score, sum, ...]}}"""
+    return sht2WithLv
+
