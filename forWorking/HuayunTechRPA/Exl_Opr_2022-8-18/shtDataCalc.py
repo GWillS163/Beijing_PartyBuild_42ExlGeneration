@@ -1,11 +1,14 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+# Description: 用于计算数据的模块
 from lib import *
 import numpy as np
 import pandas as pd
 
+
 def listMultipy(lst1, lst2):
-    return list(map(lambda x, y: x * y, lst1, lst2))
+    return list(map(lambda x, y: round(x * y, 2), lst1, lst2))
+
 
 def getMeanScore(stuffScoreLst):
     """return allLV3.mean() list"""
@@ -14,7 +17,8 @@ def getMeanScore(stuffScoreLst):
 
 
 def getScoreWithLv(staffWithLv):
-    """data PreProcess, get the score of each department"""
+    """ 从staffWithLv中得到scoreWithLv
+    data PreProcess, get the score of each department"""
     scoreWithLv = {}
     for lv2 in staffWithLv:
         scoreWithLv[lv2] = {}
@@ -23,82 +27,150 @@ def getScoreWithLv(staffWithLv):
     return scoreWithLv
 
 
-def getSht1WithLv(scoreWithLv_):
-    """统计每个二级单位下所有人的分数"""
-    Sht1WithLv = {}
+def sht2SumLv1IndexUnitScore(lv3ScoreLst, lv1IndexSpan):
+    """
+    对一级指标的分数进行求和, 并插入原列表
+    :param lv3ScoreLst:[0.9, 0.4, 0.0, 1.1, 1.0, 1.15, 1.1, 0.2, 0.5, 0.5, 1.35]
+    :param lv1IndexSpan: [[0, 6], [7, 10]]
+    :return: [0.9, 0.4, 0.0, 1.1, 1.0, 1.15, 1.1, 【5.65】,
+             0.2, 0.5, 0.5, 1.35, 【2.55】,
+                                【8.20】]
+    """
+    if not lv3ScoreLst:
+        return []
+    res = []
+    for unitScp in lv1IndexSpan:
+        if not unitScp:
+            continue
+        unitLst = lv3ScoreLst[unitScp[0]:unitScp[1] + 1]
+        res += unitLst  # 截取原分数
+        res.append(sum(unitLst))  # 插入求和
+    res.append(sum(lv3ScoreLst))
+    return res  # 插入总分数
+
+
+def getSht1WithLv(scoreWithLv_: dict) -> dict:
+    """得到sheet1中的数据
+    统计每个二级单位下所有人的分数"""
+    sht1WithLv = {}
     for lv2 in scoreWithLv_:
-        allLv3 = []
-        Sht1WithLv.update({lv2: {}})
+        # allLv3 = []  #
+        sht1WithLv.update({lv2: {}})
         for lv3 in scoreWithLv_[lv2]:
-            Sht1WithLv[lv2].update({lv3: getMeanScore(scoreWithLv_[lv2][lv3])})
-            allLv3 += scoreWithLv_[lv2][lv3]
-        allLv3Mean = getMeanScore(allLv3)
-        Sht1WithLv[lv2].update({"二级单位": allLv3Mean})
-    return Sht1WithLv
+            sht1WithLv[lv2].update({lv3: getMeanScore(scoreWithLv_[lv2][lv3])})
+        #     allLv3 += scoreWithLv_[lv2][lv3]
+        # allLv3Mean = getMeanScore(allLv3)  #
+        # sht1WithLv[lv2].update({"二级单位": allLv3Mean})  #
+    # 对每个二级单位求平均
+    for lv2 in sht1WithLv:
+        sht1WithLv[lv2].update({"二级单位": getMeanScore(sht1WithLv[lv2].values())})
+
+    return sht1WithLv
 
 
-def sht1_calculate(staffWithLv, titleDf, answerLen=30):
+def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2WgtLst: list) -> dict:
+    """得到Sheet2中的数据
+    对指定单元格的分数进行求和 * 权重  以及新增部分求和"""
+    # TODO:  本线条排名计算 & 全公司排名计算
+    sht2WithLv = {}
+    for lv2 in sht1WithLv:
+        sht2WithLv.update({lv2: {}})
+        for lv3 in sht1WithLv[lv2]:
+            title = lv3 if lv3 != "二级单位" else "二级单位成绩"  # Rename
+            lv2IndexUnitScore = sumLv2IndexUnitScoreByWgt(sht1WithLv[lv2][lv3], lv2UnitSpan, sht2WgtLst)
+            lv1IndexUnitScore = sht2SumLv1IndexUnitScore(lv2IndexUnitScore, lv1IndexSpan)
+            sht2WithLv[lv2].update({title: lv1IndexUnitScore})
+    return sht2WithLv
+
+
+def getSht3WithLv(sht1WithLv: dict, lv1Name: str) -> dict:
+    """得到sheet3中的数据
+    从Sheet1 中获取所有二级单位的分数"""
+    sht3WithLv = {}
+    allLv2 = []
+    for lv2 in sht1WithLv:
+        sht3WithLv.update({lv2: sht1WithLv[lv2]['二级单位']})
+        allLv2.append(sht1WithLv[lv2]['二级单位'])
+    allLv2Mean = getMeanScore(allLv2)
+    sht3WithLv.update({lv1Name: allLv2Mean})
+    return sht3WithLv
+
+
+def getSht4WithLv(sht2WithLv: dict, sht4Hierarchy: list, lv1Name: str) -> dict:
+    """得到sheet4中的数据
+    单独获取 二级单位成绩 按分类求和
+    :param lv1Name:
+    :param sht2WithLv: {lv2: {lv3: [0.9, 0.4, 0.0, 1.1, 1.0, 1.15, 1.1, 5.65, 0.2, 0.5, 0.5, 1.35, 2.55, 8.2]}}
+    :param sht4Hierarchy:  [["一类分公司","城区一分公司"]...
+                            ["二类分公司","城区二分公司"]]
+    :return: {"一类分公司": {"城区一分公司": [0.9, 2.3, ...],
+                                       "平均分": [0.9, 2.3, ...]},
+                                        ... ...
+                           "北京公司":{"平均分": [0.9, 2.3, ...]}} }
     """
-    calculate the score of sheet1
-    :param titleDf:
-    :param staffWithLv:
-    :return:
-    """
-    currentLv2 = None
-    allInfo = []
-    debugTitle = []
-    for colI in titleDf:
-        if titleDf[colI][0]:
-            currentLv2 = titleDf[colI][0]
-        currentLv3 = titleDf[colI][1]
-        # scoreWithLv[lv1][lv2] - > [[], [], ...]
-        # stuffWithLv[lv1][lv2] - > [stu1, stu2, ...]  -> [stu.scoreLst for stu in stuffWithLv[lv2][lv3]]
-        # print(f"{currentLv2}:{currentLv3}")
-
-        if currentLv2 not in staffWithLv:  # 检查是否有该lv2
-            allInfo.append([np.nan for _ in range(answerLen)])
-            debugTitle.append(currentLv3)
+    sht4WithLv = {}
+    allLv2 = []
+    # 对每个二级单位放入sht4WithLv 每个分类中
+    for lv2 in sht2WithLv:
+        # get lv2depart class
+        currClass = getSht4Class(lv2, sht4Hierarchy)
+        # print(currClass)
+        if not currClass:
             continue
-        if currentLv3 not in staffWithLv[currentLv2]:  # 检查是否有该lv3
-            allInfo.append([np.nan for _ in range(answerLen)])
-            debugTitle.append(currentLv3)
+        sht4WithLv.update({currClass[0]:
+                           {currClass[1]: sht2WithLv[lv2]['二级单位成绩']}})
+        allLv2.append(sht2WithLv[lv2]['二级单位成绩'])
+
+    # 对每个部门分类求平均分
+    for class_lv2 in sht4WithLv:
+        sht4WithLv[class_lv2].update({"平均分": getMeanScore(sht4WithLv[class_lv2].values())})
+    # 对所有二级单位求平均分
+    sht4WithLv.update({lv1Name: {"平均分": getMeanScore(allLv2)}})
+    return sht4WithLv
+
+
+def getSht4Class(lv2, sht4Hie):
+    """获取二级单位所属的分类"""
+    for class_lv2 in sht4Hie:
+        if lv2 == class_lv2[1]:
+            return class_lv2
+    return None
+
+
+def getSht4Hierarchy(sht4):
+    raw_depart = sht4.range("A4:B50").value
+    clazz = None
+    sht4Hie = []
+    for row in raw_depart:
+        if row[0]:
+            clazz = row[0]
+        if row[1] == "平均分":
             continue
-
-        # print(f"{currentLv2} {currentLv3} process")
-        currentColRes = []
-        # "二级部门" 单独处理
-        if currentLv3 == "二级部门":
-            for lv3 in staffWithLv[currentLv2]:
-                currentColRes += list(map(lambda x: x.scoreLst, staffWithLv[currentLv2][lv3]))
-                # allLv3OfLv2 += [stu.scoreLst for stu in stuffScoreWithLv[currentLv2][lv3]]
-        else:
-            # operate each score column of departments
-            currentColRes = [stu.scoreLst for stu in staffWithLv[currentLv2][currentLv3]]
-        # allInfo.update({currentLv3: getMeanScore(currentColRes)})
-        allInfo.append(getMeanScore(currentColRes))
-    # allInfoDf = pd.DataFrame(allInfo)
-    return allInfo
-    # scoreWithLv[lv2][lv3] - > [[], [], ...]
-    # stuffWithLv[lv2][lv3] - > [stu1, stu2, ...]  -> [stu.scoreLst for stu in stuffWithLv[lv2][lv3]]
+        sht4Hie.append([clazz, row[1].strip("\n")])
+    return sht4Hie
 
 
-def getSht2Lv2UnitScope(sht2):
+def getShtUnitScp(sht, startRow, endRow, unitCol, contentCol, skipCol=None, skipWords=None):
     """ get unit Span for Sheet2
-    跳过党廉 and 纪检
+    以D列为最小单位，获取每个B列二级指标的单元范围
+    跳过党廉 and 纪检 part
     :return:  [[0, 0], [1, 2], [3, 3], [4, 5] ...
     """
     # get merge cells scope dynamically
+    if skipWords is None:
+        skipWords = []
     resultSpan = []
     tempScp = [-1, -1]
     n = 0
-    adds = 3
-    while n < 40:
-        part = sht2.range(f"A{n + adds}").value
-        unit = sht2.range(f"B{n + adds}").value
-        content = sht2.range(f"D{n + adds}").value
-        if part and "党廉" == part or "纪检" == part:
-            resultSpan.append(tempScp)
-            break
+    while n < endRow:
+        if skipCol:
+            part = sht.range(f"{skipCol}{n + startRow}").value
+            # detect skip words if part equal skip words, thus skip this row
+            if part in skipWords:
+                n += 1
+                continue
+        unit = sht.range(f"{unitCol}{n + startRow}").value
+        content = sht.range(f"{contentCol}{n + startRow}").value
         if not content:
             resultSpan.append(tempScp)
             break
@@ -112,7 +184,7 @@ def getSht2Lv2UnitScope(sht2):
     return resultSpan
 
 
-def combineUnitScore(lv3ScoreLst, lv2Unit, sht2_wgt):
+def sumLv2IndexUnitScoreByWgt(lv3ScoreLst, lv2Unit, sht2_wgt):
     """
     计算核心合并单元的分数
     [0, 1,2,3,4,5,6] & [0,1],[2,4],[6,6] * [0.2, 0.3, 0.5]
@@ -123,35 +195,7 @@ def combineUnitScore(lv3ScoreLst, lv2Unit, sht2_wgt):
     for unitScp in lv2Unit:
         if unitScp[0] == unitScp[1]:
             res.append(lv3ScoreLst[unitScp[0]])
+            continue
         res.append(
             sum(lv3ScoreLst[unitScp[0]:unitScp[1] + 1]))
     return listMultipy(res, sht2_wgt)
-
-
-def getSht2WithLv(scoreWithLv, lv2Unit, sht2_wgt):
-    """对指定单元格的分数进行求和 * 权重"""
-    # TODO:  本线条排名计算 & 全公司排名计算
-    sht2WithLv = {}
-    for lv2 in scoreWithLv:
-        sht2WithLv.update({lv2: {}})
-        for lv3 in scoreWithLv[lv2]:
-            title = lv3 if lv3 != "二级单位" else "二级单位成绩"  # Rename
-            sht2WithLv[lv2].update({
-                title:
-                    combineUnitScore(scoreWithLv[lv2][lv3], lv2Unit, sht2_wgt)})
-    return sht2WithLv
-
-
-def getSht3WithLv(sht1WithLv):
-    """从Sheet1 中获取所有二级单位的分数"""
-    sht3WithLv = {}
-    for lv2 in sht1WithLv:
-        sht3WithLv.update({lv2: sht1WithLv[lv2]['二级单位']})
-    return sht3WithLv
-
-
-def getSht4WithLv(sht2WithLv):
-    """通过sht2 转置
-    :return:  {lv2: {lv3: [score, sum, score, sum, ...]}}"""
-    return sht2WithLv
-

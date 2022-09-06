@@ -22,24 +22,24 @@ def readOrgDict(orgSht):
 
 def getColLtr(colNum) -> str:
     """0 -> A, 1 -> B, 2 -> C, ..."""
-    if colNum > 27 * 26 - 1:  # 大于ZZ 不考虑
-        return ""
-    first = chr(colNum // 26 + (65 - 1)) if colNum > 25 else ""
-    second = chr(colNum % 26 + 65)
-    return first + second
+    if colNum < 26:
+        return chr(colNum + 65)
+    else:
+        return getColLtr(colNum // 26 - 1) + getColLtr(colNum % 26)
 
 
 def getColNum(colLetter) -> int:
-    """A -> 0, B -> 1, C -> 2, ... KZ -> 285"""
+    """A -> 0, B -> 1, C -> 2, ... KZ -> 311"""
     if len(colLetter) == 1:
         return ord(colLetter) - 65
     else:
-        return (ord(colLetter[0]) - 65) * 26 + ord(colLetter[1]) - 65
+        return (ord(colLetter[0]) - 64) * 26 + getColNum(colLetter[1:])
 
 
 def getTltColRange(titleScope):
     """titleScope : A1:B2, in other words is ColA to Col B
     return iterable Range"""
+    # TODO: AA 包含的结果错误了
     titleStart, titleEnd = titleScope.split(":")
     # get the letter of titleStart by regex
     titleStartLetter = re.findall(r"[A-Z]+", titleStart)[0]
@@ -67,12 +67,3 @@ class Stuff:
     def __repr__(self):
         return f"name:{self.name}, answerLen:{len(self.answerLst)}"  # lv2:{self.lv2Depart[:10]}, lv3:{self.lv3Depart[:10]},
 
-
-def getLv3AvgScore(lv3ScoreLst):
-    """
-    Use Pandas [[],[],[]...] get the mean score of the department
-    :param param:
-    :return:
-    """
-    # TODO: use pandas
-    pass

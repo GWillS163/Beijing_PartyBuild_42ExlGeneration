@@ -1,5 +1,3 @@
-#  Author : Github: @GWillS163
-#  Time: $(Date)
 
 import sys
 sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18")
@@ -19,5 +17,4 @@ moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-
 # resultExlPh = ".\\result.xlsx"
 test = Excel_Operation(surveyExlPh, scoreExlPh, moduleExlPh, resultExlPh)
 
-#
-
+test.mockDataDemo()

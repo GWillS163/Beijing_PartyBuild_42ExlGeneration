@@ -1,5 +1,7 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+#  Author : Github: @GWillS163
+#  Time: $(Date)
 
 import sys
 sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18")
@@ -18,6 +20,10 @@ moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-
 
 # resultExlPh = ".\\result.xlsx"
 test = Excel_Operation(surveyExlPh, scoreExlPh, moduleExlPh, resultExlPh)
+test.mockDataDemo()
+# TODO: 1. 读取问卷表格，获取所有的单位名称
 
-#
-
+test.addSheet1_surveyResult()
+test.addSheet2_surveyGrade()
+test.addSheet3_surveyResultByYear()
+test.addSheet4_surveyGradeByYear()

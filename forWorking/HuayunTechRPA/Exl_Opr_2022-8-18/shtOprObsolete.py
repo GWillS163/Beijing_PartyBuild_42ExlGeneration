@@ -1,5 +1,36 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+import pandas as pd
+
+from shtDataCalc import getMeanScore
+from shtOperation import shtCopyTo
+
+
+def sht2DeleteRows(sht2_lv2Score, deleteRowLst):
+    """ delete the row of left column redundantly, reserve unit for one row """
+    for row in deleteRowLst:
+        sht2_lv2Score.range(f"B{row}").api.EntireRow.Delete()
+    sht2_lv2Score.range("B1").column_width = 18.8
+    # Step2.2 delete the column C to I
+    sht2_lv2Score.range("C1:I1").api.EntireColumn.Delete()
+    sht2_lv2Score.range("A14:A19").api.EntireRow.Delete()
+
+
+# self.sht1Module, sht1_lv2Result, staffWithLv, self.sht1MdlTltScope, sht1Start
+def sht1PlcScoreByPD(sht1Module, sht1, staffWithLv, sht1MdlTltScope, sht1Start, answerLen):
+    titleMatrix = sht1Module.range(sht1MdlTltScope).value
+    # titleMatrix = sht1_lv2Result.range(self.sht1ModuleTltScope).value
+    titleDf = pd.DataFrame(titleMatrix)
+    sht1Value = sht1_calculateByPD(staffWithLv, titleDf, answerLen)
+    sht1ValueDf = pd.DataFrame(sht1Value).transpose()
+    # place sht1ValueDf to sht1_lv2Result at dataStart without index column
+    sht1.range(sht1Start).value = sht1ValueDf.reset_index(drop=True)
+    # get sht1ValueDf without column name by method reset_index(drop=True)
+
+    # delete range G3:G6 and fill by right value
+    sht1.range("G3:G33").api.Delete()
+    sht1.range("G3:KZ3").api.Delete()
+
 
 
 def findLv3Pos(sht1_lv2Result, startRow, startCol):
@@ -46,6 +77,51 @@ def sht2GetSht1ScoreCol(sht1_lv2Result, getSht1Col):
         allUnitScore[unit] += currScore
     return allUnitScore
 
+
+def sht1_calculateByPD(staffWithLv, titleDf, answerLen):
+    """
+    calculate the score of sheet1
+    :param answerLen:
+    :param titleDf:
+    :param staffWithLv:
+    :return:
+    """
+    currentLv2 = None
+    allInfo = []
+    debugTitle = []
+    for colI in titleDf:
+        if titleDf[colI][0]:
+            currentLv2 = titleDf[colI][0]
+        currentLv3 = titleDf[colI][1]
+        # scoreWithLv[lv1][lv2] - > [[], [], ...]
+        # stuffWithLv[lv1][lv2] - > [stu1, stu2, ...]  -> [stu.scoreLst for stu in stuffWithLv[lv2][lv3]]
+        # print(f"{currentLv2}:{currentLv3}")
+
+        if currentLv2 not in staffWithLv:  # 检查是否有该lv2
+            allInfo.append([np.nan for _ in range(answerLen)])
+            debugTitle.append(currentLv3)
+            continue
+        if currentLv3 not in staffWithLv[currentLv2]:  # 检查是否有该lv3
+            allInfo.append([np.nan for _ in range(answerLen)])
+            debugTitle.append(currentLv3)
+            continue
+
+        # print(f"{currentLv2} {currentLv3} process")
+        currentColRes = []
+        # "二级部门" 单独处理
+        if currentLv3 == "二级部门":
+            for lv3 in staffWithLv[currentLv2]:
+                currentColRes += list(map(lambda x: x.scoreLst, staffWithLv[currentLv2][lv3]))
+                # allLv3OfLv2 += [stu.scoreLst for stu in stuffScoreWithLv[currentLv2][lv3]]
+        else:
+            # operate each score column of departments
+            currentColRes = [stu.scoreLst for stu in staffWithLv[currentLv2][currentLv3]]
+        # allInfo.update({currentLv3: getMeanScore(currentColRes)})
+        allInfo.append(getMeanScore(currentColRes))
+    # allInfoDf = pd.DataFrame(allInfo)
+    return allInfo
+    # scoreWithLv[lv2][lv3] - > [[], [], ...]
+    # stuffWithLv[lv2][lv3] - > [stu1, stu2, ...]  -> [stu.scoreLst for stu in stuffWithLv[lv2][lv3]]
 
 def mergeSht2SummarizeCells(sht2_WithWeight, mergeCells, columns):
     columnLst = []
@@ -98,3 +174,7 @@ def mergeSht2Lv3Title(sht2_WithWeight, departmentLen, startLv2="C2"):
         sht2_WithWeight.range(f"{startRowLetter}{startRow}:"
                               f"{endRowLetter}{startRow}").merge()
 
+
+def sht4AddTitleIndex(sht2_lv2Score, sht4, moduleSht4):
+    """Sheet4 表头和侧栏部分处理"""
+    shtCopyTo(sht2_lv2Score, 'A4:B52', sht4, 'A4')
