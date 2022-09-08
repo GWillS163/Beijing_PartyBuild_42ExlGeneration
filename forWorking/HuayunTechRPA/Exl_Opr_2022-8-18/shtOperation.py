@@ -6,6 +6,7 @@ from lib import *
 
 def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     sht1.range(sht1Scp).api.Copy()
+    sht2.activate()
     sht2.range(sht2Start).api.Select()
     # Cells(1, 1).Select
     sht2.api.Paste()
@@ -183,7 +184,7 @@ def addOneDptData(shtSum, scpLst, height,
     # 数据栏 复制
     sht1BorderL, sht1BorderR = scpLst  # deptUnitSht1[deptName]
     sht1DataZone = f"{sht1BorderL}1:{sht1BorderR}{height}"
-    shtDept.activate()
+    # shtDept.activate()
     shtCopyTo(shtSum, sht1DataZone,
               shtDept, shtTitleTo)
     return sht1BorderL, sht1BorderR

@@ -62,9 +62,11 @@ for deptName in deptUnitSht1:
     # Clear the sheet for next loop dynamically
     print(sht1Dept, test.sht1TitleCopyTo, test.deptCopyHeight,
                   sht1BorderR, sht1BorderL)
+    sht1Dept.activate()
     dltOneDptData(sht1Dept, test.sht1TitleCopyTo, test.deptCopyHeight,
                   sht1BorderR, sht1BorderL)
     if deptName in deptUnitSht2:
+        sht2Dept.activate()
         dltOneDptData(sht2Dept, test.sht2TitleCopyTo, test.deptCopyHeight,
                       sht2BorderL, sht2BorderR)
 
