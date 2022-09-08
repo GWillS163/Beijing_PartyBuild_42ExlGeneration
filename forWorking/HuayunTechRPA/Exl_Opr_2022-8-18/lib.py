@@ -1,23 +1,7 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+import datetime
 import re
-
-
-def readOrgDict(orgSht):
-    """返回结构化的字典，key是部门名，value是部门下的子部门"""
-    allOrg = {}
-    row = 1
-    while True:
-        a = orgSht.range(f"A{row}").value
-        b = orgSht.range(f"B{row}").value
-        if not (a and b):
-            break
-        if a not in allOrg:
-            allOrg.update({a: [b]})
-        else:
-            allOrg[a].append(b)
-        row += 1
-    return allOrg
 
 
 def getColLtr(colNum) -> str:
@@ -48,6 +32,34 @@ def getTltColRange(titleScope):
     titleStartLetterNum = getColNum(titleStartLetter)
     titleEndLetterNum = getColNum(titleEndLetter)
     return range(titleStartLetterNum, titleEndLetterNum)
+
+
+def getCurrentYear(userYear=None):
+    # if userYear is a yearNum within 1970-2500, return year, otherwise return current year
+    if not userYear or not userYear.isdigit():
+        return datetime.datetime.now().year
+    if 1970 <= int(userYear) <= 2500:
+        return int(userYear)
+    else:
+        return datetime.datetime.now().year
+
+
+def readOrgDict(orgSht):
+    """返回结构化的字典，key是部门名，value是部门下的子部门"""
+    allOrg = {}
+    row = 1
+    while True:
+        a = orgSht.range(f"A{row}").value
+        b = orgSht.range(f"B{row}").value
+        if not (a and b):
+            break
+        if a not in allOrg:
+            allOrg.update({a: [b]})
+        else:
+            allOrg[a].append(b)
+        row += 1
+    return allOrg
+
 
 
 class Stuff:

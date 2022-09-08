@@ -1,6 +1,8 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
 # Description: 用于计算数据的模块
+from typing import Dict, Optional, Any, List, Union
+
 from lib import *
 import numpy as np
 import pandas as pd
@@ -182,6 +184,35 @@ def getShtUnitScp(sht, startRow, endRow, unitCol, contentCol, skipCol=None, skip
             tempScp[1] = n
         n += 1
     return resultSpan
+
+
+def getDeptUnit(shtModule, scp) -> Dict[Optional[Any], List[Union[int, str, None]]]:
+    """
+    获取分类的区间，以便裁剪sheet
+    {分类: ["F", "P"], ... }"""
+    clsScp = {}
+    titleRan = getTltColRange(scp)
+    clazz = [-1, -1]
+    lastClz = None
+    lastLtr = None
+    for colNum in titleRan:
+        colLtr = getColLtr(colNum)
+        cls = shtModule.range(f"{colLtr}1").value
+        lv2 = shtModule.range(f"{colLtr}2").value
+        # print(cls, lv2)
+        if not lv2 and not cls:
+            break
+        if cls:
+            if lastLtr:
+                clazz[1] = lastLtr
+                clsScp.update({lastClz: clazz})
+                clazz = [-1, -1]
+            clazz[0] = colLtr
+            lastClz = cls
+        lastLtr = colLtr
+    clazz[1] = lastLtr
+    clsScp.update({lastClz: clazz})
+    return clsScp
 
 
 def sumLv2IndexUnitScoreByWgt(lv3ScoreLst, lv2Unit, sht2_wgt):

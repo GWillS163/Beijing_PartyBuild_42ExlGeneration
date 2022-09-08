@@ -168,3 +168,39 @@ def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
         sht4.range(f"C{row}").value = sht4WithLv[lv1][lv2]
 
 
+def addOneDptData(shtSum, scpLst, height,
+                  shtDept, shtTitleTo):
+    """
+    粘贴一个部门的数据从 sht1Sum 到 sht1Dept
+    :param shtDept:
+    :param height:
+    :param scpLst:
+    :param shtTitleTo:
+    :param shtSum:
+    :param  从模板表中复制的部门范围
+    :return:
+    """
+    # 数据栏 复制
+    sht1BorderL, sht1BorderR = scpLst  # deptUnitSht1[deptName]
+    sht1DataZone = f"{sht1BorderL}1:{sht1BorderR}{height}"
+    shtDept.activate()
+    shtCopyTo(shtSum, sht1DataZone,
+              shtDept, shtTitleTo)
+    return sht1BorderL, sht1BorderR
+
+
+def dltOneDptData(shtDept, shtTitleCopyTo, deptCopyHeight, shtBorderL, shtBorderR):
+    """
+    删除部门数据，用于重新填入
+    :param shtDept:
+    :param shtTitleCopyTo:
+    :param deptCopyHeight:
+    :param shtBorderR:
+    :param shtBorderL:
+    :return:
+    """
+    borderWidth = getColNum(shtBorderR) - getColNum(shtBorderL)
+    borderStart = getColNum(shtTitleCopyTo[0])
+    borderEnd = getColLtr(borderStart + borderWidth)
+    shtDept.range(f"{shtTitleCopyTo}:{borderEnd}{deptCopyHeight}").api.Delete()
+
