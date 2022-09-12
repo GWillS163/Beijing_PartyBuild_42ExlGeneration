@@ -16,6 +16,8 @@ import xlwings as xw
 class Excel_Operation:
     def __init__(self, surveyExlPath, scrExlPh,
                  savePath, fileYear, fileName, fileOrgCode,
+                 surveyTestShtName, sht1ModuleName, sht2ModuleName, sht3ModuleName, sht4ModuleName,
+                 sht4DataRowRange=[4, 53]
                  ):
         """
         :param surveyExlPath: the path of the survey excel
@@ -27,12 +29,6 @@ class Excel_Operation:
         :param fileOrgCode:
         """
 
-        self.deptCopyHeight = 35  # 从总表复制到 各个部门表时的高度
-        self.lv1Name = "北京公司"
-        self.sht2WgtLstScp = "C3:C13"
-        self.sht2DeleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
-        self.sht2DeleteCopiedRowScp = "A14:A19"
-        self.sht2DeleteCopiedColScp = "C1:J1"
         self.surveyExlPath = surveyExlPath
         self.scoreExlPath = scrExlPh
 
@@ -58,10 +54,10 @@ class Excel_Operation:
         # File Settings
         # 保存的表 配置
         self.fileYear = getCurrentYear(fileYear)
-        self.fileName = "PartyBuildingResultSurvey"
+        self.fileName = fileName
         self.orgCode = "20900000"
 
-        self.savePath = ".\\"
+        self.savePath = ".\\save"
         self.orgShtName = '行政机构组织'
 
         self.otherTitle = "其他人员"
@@ -74,30 +70,36 @@ class Excel_Operation:
         self.surveyQuesCol = "E"  # 题目列
         self.surveyRuleCol = "J"  # 赋分规则列
         self.surveyQuesTypeCol = "G"  # 题目类型列
-        self.surveyTestSht = self.surveyExl.sheets["测试问卷"]
+        self.surveyTestSht = self.surveyExl.sheets[surveyTestShtName]  # "测试问卷"
         # module settings
-        self.sht1Module = self.surveyExl.sheets["调研结果_输出模板"]
-        self.sht2Module = self.surveyExl.sheets["调研成绩_输出模板"]
-        self.sht3Module = self.surveyExl.sheets["调研结果（2022年）_输出模板"]
-        self.sht4Module = self.surveyExl.sheets["调研成绩（2022年）_输出模板"]
+        self.sht1Module = self.surveyExl.sheets[sht1ModuleName]  # "调研结果_输出模板"
+        self.sht2Module = self.surveyExl.sheets[sht2ModuleName]  # "调研成绩_输出模板"
+        self.sht3Module = self.surveyExl.sheets[sht3ModuleName]  # "调研结果（2022年）_输出模板"
+        self.sht4Module = self.surveyExl.sheets[sht4ModuleName]  # "调研成绩（2022年）_输出模板"
 
+        self.deptCopyHeight = 35  # 从总表复制到 各个部门表时的高度
+        self.lv1Name = "北京公司"
         # Sheet1: survey settings
-        self.sht1NameRes = "调研结果"  # "调研问卷(未加权)"
-        self.sht1CopyFromMdlColScp = "A1:F32"
+        self.sht1NameRes = "调研结果"
+        self.sht1IndexCopyFromMdlScp = "A1:F32"
         self.sht1TitleCopyFromMdlScp = "F1:KZ2"
         self.sht1TitleCopyTo = "G1"
         self.sht1DataColRan = "G:KZ"
         # Sheet2:
-        self.sht2NameGrade = "调研成绩"  # "调研问卷(加权)"
+        self.sht2NameGrade = "调研成绩"
         self.sht2TitleCopyFromMdlScp = "D1:L2"
         self.sht2TitleCopyTo = "D1"
-        self.sht2IndexCopyFromColScp = "A1:K32"
+        self.sht2IndexCopyFromSvyScp = "A1:K32"
         self.sht2IndexCopyTo = "A1"
+        self.sht2WgtLstScp = "C3:C13"
+        self.sht2DeleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
+        self.sht2DeleteCopiedRowScp = "A14:A19"
+        self.sht2DeleteCopiedColScp = "C1:J1"
         # Sheet3:
         self.sht3NameResYear = "调研结果（2022年）"
-        self.sht3ColRan = "A1:J32"
-        self.sht3DataCol = "K:AZ"
-        self.sht3TitleCopyFromScp = "L1:BA2"
+        self.sht3IndexCopyFromSvyScp = "A1:J32"
+        self.sht3DataColRan = "K:AZ"
+        self.sht3TitleCopyFromMdlScp = "L1:BA2"
         self.sht3TitleCopyTo = "K1"
         # Sheet4:
         self.sht4NameScoreYear = "调研成绩（2022年）"
@@ -106,7 +108,8 @@ class Excel_Operation:
         self.sht4TitleCopyTo = 'A1'
         self.sht4SumTitleFromMdlScp = "P1:R3"
         self.sht4SumTitleCopyTo = "P1"
-        self.sht4DataRowRan = range(4, 53)
+        self.sht4DataRowRan = range(sht4DataRowRange[0],
+                                    sht4DataRowRange[1])
 
     def close_excel(self):
         self.surveyExl.close()
@@ -152,30 +155,30 @@ class Excel_Operation:
         sht1_lv2Result = self.resultExl.sheets.add(self.sht1NameRes)
 
         # Step2.1: copy left column the surveySht to sht1 partially with style
-        shtCopyTo(self.surveyTestSht, self.sht1CopyFromMdlColScp,
-                  sht1_lv2Result, self.sht1CopyFromMdlColScp.split(":")[0])
+        shtCopyTo(self.surveyTestSht, self.sht1IndexCopyFromMdlScp,
+                  sht1_lv2Result, self.sht1IndexCopyFromMdlScp.split(":")[0])
         # Step2.2: copy title
         shtCopyTo(self.sht1Module, self.sht1TitleCopyFromMdlScp,
                   sht1_lv2Result, self.sht1TitleCopyTo)  # sht1_tltScope = "F1:KZ2"
 
         return sht1_lv2Result
 
-    def addSheet1_singleDepartment(self, deptUnitScp):
-        """
-        add a single department to the sht1_lv2Result
-        :param deptUnitScp:
-        :return:
-        """
-        sht1_lv2Result = self.deptResultExl.sheets.add(self.sht1NameRes)
-
-        # Step2.1: copy left column the surveySht to sht1 partially with style
-        shtCopyTo(self.surveyTestSht, self.sht1CopyFromMdlColScp,
-                  sht1_lv2Result, self.sht1CopyFromMdlColScp.split(":")[0])
-        # TODO:Step2.2: copy partial title
-        shtCopyTo(self.sht1Module, deptUnitScp,
-                  sht1_lv2Result, self.sht1TitleCopyTo)  # sht1_tltScope = "F1:KZ2"
-
-        return sht1_lv2Result
+    # def addSheet1_singleDepartment(self, deptUnitScp):
+    #     """
+    #     add a single department to the sht1_lv2Result
+    #     :param deptUnitScp:
+    #     :return:
+    #     """
+    #     sht1_lv2Result = self.deptResultExl.sheets.add(self.sht1NameRes)
+    #
+    #     # Step2.1: copy left column the surveySht to sht1 partially with style
+    #     shtCopyTo(self.surveyTestSht, self.sht1CopyFromMdlColScp,
+    #               sht1_lv2Result, self.sht1CopyFromMdlColScp.split(":")[0])
+    #     # TODO:Step2.2: copy partial title
+    #     shtCopyTo(self.sht1Module, deptUnitScp,
+    #               sht1_lv2Result, self.sht1TitleCopyTo)  # sht1_tltScope = "F1:KZ2"
+    #
+    #     return sht1_lv2Result
 
     def addSheet2_surveyGrade(self):
         """
@@ -188,7 +191,7 @@ class Excel_Operation:
 
         """Sheet2 表头和侧栏部分处理"""
         # Step2: copy left column the surveySht to sht1, with style
-        shtCopyTo(self.surveyTestSht, self.sht2IndexCopyFromColScp, sht2_lv2Score, self.sht2IndexCopyTo)
+        shtCopyTo(self.surveyTestSht, self.sht2IndexCopyFromSvyScp, sht2_lv2Score, self.sht2IndexCopyTo)
         # Step2.1: delete the row of left column redundant
         for row in self.sht2DeleteRowLst:
             sht2_lv2Score.range(f"B{row}").api.EntireRow.Delete()
@@ -204,32 +207,32 @@ class Excel_Operation:
 
         return sht2_lv2Score
 
-    def addSheet2_singleDepartment(self, deptUnitScp):
-        """
-        add a single department to the sht2_lv2Score
-        重复操作，可以考虑合并
-        :param deptUnitScp:
-        :return:
-        """
-        sht2_lv2Score = self.deptResultExl.sheets.add(self.sht2NameGrade, after=self.sht1NameRes)
-
-        """Sheet2 表头和侧栏部分处理"""
-        # Step2: copy left column the surveySht to sht1, with style
-        shtCopyTo(self.surveyTestSht, self.sht2IndexCopyFromColScp, sht2_lv2Score, self.sht2IndexCopyTo)
-        # Step2.1: delete the row of left column redundant
-        for row in self.sht2DeleteRowLst:
-            sht2_lv2Score.range(f"B{row}").api.EntireRow.Delete()
-        sht2_lv2Score.range("B1").column_width = 18.8
-        # Step2.2 delete the column C to I
-        sht2_lv2Score.range(self.sht2DeleteCopiedColScp).api.EntireColumn.Delete()
-        sht2_lv2Score.range(self.sht2DeleteCopiedRowScp).api.EntireRow.Delete()
-
-        # Step3: copy title
-        shtCopyTo(self.sht2Module, deptUnitScp, sht2_lv2Score, self.sht2TitleCopyTo)
-        # Step2.3 add summary row
-        sht2OprAddSummaryRows(sht2_lv2Score)
-
-        return sht2_lv2Score
+    # def addSheet2_singleDepartment(self, deptUnitScp):
+    #     """
+    #     add a single department to the sht2_lv2Score
+    #     重复操作，可以考虑合并
+    #     :param deptUnitScp:
+    #     :return:
+    #     """
+    #     sht2_lv2Score = self.deptResultExl.sheets.add(self.sht2NameGrade, after=self.sht1NameRes)
+    #
+    #     """Sheet2 表头和侧栏部分处理"""
+    #     # Step2: copy left column the surveySht to sht1, with style
+    #     shtCopyTo(self.surveyTestSht, self.sht2IndexCopyFromColScp, sht2_lv2Score, self.sht2IndexCopyTo)
+    #     # Step2.1: delete the row of left column redundant
+    #     for row in self.sht2DeleteRowLst:
+    #         sht2_lv2Score.range(f"B{row}").api.EntireRow.Delete()
+    #     sht2_lv2Score.range("B1").column_width = 18.8
+    #     # Step2.2 delete the column C to I
+    #     sht2_lv2Score.range(self.sht2DeleteCopiedColScp).api.EntireColumn.Delete()
+    #     sht2_lv2Score.range(self.sht2DeleteCopiedRowScp).api.EntireRow.Delete()
+    #
+    #     # Step3: copy title
+    #     shtCopyTo(self.sht2Module, deptUnitScp, sht2_lv2Score, self.sht2TitleCopyTo)
+    #     # Step2.3 add summary row
+    #     sht2OprAddSummaryRows(sht2_lv2Score)
+    #
+    #     return sht2_lv2Score
 
     def clacSheet2_surveyGrade(self, sht2_lv2Score, sht1WithLv):
         # 通过权重计算得到sht2WithLv
@@ -253,9 +256,8 @@ class Excel_Operation:
         sht3_ResYear = self.resultExl.sheets.add(self.sht3NameResYear, after=self.sht2NameGrade)
 
         # Step2: Set title
-
-        shtCopyTo(self.surveyTestSht, self.sht3ColRan, sht3_ResYear, self.sht3ColRan.split(":")[0])
-        shtCopyTo(self.sht3Module, self.sht3TitleCopyFromScp, sht3_ResYear, self.sht3TitleCopyTo)
+        shtCopyTo(self.surveyTestSht, self.sht3IndexCopyFromSvyScp, sht3_ResYear, self.sht3IndexCopyFromSvyScp.split(":")[0])
+        shtCopyTo(self.sht3Module, self.sht3TitleCopyFromMdlScp, sht3_ResYear, self.sht3TitleCopyTo)
 
         return sht3_ResYear
 
@@ -415,12 +417,13 @@ class Excel_Operation:
         sht1SetData(sht1_lv2Result, sht1WithLv, getTltColRange(self.sht1DataColRan))
 
         # Sheet 2
+        # TODO: 这里放置Data真的没问题吗？
         sht2WithLv = self.clacSheet2_surveyGrade(sht2_lv2Score, sht1WithLv)
-        sht2SetData(sht2_lv2Score, sht2WithLv, getTltColRange(self.sht2IndexCopyFromColScp))
+        sht2SetData(sht2_lv2Score, sht2WithLv, getTltColRange(self.sht2IndexCopyFromSvyScp))
 
         # Sheet 3
         sht3WithLv = getSht3WithLv(sht1WithLv, self.lv1Name)
-        sht3SetData(sht3_ResYear, sht3WithLv, self.sht3DataCol, self.lv1Name)
+        sht3SetData(sht3_ResYear, sht3WithLv, self.sht3DataColRan, self.lv1Name)
 
         # Sheet 4
         sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
@@ -468,25 +471,32 @@ class Excel_Operation:
             deptResultExl.save(f"{fileNamePathPrefix}_{deptName}.xlsx")
 
             # Clear the sheet for next loop dynamically
-            borderWidth = getColNum(sht1BorderL) - getColNum(sht1BorderR)
+            # sht1Dept.activate()
+            # dltOneDptData(sht1Dept, self.sht1TitleCopyTo, self.deptCopyHeight,
+            #               sht1BorderR, sht1BorderL)
+            # if deptName in deptUnitSht2:
+            #     sht2Dept.activate()
+            #     dltOneDptData(sht2Dept, self.sht2TitleCopyTo, self.deptCopyHeight,
+            #                   sht2BorderL, sht2BorderR)
+
+            borderWidth = getColNum(sht1BorderR) - getColNum(sht1BorderL)
             borderStart = getColNum(self.sht1TitleCopyTo[0])
             borderEnd = getColLtr(borderStart + borderWidth)
+            sht1Dept.activate()
             sht1Dept.range(f"{self.sht1TitleCopyTo}:{borderEnd}{self.deptCopyHeight}").api.Delete()
-
             if deptName in deptUnitSht2:
-                borderWidth = getColNum(sht2BorderL) - getColNum(sht2BorderR)
+                borderWidth = getColNum(sht2BorderR) - getColNum(sht2BorderL)
                 borderStart = getColNum(self.sht2TitleCopyTo[0])
                 borderEnd = getColLtr(borderStart + borderWidth)
+                sht2Dept.activate()
                 sht2Dept.range(f"{self.sht2TitleCopyTo}:{borderEnd}{self.deptCopyHeight}").api.Delete()
 
         deptResultExl.close()
-        self.resultExl.close()
 
     def getDataDemo(self):
         # orgSht = self.surveyExl.sheets[self.orgShtName]
         # orgDict = readOrgDict(orgSht)
 
-        # TODO: get score 注意切换到正确的sheet
         staffWithLv = self.getStuffDict()
         for stu in staffWithLv:
             print(stu)
@@ -545,12 +555,17 @@ class Excel_Operation:
         if not self.fileYear:
             self.fileYear = datetime.datetime.now().year
         summaryFileName = f"{self.fileYear}_{self.fileName}_{self.orgCode}.xlsx"
-        sumSavePath = os.path.join(self.savePath, summaryFileName)
+        # make an output dir with current time
+        outputDir = os.path.join(self.savePath, "output_", datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        os.makedirs(outputDir)
+        sumSavePath = os.path.join(outputDir, summaryFileName)
         sht2WithLv = self.genSummaryFile(sht1WithLv, sumSavePath)
         self.surveyExl.close()
         self.app4Survey1.quit()
         # generate each department file
         self.genDepartmentFile(sumSavePath)
+        self.resultExl.close()
+        self.app4Result3.quit()
 
     def run(self):
         """

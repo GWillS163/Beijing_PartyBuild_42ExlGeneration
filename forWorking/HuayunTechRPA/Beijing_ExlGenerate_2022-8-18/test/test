@@ -1,0 +1,44 @@
+# 输入配置-规则表 修改后请核对以下配置
+surveyQuesCol = "E"  # 题目列
+surveyRuleCol = "J"  # 赋分规则列
+surveyQuesTypeCol = "G"  # 题目类型列
+surveyTestShtName = "测试问卷"
+# module settings
+sht1ModuleName = "调研结果_输出模板"
+sht2ModuleName = "调研成绩_输出模板"
+sht3ModuleName = "调研结果（2022年）_输出模板"
+sht4ModuleName = "调研成绩（2022年）_输出模板"
+
+deptCopyHeight = 35  # 从总表复制到 各个部门表时的高度
+lv1Name = "北京公司"
+# Sheet1: survey settings
+sht1NameRes = "调研结果"  # "调研问卷(未加权)"
+sht1CopyFromMdlColScp = "A1:F32"
+sht1TitleCopyFromMdlScp = "F1:KZ2"
+sht1TitleCopyTo = "G1"
+sht1DataColRan = "G:KZ"
+# Sheet2:
+sht2NameGrade = "调研成绩"  # "调研问卷(加权)"
+sht2TitleCopyFromMdlScp = "D1:L2"
+sht2TitleCopyTo = "D1"
+sht2IndexCopyFromColScp = "A1:K32"
+sht2IndexCopyTo = "A1"
+sht2WgtLstScp = "C3:C13"
+sht2DeleteRowLst = [31, 29, 27, 24, 18, 17, 15, 14, 13, 12, 11, 8, 5]
+sht2DeleteCopiedRowScp = "A14:A19"
+sht2DeleteCopiedColScp = "C1:J1"
+# Sheet3:
+sht3NameResYear = "调研结果（2022年）"
+sht3ColRan = "A1:J32"
+sht3DataCol = "K:AZ"
+sht3TitleCopyFromScp = "L1:BA2"
+sht3TitleCopyTo = "K1"
+# Sheet4:
+sht4NameScoreYear = "调研成绩（2022年）"
+sht4IndexFromSht2Scp = 'A4:B52'
+sht4TitleFromSht2Scp = 'A1:C17'
+sht4TitleCopyTo = 'A1'
+sht4SumTitleFromMdlScp = "P1:R3"
+sht4SumTitleCopyTo = "P1"
+sht4DataRowRange = [4,53]
+

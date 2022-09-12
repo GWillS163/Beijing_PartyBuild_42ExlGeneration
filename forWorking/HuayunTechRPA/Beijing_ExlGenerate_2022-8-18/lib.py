@@ -4,26 +4,31 @@ import datetime
 import re
 
 
-def getColLtr(colNum) -> str:
-    """0 -> A, 1 -> B, 2 -> C, ..."""
+def getColLtr(colNum: int) -> str:
+    """0 -> A, 1 -> B, 2 -> C, ..., 26->AA, ..., 311 -> KZ
+    :param colNum: the Column number of the Column Letter of Excel mappings
+    :return the letter of Excel column
+    """
     if colNum < 26:
         return chr(colNum + 65)
     else:
         return getColLtr(colNum // 26 - 1) + getColLtr(colNum % 26)
 
 
-def getColNum(colLetter) -> int:
-    """A -> 0, B -> 1, C -> 2, ... KZ -> 311"""
-    if len(colLetter) == 1:
-        return ord(colLetter) - 65
+def getColNum(colLtr: str) -> int:
+    """A -> 0, B -> 1, C -> 2, ..., AA->26, ..., KZ -> 311
+    :param colLtr: the Column Letter of Excel
+    :return the sequence number of Excel column
+    """
+    if len(colLtr) == 1:
+        return ord(colLtr) - 65
     else:
-        return (ord(colLetter[0]) - 64) * 26 + getColNum(colLetter[1:])
+        return (ord(colLtr[0]) - 64) * 26 + getColNum(colLtr[1:])
 
 
 def getTltColRange(titleScope):
     """titleScope : A1:B2, in other words is ColA to Col B
     return iterable Range"""
-    # TODO: AA 包含的结果错误了
     titleStart, titleEnd = titleScope.split(":")
     # get the letter of titleStart by regex
     titleStartLetter = re.findall(r"[A-Z]+", titleStart)[0]
@@ -61,7 +66,6 @@ def readOrgDict(orgSht):
     return allOrg
 
 
-
 class Stuff:
     def __init__(self, name, lv2Depart, lv2Code, lv3Depart, lv3Code, ID, answerLst=None):
         self.name = name
@@ -78,4 +82,3 @@ class Stuff:
 
     def __repr__(self):
         return f"name:{self.name}, answerLen:{len(self.answerLst)}"  # lv2:{self.lv2Depart[:10]}, lv3:{self.lv3Depart[:10]},
-

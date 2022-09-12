@@ -129,7 +129,7 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
     :return:
     """
     titleRan = getTltColRange(titleRange)
-    lv2Clz = None
+    # lv2Clz = None
     for col in titleRan:
         colLtr = getColLtr(col)
         lv2UpCurr = sht3.range(f"{colLtr}1").value
