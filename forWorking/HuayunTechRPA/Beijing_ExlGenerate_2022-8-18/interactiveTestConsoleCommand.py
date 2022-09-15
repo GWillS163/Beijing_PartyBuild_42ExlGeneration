@@ -12,7 +12,8 @@ from shtDataCalc import *
 # if result.xlsx is exist, resultExlPh named as result + time.xlsx
 resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
 
-surveyExlPh = "D:\work\考核RPA_Exl\Input\模板1：【测试问卷】标准模板示例（原文件修改）_2022-8-30.xlsx"
+# surveyExlPh = "D:\work\考核RPA_Exl\Input\模板1：【测试问卷】标准模板示例（原文件修改）_2022-8-30.xlsx"
+surveyExlPh = "D:\work\考核RPA_Exl\Input\模板：【测试问卷】标准模板示例_2022-9-14.xlsx"
 scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.15答题结果_（模板）_2022-8-30.xlsx"
 
 # resultExlPh = ".\\result.xlsx"

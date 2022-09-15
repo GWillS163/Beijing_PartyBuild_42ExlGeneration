@@ -49,6 +49,11 @@ def getCurrentYear(userYear=None):
         return datetime.datetime.now().year
 
 
+def addRankForSht2():
+    """为第二个sheet添加排名"""
+    pass
+
+
 def readOrgDict(orgSht):
     """返回结构化的字典，key是部门名，value是部门下的子部门"""
     allOrg = {}
