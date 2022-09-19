@@ -6,6 +6,7 @@ import csv
 
 
 def findFileByRegex(folderPath, filesRegex):
+    """根据正则表达式查找文件"""
     files = os.listdir(folderPath)
     return [file for file in files if re.match(filesRegex, file)]
 
@@ -30,7 +31,7 @@ def singleFileCheck(filePath, wordsList):
     content = docx2txt.process(filePath)
     wordCheckList = [filePath]
     for keyword in wordsList:
-        # 关键字有多个
+        # 一组关键字有多个
         flag = False
         for kw in keyword:
             if kw in content:
@@ -38,6 +39,7 @@ def singleFileCheck(filePath, wordsList):
                 wordCheckList.append("√" + kw)  # 如果有一个关键字在文档中，就算通过
                 flag = True
                 break
+        # 如果一组关键字都不在文档中
         if not flag:
             wordCheckList.append("×关键词:"+".".join(keyword)+" 均不存在")  # 如果没有一个关键字在文档中，就算不通过
     return wordCheckList
@@ -47,7 +49,7 @@ def main(filesPath, filesRegex, wordStr, outputPrefixName):
     files = findFileByRegex(filesPath, filesRegex)
     wordsList = parseKeywords(wordStr)
     os.chdir(filesPath)
-    result = []
+    result = [["文件名", "关键词检查结果"]]
     for file in files:
         if "~$" in file:  # temp file
             continue
@@ -66,6 +68,9 @@ def main(filesPath, filesRegex, wordStr, outputPrefixName):
 if __name__ == '__main__':
     filesPh = r"D:\work\北京9.8 - 批量文件关键词检查"
     filesRe = r".*\.docx"
-    kws = "北京, 设计 设置,中共 中国共产党, 二十大 第二十次大会, 三中全会 第三次中央全面会议"
+    kws = "北京, 设计 设置," \
+          "中共 中国共产党, " \
+          "二十大 第二十次大会, " \
+          "三中全会 第三次中央全面会议"
     prefixName = "workCheckResult"
     main(filesPh, filesRe, kws, prefixName)
