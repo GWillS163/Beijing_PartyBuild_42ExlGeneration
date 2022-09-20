@@ -1,8 +1,10 @@
 # import a module that can read docx & doc file
-import docx2txt
+import docx
 import os
 import re
 import csv
+# Get current datetime as filename
+import datetime
 
 
 def findFileByRegex(folderPath, filesRegex):
@@ -28,7 +30,8 @@ def saveResult2csv(outputFileName, resultList):
 
 def singleFileCheck(filePath, wordsList):
     """进行单个文件的检查"""
-    content = docx2txt.process(filePath)
+    # content = docx2txt.process(filePath)
+    content = readDocx2Txt(filePath)
     wordCheckList = [filePath]
     for keyword in wordsList:
         # 一组关键字有多个
@@ -45,7 +48,35 @@ def singleFileCheck(filePath, wordsList):
     return wordCheckList
 
 
+def readDocx2Txt(param):
+    """
+    Read a docx file and return a string.
+    :param param: a docx file path.
+    :return: a string.
+    """
+    doc = docx.Document(param)
+    # paragraphs
+    text = ''
+    for para in doc.paragraphs:
+        text += para.text
+    # tables
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for para in cell.paragraphs:
+                    text += para.text
+    return text
+
+
 def main(filesPath, filesRegex, wordStr, outputPrefixName):
+    """
+    主程序
+    :param filesPath:
+    :param filesRegex:
+    :param wordStr:
+    :param outputPrefixName:
+    :return:
+    """
     files = findFileByRegex(filesPath, filesRegex)
     wordsList = parseKeywords(wordStr)
     os.chdir(filesPath)
@@ -58,19 +89,12 @@ def main(filesPath, filesRegex, wordStr, outputPrefixName):
         # result.append(singleFileCheck(filePath, wordsList))
         # Method 2: 使用相对路径，输出文件在Word文件夹
         result.append(singleFileCheck(file, wordsList))
-    # Get current datetime as filename
-    import datetime
+
+    # 输出
     fileName = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     saveResult2csv(f"{outputPrefixName}_{fileName}.csv", result)
     print("Done!")
+    return result
 
-
-if __name__ == '__main__':
-    filesPh = r"D:\work\北京9.8 - 批量文件关键词检查"
-    filesRe = r".*\.docx"
-    kws = "北京, 设计 设置," \
-          "中共 中国共产党, " \
-          "二十大 第二十次大会, " \
-          "三中全会 第三次中央全面会议"
-    prefixName = "workCheckResult"
-    main(filesPh, filesRe, kws, prefixName)
+# need cancel the comment if you want to run this script
+# res = main(filesPh, filesRe, kws, prefixName)

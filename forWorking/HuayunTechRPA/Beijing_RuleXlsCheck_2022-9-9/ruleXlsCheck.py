@@ -6,7 +6,7 @@ import re
 import time
 from typing import List, Any
 
-import xlrd
+import xlwings as xw
 
 
 def findFileByRegex(folderPath, filesRegex):
@@ -20,12 +20,26 @@ def saveResult2csv(outputFileName, resultList):
         writer.writerows(resultList)
 
 
-def getXlsData(banRuleFilePath):
+def getXlsData(app, banRuleFilePath):
     """得到Xls文件中的数据
     Get the data in the Xls file"""
-    workbook = xlrd.open_workbook(banRuleFilePath)
-    sheet = workbook.sheet_by_index(0)
-    return [sheet.row_values(i) for i in range(1, sheet.nrows)]
+    # workbook = xlwings.Book(banRuleFilePath)
+    workbook = app.books.open(banRuleFilePath)
+    sheet = workbook.sheets[0]
+    # get the last row number
+    # lastRow = sheet.range("A1").end("down").row
+    # # get the last column number
+    # lastCol = sheet.range("A1").end("right").column
+    # # get the data in the range
+    # data = sheet.range((1, 1), (lastRow, lastCol)).value
+    # get all data zone in the sheet
+    data = sheet.used_range.value
+    workbook.close()
+    return data
+
+    # workbook = xlrd.open_workbook(banRuleFilePath)
+    # sheet = workbook.sheet_by_index(0)
+    # return [sheet.row_values(i) for i in range(1, sheet.nrows)]
 
 
 def getColNum(colLtr):
@@ -38,12 +52,12 @@ def getColNum(colLtr):
     return num
 
 
-def getBannedRuleList(bannedRuleFilePath: str, columnLetter: str) -> list:
+def getBannedRuleList(app, bannedRuleFilePath: str, columnLetter: str) -> list:
     """得到禁止规则文件中的数据
     Get the data in the banned rule file"""
     colNum = getColNum(columnLetter)
     return [data[colNum]
-            for data in getXlsData(bannedRuleFilePath)]
+            for data in getXlsData(app, bannedRuleFilePath)]
 
 
 def findBannedRule(runningRule: str, banRuleList: list) -> List[str]:
@@ -67,6 +81,10 @@ def compareFileRule(fileData, ruleCol, banRuleList):
     result = []
     ruleNum = getColNum(ruleCol)
     for fileRow in fileData:
+        if not fileRow:
+            continue
+        if not fileRow[ruleNum]:
+            continue
         res = findBannedRule(fileRow[ruleNum], banRuleList)
         if res:
             bannedRuleFormat = '》,\n《'.join(res)
@@ -74,8 +92,8 @@ def compareFileRule(fileData, ruleCol, banRuleList):
     return result
 
 
-def main(bannedFilePh, bannedCol, sectUsingFilePh1, sect1Col,
-         compUsingFilePh, compCol, sectUsingFilePh, sectCol):
+def main(savePath, bannedFilePh, bannedCol, sectUsingFilePh1, sect1Col,
+         compUsingFilePh, compCol, sectUsingFilePh, sectCol, *args, **kwargs):
     # files = findFileByRegex(folderPath, filesRegex)
     # allRuleList = []
     # for file in files:
@@ -86,27 +104,24 @@ def main(bannedFilePh, bannedCol, sectUsingFilePh1, sect1Col,
     runningRuleList = [(sectUsingFilePh1, sect1Col),
                        (compUsingFilePh, compCol),
                        (sectUsingFilePh, sectCol)]
-    banRuleList = getBannedRuleList(bannedFilePh, bannedCol)
+    app = xw.App(visible=True, add_book=False)
+    banRuleList = getBannedRuleList(app, bannedFilePh, bannedCol)
     result = [["包含的已禁止规则：", "原文"]]
     # 对所有文件的运行中规则进行遍历
     for rulePh, ruleCol in runningRuleList:
-        fileData = getXlsData(rulePh)
+        if not rulePh or not ruleCol:
+            continue
+        fileData = getXlsData(app, rulePh)
         # 如果规则在禁用规则中，记录下来所有信息
         result += compareFileRule(fileData, ruleCol, banRuleList)
-    # fileName with current timestamp
-    fileName = "result_" + str(int(time.time())) + ".csv"
-    saveResult2csv(fileName, result)
+    app.quit()
+    # fileName with current timestamp format "YYYYMMDDHHMMSS"
+    fileName = "result_" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".csv"
+    savefilePath = os.path.join(savePath, fileName)
+    saveResult2csv(savefilePath, result)
+    return result
 
 
-if __name__ == '__main__':
-    bannedFilePath = r"D:\work\北京9.8 - 批量文件关键词检查\制度核查\公司级制度汇编-已废止.xls"
-    bannedColName = "E"
-    sectUsingFilePath1 = r"D:\work\北京9.8 - 批量文件关键词检查\制度核查\公司级制度汇编-使用中.xls"
-    sect1ColName = "C"
-    compUsingFilePath = r"D:\work\北京9.8 - 批量文件关键词检查\制度核查\公司级-控措施清单-20220909.xls"
-    compColName = "D"
-    sectUsingFilePath = r"D:\work\北京9.8 - 批量文件关键词检查\制度核查\部门级-防控措施清单-20220909.xlsx"
-    sectColName = "C"
-    main(bannedFilePath, bannedColName, sectUsingFilePath1, sect1ColName,
-         compUsingFilePath, compColName, sectUsingFilePath, sectColName)
-    print("Done!")
+# result = main(savefilePath, bannedFilePath, bannedColName, sectUsingFilePath1, sect1ColName,
+#      compUsingFilePath, compColName, sectUsingFilePath, sectColName)
+# print("Done!")
