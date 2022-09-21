@@ -17,6 +17,7 @@ def findFileByRegex(folderPath, filesRegex):
 def saveResult2csv(outputFileName, resultList):
     with open(outputFileName, "w", newline="") as f:
         writer = csv.writer(f)
+        writer.writerows([["包含的已禁止规则：", "原文"]])
         writer.writerows(resultList)
 
 
@@ -76,6 +77,31 @@ def findBannedRule(runningRule: str, banRuleList: list) -> List[str]:
     return containBannedRule
 
 
+def isRunningRuleLtVersion(runningRuleV, versionV):
+    """判断运行规则的版本号是否小于规则的版本号"""
+    runningRuleVersion = re.findall(r"V(\d{1,3}).(\d{1,3})?.?(\d{1,3})?.?(\d{1,3})?", runningRuleV)
+    # get "3.4.2.3" in Version
+    version = re.findall(r"(\d{1,3}).(\d{1,3})?.?(\d{1,3})?.?(\d{1,3})?", versionV)
+    if not runningRuleVersion or not version:
+        return True
+    runningRuleVersion = runningRuleVersion[0]
+    version = version[0]
+    for i in range(len(runningRuleVersion)):
+        runR = runningRuleVersion[i]
+        verR = version[i]
+        if not runR:
+            break
+        if not verR:
+            return False
+        # 若运行规则版本号小于规则版本号，返回True
+        if int(runR) < int(verR):
+            return True
+        elif int(runR) == int(verR):
+            continue
+        else:
+            return False
+
+
 def compareFileRule(fileData, ruleCol, banRuleList):
     """比较一个文件中的所有规则 返回不符合的规则"""
     result = []
@@ -85,15 +111,19 @@ def compareFileRule(fileData, ruleCol, banRuleList):
             continue
         if not fileRow[ruleNum]:
             continue
-        res = findBannedRule(fileRow[ruleNum], banRuleList)
-        if res:
-            bannedRuleFormat = '》,\n《'.join(res)
+        involvedBannedRule = findBannedRule(fileRow[ruleNum], banRuleList)
+        if involvedBannedRule:
+            # 仅存储版本号小的规则 演示后更新部分(2022-9-21),
+            lowVersion = isRunningRuleLtVersion(fileRow[ruleNum], fileRow[0])
+            if not lowVersion:
+                continue
+            bannedRuleFormat = '》,\n《'.join(involvedBannedRule)
             result.append([f"《{bannedRuleFormat}》"] + fileRow)
     return result
 
 
 def main(savePath, bannedFilePh, bannedCol, sectUsingFilePh1, sect1Col,
-         compUsingFilePh, compCol, sectUsingFilePh, sectCol, *args, **kwargs):
+         compUsingFilePh, compCol, sectUsingFilePh, sectCol):
     # files = findFileByRegex(folderPath, filesRegex)
     # allRuleList = []
     # for file in files:
@@ -106,20 +136,29 @@ def main(savePath, bannedFilePh, bannedCol, sectUsingFilePh1, sect1Col,
                        (sectUsingFilePh, sectCol)]
     app = xw.App(visible=True, add_book=False)
     banRuleList = getBannedRuleList(app, bannedFilePh, bannedCol)
-    result = [["包含的已禁止规则：", "原文"]]
+
     # 对所有文件的运行中规则进行遍历
+    output = []
     for rulePh, ruleCol in runningRuleList:
         if not rulePh or not ruleCol:
             continue
         fileData = getXlsData(app, rulePh)
         # 如果规则在禁用规则中，记录下来所有信息
-        result += compareFileRule(fileData, ruleCol, banRuleList)
+        result = compareFileRule(fileData, ruleCol, banRuleList)
+        output.extend(result)
+
+        prefix = ""
+        if "使用中" in rulePh:
+            prefix = "使用中"
+        elif "部门" in rulePh:
+            prefix = "部门级"
+        elif "公司" in rulePh:
+            prefix = "公司级"
+        fileName = f"{prefix}检查结果_" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".csv"
+        savefilePath = os.path.join(savePath, fileName)
+        saveResult2csv(savefilePath, result)
     app.quit()
-    # fileName with current timestamp format "YYYYMMDDHHMMSS"
-    fileName = "result_" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".csv"
-    savefilePath = os.path.join(savePath, fileName)
-    saveResult2csv(savefilePath, result)
-    return result
+    return output
 
 
 # result = main(savefilePath, bannedFilePath, bannedColName, sectUsingFilePath1, sect1ColName,
