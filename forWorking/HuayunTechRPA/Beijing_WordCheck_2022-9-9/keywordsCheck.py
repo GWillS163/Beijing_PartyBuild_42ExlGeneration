@@ -33,6 +33,8 @@ def singleFileCheck(filePath, wordsList):
     # content = docx2txt.process(filePath)
     content = readDocx2Txt(filePath)
     wordCheckList = [filePath]
+    contains = []
+    notContains = []
     for keyword in wordsList:
         # 一组关键字有多个
         flag = False
@@ -40,18 +42,22 @@ def singleFileCheck(filePath, wordsList):
             if kw in content:
                 # wordCheckList.append(kw)  # 如果有一个关键字在文档中，就算通过
                 wordCheckList.append("√" + kw)  # 如果有一个关键字在文档中，就算通过
+                contains.append(kw)
                 flag = True
                 break
         # 如果一组关键字都不在文档中
         if not flag:
+            notContains.append(keyword[0])
             wordCheckList.append("×关键词:"+".".join(keyword)+" 均不存在")  # 如果没有一个关键字在文档中，就算不通过
+    wordCheckList.insert(1, ("√" + "、".join(contains)) if contains else "无")
+    wordCheckList.insert(2, ("×" + "、".join(notContains)) if notContains else "无")
     return wordCheckList
 
 
 def readDocx2Txt(param):
     """
     Read a docx file and return a string.
-    :param param: a docx file path.
+    :param: param: a docx file path.
     :return: a string.
     """
     doc = docx.Document(param)
@@ -80,7 +86,7 @@ def main(filesPath, filesRegex, wordStr, outputPrefixName):
     files = findFileByRegex(filesPath, filesRegex)
     wordsList = parseKeywords(wordStr)
     os.chdir(filesPath)
-    result = [["文件名", "关键词检查结果"]]
+    result = [["文件名", "已包含关键词", "未包含关键词(组)", "关键词检查结果详情"]]
     for file in files:
         if "~$" in file:  # temp file
             continue
