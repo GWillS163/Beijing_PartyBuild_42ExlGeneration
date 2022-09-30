@@ -1,13 +1,19 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
 
+#  Author : Github: @GWillS163
+#  Time: $(Date)
+
+#  Author : Github: @GWillS163
+#  Time: $(Date)
+
 import sys
 sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18")
-from main_xlwings import Excel_Operation
+from coreCode.main_xlwings import Excel_Operation
 
-from shtOperation import *
+from coreCode.shtOperation import *
 import time
-from shtDataCalc import *
+from coreCode.shtDataCalc import *
 
 # if result.xlsx is exist, resultExlPh named as result + time.xlsx
 resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
@@ -20,7 +26,7 @@ scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.1
 test = Excel_Operation(surveyExlPh, scoreExlPh,
                        "D:\\", "2022", "PartyBuildingSurvey", "20002100",
                        )
-test.mockDataDemo()
+test.fillData()
 
 #
 

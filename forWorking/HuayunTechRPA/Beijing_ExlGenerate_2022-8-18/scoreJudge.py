@@ -90,7 +90,6 @@ def judgeGradeMulti(answerIntLst, ruleSelect, ruleScore):
         if not permitNumStart and permitNumEnd:
             print("全部选择与部分全选，需要指定范围！")
             return -1
-            # TODO: 如何统计题目的数量
         # 选择的数量与范围一致
         if len(answerIntLst) == len(range(int(permitNumStart), int(permitNumEnd) + 1)):
             return ruleScore
@@ -156,7 +155,7 @@ def judgeAnswerGrade(answer, rule, quesType):
     if "开放题" in quesType:
         return 0
     elif "评分题" in quesType:
-        return int(re.search(r"(\d{,3}?)", answer.strip()).groups()[0])
+        return int(re.search(r"\d{0,3}", answer.strip()).group(0))
 
     # get RuleL & RuleR and verify
     answerIntLst = list(map(int, re.findall(r"(\d{,3})\..*?", answer)))
@@ -173,6 +172,8 @@ def judgeAnswerGrade(answer, rule, quesType):
         if "单项" in quesType or "单选" in quesType:
             score = judgeGradeSingle(answerIntLst, ruleSelect, ruleScore)
         elif "不定项" in quesType:
+            # TODO: 2022-9-29 18题15题判断异常
+
             score = judgeGradeMulti(answerIntLst, ruleSelect, ruleScore)
 
         if score != -1:

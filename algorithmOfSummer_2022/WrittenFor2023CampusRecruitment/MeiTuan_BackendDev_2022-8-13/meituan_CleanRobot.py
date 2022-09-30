@@ -45,7 +45,7 @@ for i, c in enumerate(command):
         mapp[coord[0]][coord[1]] = 1  # make as cleaned
 
 # for row in mapp:
-#     print(row)  # test
+#     print(row)  # testScripts
     # for tile in row:
     #     if tile != 1:
     #         no_of_cleaned += 1

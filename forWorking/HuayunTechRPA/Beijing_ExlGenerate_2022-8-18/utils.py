@@ -1,7 +1,13 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+
+#  Author : Github: @GWillS163
+#  Time: $(Date)
+import csv
 import datetime
+import os.path
 import re
+import time
 
 
 def getColLtr(colNum: int) -> str:
@@ -13,6 +19,34 @@ def getColLtr(colNum: int) -> str:
         return chr(colNum + 65)
     else:
         return getColLtr(colNum // 26 - 1) + getColLtr(colNum % 26)
+
+
+def paramsCheckExist(surveyExlPath, scrExlPh, savePath, fileYear, fileName):
+    """
+    检查输入文件是否存在, 并新建保存路径
+    Check Input files are
+    :param surveyExlPath:
+    :param scrExlPh:
+    :param savePath:
+    :param fileYear:
+    :param fileName:
+    :return:
+    """
+    if surveyExlPath == scrExlPh or surveyExlPath == savePath or scrExlPh == savePath:
+        raise FileExistsError("文件名输出重复,", surveyExlPath, scrExlPh, savePath)
+    if not os.path.exists(surveyExlPath):
+        raise FileNotFoundError("问卷模板文件不存在:")
+    if not os.path.exists(scrExlPh):
+        return FileNotFoundError("分数数据文件不存在:", scrExlPh)
+    if not os.path.exists(savePath):
+        return FileNotFoundError("指定的保存路径不存在")
+
+    summaryFileName = f"{fileYear}_{fileName}.xlsx"
+    # make an output dir with current time
+    outputDir = os.path.join(savePath, "output_", datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    os.makedirs(outputDir)
+
+    return os.path.join(outputDir, summaryFileName)
 
 
 def getColNum(colLtr: str) -> int:
@@ -69,6 +103,36 @@ def readOrgDict(orgSht):
             allOrg[a].append(b)
         row += 1
     return allOrg
+
+
+def saveDebugFile(debugScoreLst, pathPre):
+    """
+    保存debug文件
+    save debug file
+    :param debugScoreLst:
+    :param pathPre:
+    :return:
+    """
+    with open(f"{pathPre}_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows([["name", "questTitle", "quesType", "answer", "rule", "score"]])
+        writer.writerows(debugScoreLst)
+
+
+def paramsCheckSurvey(surveyExl, shtNameList: list):
+    """
+    调查问卷 文件名检查
+    Survey Excel params check
+    :param surveyExl:
+    :param shtNameList:
+    :return:
+    """
+    for shtName in shtNameList:
+        try:
+            surveyExl.sheets[shtName]
+        except Exception as e:
+            raise Exception(f"{shtName} 不存在于{surveyExl.name}中.\n ({e})")
+    print(f"{surveyExl.name} Sheet 参数检查通过")
 
 
 class Stuff:

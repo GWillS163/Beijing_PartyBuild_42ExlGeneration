@@ -52,7 +52,7 @@ def get_str_lst(row_text):
 
 
 if __name__ == '__main__':
-    # test the function by use the above stuff_with_keyword dict, the result is key, value is the person who is the key
+    # testScripts the function by use the above stuff_with_keyword dict, the result is key, value is the person who is the key
     # print(get_str_lst("企业视频彩铃"))
     for person, keywords in keywordDict.items():
         for keyword in keywords:

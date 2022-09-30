@@ -14,7 +14,7 @@ n = 18
 summary_list = [summary[i:i + n] for i in range(0, len(summary), n)]
 
 # 图片名称
-img = './test.png'  # 图片模板
+img = './testScripts.png'  # 图片模板
 new_img = 'text.png'  # 生成的图片
 compress_img = 'compress.png'  # 压缩后的图片
 

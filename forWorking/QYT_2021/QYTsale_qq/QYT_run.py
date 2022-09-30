@@ -24,7 +24,7 @@ def file_Rec():
                 else:
                     # qytang_QQ_requests.message_API()
                     # qytang_QQ_requests.send_text(OCR.run_ocr(path,i))#调用API识别，并发送text至API,
-                    print('test\t发送成功')
+                    print('testScripts\t发送成功')
             else:
                 print('###confidence 未达阈值 \t不发送')
             previous_confidence = confidence  # 记录已匹配的阈值
@@ -41,7 +41,7 @@ def run(tmi):
 
 #设置一下基准benchamark文件 和path
 path = 'C:\\Users\\admin\\Desktop\\'
-benchmark = 'test.jpg'
+benchmark = 'testScripts.jpg'
 previous_confidence = 0
 
 run()

@@ -1,5 +1,6 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+import numpy as np
 import pandas as pd
 
 from shtDataCalc import getMeanScore
@@ -151,7 +152,6 @@ def placeDepartmentTitle(sht, departmentLst, titleStart="K1"):
     startRow = titleStart[1]
     endLetter = chr(ord(titleStart[0]) + len(departmentLst[1]) - 1)
     # merge K1:L1 cells
-    # TODO: record index position
     sht.range(f"{titleStart}:{endLetter}{startRow}").merge()
 
 

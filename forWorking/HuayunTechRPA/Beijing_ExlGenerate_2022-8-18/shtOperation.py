@@ -1,10 +1,18 @@
 #  Author : Github: @GWillS163
-#  Time: $(Date)
 # Description: 用于 添加数据，增加行列
-from lib import *
+from utils import *
 
 
 def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
+    """
+    将sht1中的数据复制到sht2中
+    copy data and format from sht1 to sht2
+    :param sht1:
+    :param sht1Scp:
+    :param sht2:
+    :param sht2Start:
+    :return:
+    """
     sht1.range(sht1Scp).api.Copy()
     sht2.activate()
     sht2.range(sht2Start).api.Select()
@@ -13,6 +21,15 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
 
 
 def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
+    """
+    为Sheet2 添加合计行
+    :param sht2_lv2Score:
+    :param sht2WithLv:
+    :param row:
+    :param startCol:
+    :param endCol:
+    :return:
+    """
     unitScoreSum = 0
     while True:
         unit = sht2_lv2Score.range(f"A{row}").value
@@ -23,7 +40,9 @@ def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
 
 
 def sht2OprAddSummaryRows(sht2_lv2Score):
-    """add summary rows to sheet2"""
+    """
+    为Sheet2 添加合计行
+    add summary rows to sheet2"""
     insertRow = []
     for row in range(4, 20):
         unit = sht2_lv2Score.range(f"A{row}").value
@@ -57,7 +76,6 @@ def fillSht2SumOneLine(sht2, summaryRow, summaryScp, unitCol="A"):
     unitRow = summaryRow
     while True:
         unitRow -= 1
-        print(unitRow)
         if sht2.range(f"{unitCol}{unitRow}").value:
             break
     # Fill one Line
@@ -205,3 +223,31 @@ def dltOneDptData(shtDept, shtTitleCopyTo, deptCopyHeight, shtBorderL, shtBorder
     borderEnd = getColLtr(borderStart + borderWidth)
     shtDept.range(f"{shtTitleCopyTo}:{borderEnd}{deptCopyHeight}").api.Delete()
 
+
+def getRuleByQuestion(questTitle, surveyTestSht, surveyQuesCol, surveyRuleCol):
+    """
+
+    # 找到所属规则 - locate which row is rule by questTitle in scoreExl
+    :param questTitle:
+    :param surveyTestSht:
+    :param surveyQuesCol:
+    :param surveyRuleCol:
+    :return:
+    """
+    answerRow = -1
+    for row in range(3, 40):
+        # find the cell in the surveyExl by Question column
+        ruleQuest = surveyTestSht.range(f"{surveyQuesCol}{row}").value
+        if ruleQuest is None:
+            continue
+        if ruleQuest in questTitle:
+            # print("Check_cellQuestion: ", ruleQuest)
+            answerRow = row
+            break
+    if answerRow == -1:
+        print(f"{questTitle} not found in surveyExl")
+        return answerRow, None
+    # get rule in the surveyExl App
+    # rule = app4Survey1.range(f"{surveyRuleCol}{answerRow}").value
+    rule = surveyTestSht.range(f"{surveyRuleCol}{answerRow}").value
+    return answerRow, rule

@@ -50,7 +50,7 @@ class Solution:
         return False
 
 if __name__ == '__main__':
-    # test the function
+    # testScripts the function
     s = Solution()
     head = ListNode(1)
     # head.next = ListNode(2)

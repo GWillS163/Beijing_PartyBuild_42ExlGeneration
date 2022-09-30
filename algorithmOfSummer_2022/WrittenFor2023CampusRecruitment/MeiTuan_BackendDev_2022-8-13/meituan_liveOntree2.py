@@ -40,7 +40,7 @@ class binaryTree:
 
 
 if __name__ == '__main__':
-    # test the function
+    # testScripts the function
     root = binaryTree(1)
     a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12]
     for i, n in enumerate(a):

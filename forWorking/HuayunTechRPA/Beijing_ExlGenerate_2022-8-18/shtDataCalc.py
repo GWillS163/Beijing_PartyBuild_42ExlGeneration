@@ -1,21 +1,31 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
+
+#  Author : Github: @GWillS163
+#  Time: $(Date)
 # Description: 用于计算数据的模块
 from typing import Dict, Optional, Any, List, Union
+from utils import *
 
-from lib import *
-import numpy as np
-import pandas as pd
+
+# import pandas as pd
 
 
 def listMultipy(lst1, lst2):
     return list(map(lambda x, y: round(x * y, 2), lst1, lst2))
 
 
-def getMeanScore(stuffScoreLst):
-    """return allLV3.mean() list"""
-    df = pd.DataFrame(stuffScoreLst).transpose()
-    return df.mean(axis=1).tolist()
+def getMeanScore(stuffScoreLst: list) -> list:
+    """
+    [[],[]] -> []
+    return allLV3.mean() list"""
+    if not stuffScoreLst:
+        return []
+    # get the mean list of stuffScoreLst
+    res = []
+    for i in range(len(stuffScoreLst[0]) - 1):
+        res.append(sum([stu[i] for stu in stuffScoreLst]) / len(stuffScoreLst))
+    return res
 
 
 def getScoreWithLv(staffWithLv):
@@ -65,8 +75,7 @@ def getSht1WithLv(scoreWithLv_: dict) -> dict:
         # sht1WithLv[lv2].update({"二级单位": allLv3Mean})  #
     # 对每个二级单位求平均
     for lv2 in sht1WithLv:
-        sht1WithLv[lv2].update({"二级单位": getMeanScore(sht1WithLv[lv2].values())})
-
+        sht1WithLv[lv2].update({"二级单位": getMeanScore(list(sht1WithLv[lv2].values()))})
     return sht1WithLv
 
 
@@ -120,12 +129,12 @@ def getSht4WithLv(sht2WithLv: dict, sht4Hierarchy: list, lv1Name: str) -> dict:
         if not currClass:
             continue
         sht4WithLv.update({currClass[0]:
-                           {currClass[1]: sht2WithLv[lv2]['二级单位成绩']}})
+                               {currClass[1]: sht2WithLv[lv2]['二级单位成绩']}})
         allLv2.append(sht2WithLv[lv2]['二级单位成绩'])
 
     # 对每个部门分类求平均分
     for class_lv2 in sht4WithLv:
-        sht4WithLv[class_lv2].update({"平均分": getMeanScore(sht4WithLv[class_lv2].values())})
+        sht4WithLv[class_lv2].update({"平均分": getMeanScore(list(sht4WithLv[class_lv2].values()))})
     # 对所有二级单位求平均分
     sht4WithLv.update({lv1Name: {"平均分": getMeanScore(allLv2)}})
     return sht4WithLv
@@ -140,6 +149,12 @@ def getSht4Class(lv2, sht4Hie):
 
 
 def getSht4Hierarchy(sht4):
+    """
+    获得Sheet4的层级
+    Get the hierarchy of sheet4
+    :param sht4:
+    :return:
+    """
     raw_depart = sht4.range("A4:B50").value
     clazz = None
     sht4Hie = []
@@ -152,9 +167,51 @@ def getSht4Hierarchy(sht4):
     return sht4Hie
 
 
-def getShtUnitScp(sht, startRow, endRow, unitCol, contentCol, skipCol=None, skipWords=None):
-    """ get unit Span for Sheet2
-    以D列为最小单位，获取每个B列二级指标的单元范围
+def resetUnitSum(sht, sht2UnitScp, weightCol):
+    """
+    重置Sheet2中的单元格权重 = 与其他几个单元格的和
+    reset the weight of sheet2 equal to the sum of other cells
+    :param startRow:
+    :param sht:
+    :param sht2UnitScp: [2, 4], [7, 10]
+    :param weightCol:
+    :return:
+    """
+    for unit in sht2UnitScp:
+        cellSum = 0
+        for edge in range(unit[0], unit[1] + 1):
+            weight = sht.range(f"{weightCol}{edge}").value
+            try:
+                assert type(weight) == float or type(weight) == int
+            except Exception as e:
+                print("weight is not int:", e)
+                weight = 0
+            print(f"\t 获得单元格值:{weightCol}{edge} = {weight} get value of weightCell: ")
+            cellSum += weight
+        print(f"求和放至首格：{weightCol}{unit[0]}={cellSum} - place the sum to the first cell of the unit\n")
+        sht.range(f"{weightCol}{unit[0]}").value = cellSum
+
+
+def getSht2DeleteRowLst(sht2UnitScp: list) -> List[int]:
+    """
+    获取需要删除的行号, 仅保留每个单元内的第一行
+    get the row num of the rows that need to be deleted, only keep the first row in the unit
+    :param sht2UnitScp:
+    :return:
+    """
+    sht2DeleteRowLst = []
+    for eachUnitScp in sht2UnitScp:
+        if len(eachUnitScp) == 1:
+            continue
+        for eachCell in range(eachUnitScp[0] + 1, eachUnitScp[1] + 1):
+            sht2DeleteRowLst.append(eachCell)  # 除了第一行，其他行都需要删除
+    return sht2DeleteRowLst
+
+
+def getShtUnitScp(sht, startRow: int, endRow: int, unitCol: str, contentCol: str,
+                  skipCol=None, skipWords=None) -> List[List[int]]:
+    """
+    以contentCol列为最小单位，获取每个unitCol列二级指标的单元范围
     跳过党廉 and 纪检 part
     :return:  [[0, 0], [1, 2], [3, 3], [4, 5] ...
     """
@@ -165,23 +222,25 @@ def getShtUnitScp(sht, startRow, endRow, unitCol, contentCol, skipCol=None, skip
     tempScp = [-1, -1]
     n = 0
     while n < endRow:
+        row = startRow + n
         if skipCol:
-            part = sht.range(f"{skipCol}{n + startRow}").value
+            part = sht.range(f"{skipCol}{row}").value
             # detect skip words if part equal skip words, thus skip this row
             if part in skipWords:
                 n += 1
                 continue
-        unit = sht.range(f"{unitCol}{n + startRow}").value
-        content = sht.range(f"{contentCol}{n + startRow}").value
-        if not content:
+        unit = sht.range(f"{unitCol}{row}").value
+        content = sht.range(f"{contentCol}{row}").value
+        if not content:  # 若无内容，则结束流程 - end the process if no content
             resultSpan.append(tempScp)
             break
-        if unit:
-            if tempScp != [-1, -1]:
+
+        if unit:  # 若有单元值则是新的单元 - new unit if unit value exist
+            if tempScp != [-1, -1]:  # 如果是新的单元，则将上一个单元的范围加入结果 - add the scope of last unit to result
                 resultSpan.append(tempScp)
-            tempScp = [n, n]
+            tempScp = [n, n]  # 设定新单元的范围 - set the scope of new unit
         else:
-            tempScp[1] = n
+            tempScp[1] = n  # 更新单元的范围 - update the scope of unit
         n += 1
     return resultSpan
 

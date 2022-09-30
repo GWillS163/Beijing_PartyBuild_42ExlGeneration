@@ -23,7 +23,7 @@ class Solution:
         return not stack
 
 if __name__ == '__main__':
-    # test the function
+    # testScripts the function
     s = Solution()
     print(s.isValid("{[]}"), True)
     print(s.isValid("(]"), False)

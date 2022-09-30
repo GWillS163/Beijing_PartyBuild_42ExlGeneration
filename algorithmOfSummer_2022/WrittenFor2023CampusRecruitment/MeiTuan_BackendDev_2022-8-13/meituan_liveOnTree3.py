@@ -112,7 +112,7 @@ def listToBinaryTree(a):
     return root
 
 
-# test
+# testScripts
 def preOrder(root):
     if root:
         print(root.val, end=" ")

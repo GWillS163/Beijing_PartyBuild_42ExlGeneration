@@ -49,7 +49,7 @@ class binaryTree:
 
 
 if __name__ == '__main__':
-    # test the function
+    # testScripts the function
     root = binaryTree(1)
     root.addLeft(2)
     root.addRight(3)
