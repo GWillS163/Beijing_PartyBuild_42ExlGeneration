@@ -10,26 +10,13 @@ import re
 import time
 
 
-def getColLtr(colNum: int) -> str:
-    """0 -> A, 1 -> B, 2 -> C, ..., 26->AA, ..., 311 -> KZ
-    :param colNum: the Column number of the Column Letter of Excel mappings
-    :return the letter of Excel column
-    """
-    if colNum < 26:
-        return chr(colNum + 65)
-    else:
-        return getColLtr(colNum // 26 - 1) + getColLtr(colNum % 26)
-
-
-def paramsCheckExist(surveyExlPath, scrExlPh, savePath, fileYear, fileName):
+def paramsCheckExist(surveyExlPath, scrExlPh, savePath):
     """
     检查输入文件是否存在, 并新建保存路径
     Check Input files are
     :param surveyExlPath:
     :param scrExlPh:
     :param savePath:
-    :param fileYear:
-    :param fileName:
     :return:
     """
     if surveyExlPath == scrExlPh or surveyExlPath == savePath or scrExlPh == savePath:
@@ -41,12 +28,22 @@ def paramsCheckExist(surveyExlPath, scrExlPh, savePath, fileYear, fileName):
     if not os.path.exists(savePath):
         return FileNotFoundError("指定的保存路径不存在")
 
-    summaryFileName = f"{fileYear}_{fileName}.xlsx"
     # make an output dir with current time
-    outputDir = os.path.join(savePath, "output_", datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    outputDir = os.path.join(savePath, "output_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     os.makedirs(outputDir)
 
-    return os.path.join(outputDir, summaryFileName)
+    return outputDir
+
+
+def getColLtr(colNum: int) -> str:
+    """0 -> A, 1 -> B, 2 -> C, ..., 26->AA, ..., 311 -> KZ
+    :param colNum: the Column number of the Column Letter of Excel mappings
+    :return the letter of Excel column
+    """
+    if colNum < 26:
+        return chr(colNum + 65)
+    else:
+        return getColLtr(colNum // 26 - 1) + getColLtr(colNum % 26)
 
 
 def getColNum(colLtr: str) -> int:

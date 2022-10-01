@@ -1,8 +1,6 @@
 #  Author : Github: @GWillS163
-#  Time: $(Date)
+#  Time: 2022-10-1
 
-#  Author : Github: @GWillS163
-#  Time: $(Date)
 # Description: 用于计算数据的模块
 from typing import Dict, Optional, Any, List, Union
 from utils import *
@@ -80,8 +78,14 @@ def getSht1WithLv(scoreWithLv_: dict) -> dict:
 
 
 def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2WgtLst: list) -> dict:
-    """得到Sheet2中的数据
-    对指定单元格的分数进行求和 * 权重  以及新增部分求和"""
+    """
+    得到Sheet2中的数据,对指定单元格的分数进行求和 * 权重  以及新增部分求和
+    :param sht1WithLv: 从sheet1中获取的数据 [1,2,3 ... , 30]
+    :param lv2UnitSpan: 二级指标的单元格范围 [ [1,3], [ 4, 8], [20, 30] ]
+    :param lv1IndexSpan: 一级指标的单元格范围 [ [1, 3], [7, 10] ]
+    :param sht2WgtLst: sheet2中的权重
+    :return: sheet2中的数据{lv2:[1, 2, 3, 4, sum, 5, 6, 7, 8, sum, sum]}
+    """
     # TODO:  本线条排名计算 & 全公司排名计算
     sht2WithLv = {}
     for lv2 in sht1WithLv:
@@ -186,9 +190,9 @@ def resetUnitSum(sht, sht2UnitScp, weightCol):
             except Exception as e:
                 print("weight is not int:", e)
                 weight = 0
-            print(f"\t 获得单元格值:{weightCol}{edge} = {weight} get value of weightCell: ")
+            # print(f"\t 获得单元格值:{weightCol}{edge} = {weight} get value of weightCell: ")
             cellSum += weight
-        print(f"求和放至首格：{weightCol}{unit[0]}={cellSum} - place the sum to the first cell of the unit\n")
+        # print(f"求和放至首格：{weightCol}{unit[0]}={cellSum} - place the sum to the first cell of the unit\n")
         sht.range(f"{weightCol}{unit[0]}").value = cellSum
 
 
@@ -242,6 +246,7 @@ def getShtUnitScp(sht, startRow: int, endRow: int, unitCol: str, contentCol: str
         else:
             tempScp[1] = n  # 更新单元的范围 - update the scope of unit
         n += 1
+    assert resultSpan != [[-1, -1]]  # 断言结果不为空 - assert the result is not empty
     return resultSpan
 
 
@@ -274,18 +279,68 @@ def getDeptUnit(shtModule, scp) -> Dict[Optional[Any], List[Union[int, str, None
     return clsScp
 
 
-def sumLv2IndexUnitScoreByWgt(lv3ScoreLst, lv2Unit, sht2_wgt):
+def sumLv2IndexUnitScoreByWgt(lv3ScoreLst: list, lv2Unit: list, sht2_wgt: list):
     """
     计算核心合并单元的分数
     [0, 1,2,3,4,5,6] & [0,1],[2,4],[6,6] * [0.2, 0.3, 0.5]
-    -> [0+1, 2+4, 6]"""
+    -> [0+1, 2+4, 6]
+    : params lv3ScoreLst: 分数序列（多少个问题就有多少个分数）
+    : params lv2Unit: 分数求和范围（单元格范围）"""
     if not lv3ScoreLst:
         return []
     res = []
-    for unitScp in lv2Unit:
-        if unitScp[0] == unitScp[1]:
-            res.append(lv3ScoreLst[unitScp[0]])
+    for unitScp in lv2Unit: # 添加每个单元的分数
+        if unitScp[0] == unitScp[1]:  # 若单元只有一个单元格，则直接添加分数
+            # TODO: 为什么这里判分的数据长度与单元格不匹配 - why the length of score is not equal to the length of unit
+            # unit=[28, 28], but score list length is 28
+            try:
+                res.append(lv3ScoreLst[unitScp[0]])
+            except IndexError:
+                res.append(0)
             continue
-        res.append(
-            sum(lv3ScoreLst[unitScp[0]:unitScp[1] + 1]))
+        endBound = unitScp[1] + 1
+        if endBound > len(lv3ScoreLst):
+            endBound = len(lv3ScoreLst)
+        res.append(  # 若单元有多个单元格，则求和
+            sum(lv3ScoreLst[unitScp[0]:endBound]))
     return listMultipy(res, sht2_wgt)
+
+
+
+def getSht2WgtLst(sht2_lv2Score) -> list:
+    """
+    获取Sheet2中的权重列表
+    :param sht2_lv2Score:
+    :return:
+    """
+    # 通过权重计算得到sht2WithLv TODO: 把参数抽调上去
+    sht2WgtLstScp = "C3:C" + str(sht2_lv2Score.used_range.last_cell.row)
+    sht2WgtLst = sht2_lv2Score.range(sht2WgtLstScp).value
+    # # pop掉最后一个空值 - pop out the last empty value
+    # for i in range(len(sht2WgtLst) - 1, -1, -1):
+    #     if sht2WgtLst[i] is None:
+    #         sht2WgtLst.pop(i)
+    return sht2WgtLst
+
+
+def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv):
+    """
+    通过sht1的值 与 权重， 计算sheet2的分数。 原数据[1,2..., 30]
+    calculate the score of the sht2_lv2Score
+    :param sht1_lv2Result: sheet1
+    :param sht2_lv2Score: sheet2
+    :param sht1WithLv:
+    :return:
+    """
+    # TODO: 传入的sht1WithLv 长度好像不对，需要排查
+    print("开始计算sheet2数据，准备获取页面值")
+    sht2WgtLst = getSht2WgtLst(sht2_lv2Score)
+    print(f"获得 sht2 权重: {sht2WgtLst}, weight")
+    assert None not in sht2WgtLst, "权重列表中存在空值"
+    lv2UnitSpan = getShtUnitScp(sht1_lv2Result, startRow=3, endRow=40,
+                                unitCol="B", contentCol="D",
+                                skipCol="A", skipWords=["党廉", "纪检"])
+    lv1UnitSpan = getShtUnitScp(sht2_lv2Score, startRow=3, endRow=40,
+                                unitCol="A", contentCol="B")
+    sht2WithLv = getSht2WithLv(sht1WithLv, lv2UnitSpan, lv1UnitSpan, sht2WgtLst)
+    return sht2WithLv

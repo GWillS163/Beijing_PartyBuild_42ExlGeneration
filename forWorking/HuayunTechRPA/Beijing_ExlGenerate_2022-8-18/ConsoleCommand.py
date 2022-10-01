@@ -26,7 +26,7 @@ scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.1
 test = Excel_Operation(surveyExlPh, scoreExlPh,
                        "D:\\", "2022", "PartyBuildingSurvey", "20002100",
                        )
-test.fillData()
+test.fillAllData()
 
 #
 
