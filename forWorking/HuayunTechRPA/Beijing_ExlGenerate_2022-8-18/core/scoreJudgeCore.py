@@ -144,9 +144,9 @@ def judgeRulePreProcess(ruleP, debugPrint):
 
 
 def judgeAnswerGrade(answer, rule, quesType):
-    debugPrint = f"answer: {answer}\n" \
-                 f"rule: {rule}\n" \
-                 f"quesType: {quesType}"
+    debugPrint = f"\tanswer: {answer}\n" \
+                 f"\trule: {rule}\n" \
+                 f"\tquesType: {quesType}"
     # match the number of digital in answer by regex, form is a number+分
     answerInt = re.findall(r"(\d{,3}?)分", answer.strip())
     if answerInt and answerInt[0]:
@@ -173,10 +173,7 @@ def judgeAnswerGrade(answer, rule, quesType):
             score = judgeGradeSingle(answerIntLst, ruleSelect, ruleScore)
         elif "不定项" in quesType:
             # TODO: 2022-9-29 18题15题判断异常
-
             score = judgeGradeMulti(answerIntLst, ruleSelect, ruleScore)
-
         if score != -1:
             return score
-
     return -1

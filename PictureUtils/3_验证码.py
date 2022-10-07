@@ -43,4 +43,4 @@ for t in range(4):
     draw.text((60 * t + 10, 10), rndchar(), font=font, fill=rndcolor2())
 # 模糊:
 image = image.filter(ImageFilter.BLUR)
-image.save('./images/code.jpg', 'jpeg')
+image.save('./images/departCode.jpg', 'jpeg')

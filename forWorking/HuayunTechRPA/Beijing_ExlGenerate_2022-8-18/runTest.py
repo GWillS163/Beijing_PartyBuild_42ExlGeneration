@@ -1,18 +1,19 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
 
-from runPrefix import *
+# from test.runPrefix import *
 
 if __name__ == '__main__':
-    test = Excel_Operation(
-        surveyExlPh, scoreExlPh,
-        savePath, fileYear, fileName,
-        surveyTestShtName, sht1ModuleName, sht2ModuleName, sht3ModuleName, sht4ModuleName,
-        sht1Name, sht2Name, sht3Name, sht4Name
-    )
+    # test = Excel_Operation(
+    #     surveyExlPh, scoreExlPh,
+    #     savePath, fileYear, fileName,
+    #     surveyTestShtName, sht1ModuleName, sht2ModuleName, sht3ModuleName, sht4ModuleName,
+    #     sht1Name, sht2Name, sht3Name, sht4Name
+    # )
+    from core.core import *
+    pprint("test", "dfsdfsd")
 
     # 1. Get readData
-    sht1WithLv = test.getData()
 
     # 2. fill data
     # 2.1 use Mock Data

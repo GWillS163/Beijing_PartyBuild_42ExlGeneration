@@ -10,23 +10,25 @@ import re
 import time
 
 
-def paramsCheckExist(surveyExlPath, scrExlPh, savePath):
+def paramsCheckExist(surveyExlPath, partyAnsExlPh, peopleAnsExlPh, savePath):
     """
     检查输入文件是否存在, 并新建保存路径
     Check Input files are
     :param surveyExlPath:
-    :param scrExlPh:
+    :param partyAnsExlPh:
     :param savePath:
     :return:
     """
-    if surveyExlPath == scrExlPh or surveyExlPath == savePath or scrExlPh == savePath:
-        raise FileExistsError("文件名输出重复,", surveyExlPath, scrExlPh, savePath)
-    if not os.path.exists(surveyExlPath):
-        raise FileNotFoundError("问卷模板文件不存在:")
-    if not os.path.exists(scrExlPh):
-        return FileNotFoundError("分数数据文件不存在:", scrExlPh)
-    if not os.path.exists(savePath):
-        return FileNotFoundError("指定的保存路径不存在")
+    if surveyExlPath == partyAnsExlPh or surveyExlPath == savePath or partyAnsExlPh == savePath:
+        raise FileExistsError("文件名输出重复,", surveyExlPath, partyAnsExlPh, savePath)
+    fileDict = {
+        "问卷模板文件": surveyExlPath,
+        "党员答题文件": partyAnsExlPh,
+        "群众答题文件": peopleAnsExlPh
+    }
+    for name,path in fileDict.items():
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"{name} 不存在:")
 
     # make an output dir with current time
     outputDir = os.path.join(savePath, "output_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -81,11 +83,31 @@ def getCurrentYear(userYear=None):
 
 
 def addRankForSht2():
-    """为第二个sheet添加排名"""
+    """为第二个sheet添加排名
+
+    """
+    # TODO: 2022-10-7 日后在做排名
     pass
 
 
-def readOrgDict(orgSht):
+def getAllOrgCode(orgSht):
+    """返回所有的部门代码"""
+    lastRow = orgSht.used_range.last_cell.row
+    lastCol = orgSht.used_range.last_cell.column
+    values = orgSht.range(f"A2:{getColLtr(lastCol)}{lastRow}").value
+    allOrgCode = {}
+    for row in values:
+        allOrgCode.update({row[0]: {
+            "departCode": row[1],
+            "level": row[2],
+            "line": row[3],
+            "parent": row[4],
+        }})
+    return allOrgCode
+
+
+
+def readLvDict(orgSht):
     """返回结构化的字典，key是部门名，value是部门下的子部门"""
     allOrg = {}
     row = 1
@@ -102,18 +124,22 @@ def readOrgDict(orgSht):
     return allOrg
 
 
-def saveDebugFile(debugScoreLst, pathPre):
+def saveDebugLogIfTrue(debugScoreLst, pathPre, debug, debugPath):
     """
     保存debug文件
     save debug file
+    :param debug:
+    :param debugPath:
     :param debugScoreLst:
     :param pathPre:
     :return:
     """
-    with open(f"{pathPre}_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows([["name", "questTitle", "quesType", "answer", "rule", "score"]])
-        writer.writerows(debugScoreLst)
+    if debug:
+        print(f"正在保存Debug文件, {debugPath}")
+        with open(f"{pathPre}_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows([["name", "questTitle", "quesType", "answer", "rule", "score"]])
+            writer.writerows(debugScoreLst)
 
 
 def paramsCheckSurvey(surveyExl, shtNameList: list):

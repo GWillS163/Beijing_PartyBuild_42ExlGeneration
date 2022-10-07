@@ -1,6 +1,6 @@
 #  Author : Github: @GWillS163
 # Description: 用于 添加数据，增加行列
-from utils import *
+from .utils import *
 
 
 def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
@@ -17,7 +17,7 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     sht2.activate()
     sht2.range(sht2Start).api.Select()
     # Cells(1, 1).Select
-    sht2.api.Paste()
+    sht2.api.Paste()  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel', '类 Worksheet 的 Paste 方法无效', 'xlmain11.chm', 0, -2146827284), None)
 
 
 def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
@@ -39,9 +39,10 @@ def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
     sht2_lv2Score.range(f"{startCol}{row}").value = unitScoreSum
 
 
-def addUnitScpOffsite(unitScp: list, offsite: list = 2) -> list:
+def addUnitScpOffsite(unitScp: list, offsite: int = 2) -> list:
     """
     为unitScp添加偏移量
+    :param offsite:
     :param unitScp:
     :return:
     """
@@ -311,7 +312,7 @@ def getRuleByQuestion(questTitle, surveyTestSht, surveyQuesCol, surveyRuleCol):
             answerRow = row
             break
     if answerRow == -1:
-        print(f"{questTitle} not found in surveyExl")
+        print(f"[not found]: {questTitle}")
         return answerRow, None
     # get rule in the surveyExl App
     # rule = app4Survey1.range(f"{surveyRuleCol}{answerRow}").value

@@ -1,15 +1,4 @@
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-from ..main_xlwings import *
+from core.scoreJudgeCore import *
 
 
 def scoreTest():
@@ -163,33 +152,7 @@ def ScoreJudgeBugFixCase2():
     print(judgeAnswerGrade(ans5, rule4, "不定项选择题"), 10)
 
 
-def main():
-    # if result.xlsx is exist, resultExlPh named as result + time.xlsx
-    resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
-
-    surveyExlPh = "D:\work\考核RPA_Exl\Input\模板1：【测试问卷】标准模板示例（原文件修改）_2022-8-30.xlsx"
-    scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.15答题结果_（模板）_2022-8-30.xlsx"
-
-    test = Excel_Operation(surveyExlPh, scoreExlPh,
-                           "D:\\", "2022", "PartyBuildingSurvey", "20002100",
-                           )
-
-    # staffWithLv = testScripts.getStuffDict()
-    # scoreWithLv = testScripts.getStuffAllScore(staffWithLv)
-    #
-    # print("展示分数：")
-    # for lv2 in staffWithLv:
-    #     for lv3 in staffWithLv[lv2]:
-    #         for sta in staffWithLv[lv2][lv3]:
-    #             print(sta.name, sta.scoreLst)
-
-    # testScripts.addSheet1_surveyResult(stuffLst)
-    # testScripts.addSheet2_scoreResult(scoreWithLv)
-    test.fillAllData()
-
-
 if __name__ == '__main__':
-    # scoreTest()
-    # ScoreJudgeBugFixCase()
-    # ScoreJudgeBugFixCase2()
-    main()
+    scoreTest()
+    ScoreJudgeBugFixCase()
+    ScoreJudgeBugFixCase2()

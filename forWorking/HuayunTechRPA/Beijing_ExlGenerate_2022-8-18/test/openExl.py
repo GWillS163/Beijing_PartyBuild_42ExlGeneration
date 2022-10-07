@@ -11,7 +11,7 @@ app4Survey1 = xw.App(visible=True, add_book=False)
 
 app4Survey1.display_alerts = False
 # surveyExl = app4Survey1.books.open(surveyExlPath)
-surveyExl = app4Survey1.books.add()
+surveyExl = app4Survey1.books.open(surveyExlPath)
 surveyTestSht = surveyExl.sheets[surveyTestShtName]  # "测试问卷"
 
 print(surveyExl.name)

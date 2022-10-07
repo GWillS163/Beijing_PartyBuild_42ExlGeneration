@@ -26965,7 +26965,7 @@ a.branch-name .octicon {
   text-align: right;
 }
 
-/* line 4, node_modules/@primer/css/markdown/code.scss */
+/* line 4, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body code,
 .markdown-body tt {
   padding: 0.2em 0.4em;
@@ -26975,28 +26975,28 @@ a.branch-name .octicon {
   border-radius: 6px;
 }
 
-/* line 14, node_modules/@primer/css/markdown/code.scss */
+/* line 14, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body code br,
 .markdown-body tt br {
   display: none;
 }
 
-/* line 17, node_modules/@primer/css/markdown/code.scss */
+/* line 17, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body del code {
   text-decoration: inherit;
 }
 
-/* line 19, node_modules/@primer/css/markdown/code.scss */
+/* line 19, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body pre {
   word-wrap: normal;
 }
 
-/* line 22, node_modules/@primer/css/markdown/code.scss */
+/* line 22, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body pre code {
   font-size: 100%;
 }
 
-/* line 28, node_modules/@primer/css/markdown/code.scss */
+/* line 28, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body pre > code {
   padding: 0;
   margin: 0;
@@ -27006,18 +27006,18 @@ a.branch-name .octicon {
   border: 0;
 }
 
-/* line 38, node_modules/@primer/css/markdown/code.scss */
+/* line 38, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body .highlight {
   margin-bottom: 16px;
 }
 
-/* line 41, node_modules/@primer/css/markdown/code.scss */
+/* line 41, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body .highlight pre {
   margin-bottom: 0;
   word-break: normal;
 }
 
-/* line 47, node_modules/@primer/css/markdown/code.scss */
+/* line 47, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body .highlight pre,
 .markdown-body pre {
   padding: 16px;
@@ -27028,7 +27028,7 @@ a.branch-name .octicon {
   border-radius: 6px;
 }
 
-/* line 59, node_modules/@primer/css/markdown/code.scss */
+/* line 59, node_modules/@primer/css/markdown/departCode.scss */
 .markdown-body pre code,
 .markdown-body pre tt {
   display: inline;
