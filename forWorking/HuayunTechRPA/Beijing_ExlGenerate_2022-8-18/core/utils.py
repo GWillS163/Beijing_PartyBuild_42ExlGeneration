@@ -106,6 +106,27 @@ def getAllOrgCode(orgSht):
     return allOrgCode
 
 
+def getSumSavePath(savePath, fileYear, fileName):
+    fileYear = getCurrentYear(fileYear)
+    return os.path.join(savePath, f"{fileYear}_{fileName}.xlsx")
+
+
+def getSht2DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> str:
+    """
+    获得需要删除的区间, keywords开始到结束的区间行
+    :param keywords:  关键词列表
+    :param sht2_lv2Score:
+    :return:
+    """
+    row = 3
+    while True:
+        unit = sht2_lv2Score.range(f"A{row}").value
+        if unit in keywords:
+            break
+        row += 1
+    lastRow = sht2_lv2Score.used_range.last_cell.row
+    return f"A{row}:A{lastRow}  "  # f"A32:A52"
+
 
 def readLvDict(orgSht):
     """返回结构化的字典，key是部门名，value是部门下的子部门"""

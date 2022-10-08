@@ -125,9 +125,10 @@ class scoreJudgement:
         self.app4Ans.display_alerts = False
         self.app4Ans.api.CutCopyMode = False
 
-    def getStaffData(self, ansExlPh, isDebug=True):
+    def getStaffData(self, ansExlPh, deBugPath, isDebug=True):
         """
         打开文件，获取答题后分数数据
+        :param deBugPath:
         :param ansExlPh:
         :param isDebug:
         :return:
@@ -140,7 +141,7 @@ class scoreJudgement:
         ansExl.close()
         print("得到员工字典完毕")
         print("开始分数计算")
-        staffWithLv = self.step2FormatScoreWithLv(staffWithLv, isDebug)
+        staffWithLv = self.step2FormatScoreWithLv(staffWithLv, deBugPath,isDebug)
         scoreWithLv = getScoreWithLv(staffWithLv)
         # sht1WithLv = getSht1WithLv(scoreWithLv)
 
