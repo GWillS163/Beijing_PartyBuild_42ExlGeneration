@@ -26,7 +26,7 @@ def paramsCheckExist(surveyExlPath, partyAnsExlPh, peopleAnsExlPh, savePath):
         "党员答题文件": partyAnsExlPh,
         "群众答题文件": peopleAnsExlPh
     }
-    for name,path in fileDict.items():
+    for name, path in fileDict.items():
         if not os.path.exists(path):
             raise FileNotFoundError(f"{name} 不存在:")
 
@@ -59,9 +59,12 @@ def getColNum(colLtr: str) -> int:
         return (ord(colLtr[0]) - 64) * 26 + getColNum(colLtr[1:])
 
 
-def getTltColRange(titleScope):
+def getTltColRange(titleScope, offsite: int = 0):
     """titleScope : A1:B2, in other words is ColA to Col B
-    return iterable Range"""
+    return iterable Range
+    :param titleScope:
+    :param offsite: 偏移是为了在放置sht2值时，包含最后一列(默认不包含下界)
+    """
     titleStart, titleEnd = titleScope.split(":")
     # get the letter of titleStart by regex
     titleStartLetter = re.findall(r"[A-Z]+", titleStart)[0]
@@ -69,6 +72,7 @@ def getTltColRange(titleScope):
     # convert to number
     titleStartLetterNum = getColNum(titleStartLetter)
     titleEndLetterNum = getColNum(titleEndLetter)
+    titleEndLetterNum += offsite
     return range(titleStartLetterNum, titleEndLetterNum)
 
 
@@ -82,12 +86,19 @@ def getCurrentYear(userYear=None):
         return datetime.datetime.now().year
 
 
-def addRankForSht2():
-    """为第二个sheet添加排名
-
+def getLineData(allOrgCode):
     """
-    # TODO: 2022-10-7 日后在做排名
-    pass
+    获取所有的线数据
+    :param allOrgCode:
+    :return: {线条: [部门, 部门, ...]}
+    """
+    lineData = {}
+    for orgName, orgInfo in allOrgCode.items():
+        if orgInfo["line"] not in lineData:
+            lineData.update({orgInfo["line"]: [orgName]})
+            continue
+        lineData[orgInfo["line"]] += [orgName]
+    return lineData
 
 
 def getAllOrgCode(orgSht):
@@ -106,9 +117,9 @@ def getAllOrgCode(orgSht):
     return allOrgCode
 
 
-def getSumSavePath(savePath, fileYear, fileName):
+def getSumSavePathNoSuffix(savePath, fileYear, fileName):
     fileYear = getCurrentYear(fileYear)
-    return os.path.join(savePath, f"{fileYear}_{fileName}.xlsx")
+    return os.path.join(savePath, f"{fileYear}_{fileName}")
 
 
 def getSht2DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> str:
@@ -157,7 +168,7 @@ def saveDebugLogIfTrue(debugScoreLst, pathPre, debug, debugPath):
     """
     if debug:
         print(f"正在保存Debug文件, {debugPath}")
-        with open(f"{pathPre}_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
+        with open(f"{debugPath + pathPre}_{time.strftime('%Y%m%d%H%M%S')}.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows([["name", "questTitle", "quesType", "answer", "rule", "score"]])
             writer.writerows(debugScoreLst)
@@ -179,12 +190,23 @@ def paramsCheckSurvey(surveyExl, shtNameList: list):
     print(f"{surveyExl.name} Sheet 参数检查通过")
 
 
+def chinizeBracket(s: str) -> str:
+    """
+    将英文括号转换为中文括号
+    :param s:
+    :return:
+    """
+    if not s:
+        return s
+    return s.replace("(", "（").replace(")", "）")
+
+
 class Stuff:
     def __init__(self, name, lv2Depart, lv2Code, lv3Depart, lv3Code, ID, answerLst=None):
         self.name = name
-        self.lv2Depart = lv2Depart
+        self.lv2Depart = chinizeBracket(lv2Depart)
         self.lv2Code = lv2Code
-        self.lv3Depart = lv3Depart
+        self.lv3Depart = chinizeBracket(lv3Depart)
         self.lv3Code = lv3Code
         self.ID = ID
         self.answerLst = answerLst
@@ -194,4 +216,4 @@ class Stuff:
         return f"{self.name} {self.lv2Depart} {self.lv2Code} {self.lv3Depart} {self.lv3Code} {self.ID} {self.answerLst}"
 
     def __repr__(self):
-        return f"name:{self.name}, answerLen:{len(self.answerLst)}"  # lv2:{self.lv2Depart[:10]}, lv3:{self.lv3Depart[:10]},
+        return f"{self.name}, answers:{len(self.answerLst)}"  # lv2:{self.lv2Depart[:10]}, lv3:{self.lv3Depart[:10]},

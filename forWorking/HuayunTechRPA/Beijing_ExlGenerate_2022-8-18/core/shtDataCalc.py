@@ -22,8 +22,9 @@ def getMeanScore(stuffScoreLst: list) -> list:
     # get the mean list of stuffScoreLst
     res = []
     for i in range(len(stuffScoreLst[0])):
-        # TODO: IndexError: list index out of range
-        res.append(sum([stu[i] for stu in stuffScoreLst]) / len(stuffScoreLst))
+        validLst = [lst[i] for lst in stuffScoreLst if lst[i] != 0]
+        cellValue = round(sum(validLst) / len(validLst), 2) if validLst else 0
+        res.append(cellValue)
     return res
 
 
@@ -63,18 +64,21 @@ def sht2SumLv1IndexUnitScore(lv3ScoreLst, lv1IndexSpan):
 def getSht1WithLv(scoreWithLv: dict) -> dict:
     """
     每个三级部门求平均，及每个二级部门的平均
-    统计每个二级单位下所有人的分数"""
+    统计每个二级单位下所有人的分数
+    :param scoreWithLv:
+    :return:
+    """
     sht1WithLv = {}
     for lv2 in scoreWithLv:
         allLv3 = []
         sht1WithLv.update({lv2: {}})
 
-        # 每个三级部门求平均
+        # 每个三级部门求平均 - get the mean of each lv3
         for lv3 in scoreWithLv[lv2]:
             allLv3 += scoreWithLv[lv2][lv3]
             sht1WithLv[lv2].update({lv3: getMeanScore(scoreWithLv[lv2][lv3])})
 
-        # 每个二级部门的所有人平均
+        # 每个二级部门的所有人平均 - for each of lv2 unit get the mean score
         allLv3Mean = getMeanScore(allLv3)  #
         sht1WithLv[lv2].update({"二级单位": allLv3Mean})  #
     # 对每个二级单位求平均
@@ -83,17 +87,93 @@ def getSht1WithLv(scoreWithLv: dict) -> dict:
     return sht1WithLv
 
 
-def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2WgtLst: list) -> dict:
+def getLineDepart(lv2, lineData):
+    """
+    得到当前单位所在的线条 的 所有单位
+    :param lv2:
+    :param lineData:
+    :return:
+    """
+    for line in lineData:
+        if lv2 in lineData[line]:
+            return lineData[line]
+    return []
+
+
+def getLineRank(currentUnitScore, lv2, lineData, sht2WithLv, lv2ScoreName="二级单位成绩") -> list:
+    """
+    计算当前单位在同一线条的排名
+    :param lv2ScoreName:
+    :param lv2:
+    :param sht2WithLv:
+    :param lineData:
+    :param currentUnitScore: 当前单位分数
+    :return: 排名
+    """
+    # current Line score
+
+    lineDeparts = getLineDepart(lv2, lineData)  # 得到当前单位所在的线条 的 所有单位
+    lineScoreLst = []  # 得到当前单位所在的线条 的 所有单位的分数
+    for depart in lineDeparts:
+        if depart not in sht2WithLv:
+            continue
+        lineScoreLst.append(sht2WithLv[depart][lv2ScoreName])
+    return getListOrderByList(currentUnitScore, lineScoreLst)
+
+
+def getCompanyRank(currentUnitScore, sht2WithLv, lv2ScoreName="二级单位成绩") -> list:
+    """
+    计算当前单位在同一公司的排名： 取出所有二级单位的分数，排序，返回当前单位的排名
+    :param lv2ScoreName:
+    :param currentUnitScore: [4.2, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 0.0, 0.0, 4.60]
+    :param sht2WithLv:
+    :return:
+    """
+    # CurrentUnitScore 和 下面的对象（所有二级单位的分数）比较
+    scoreInLine = [sht2WithLv[lv2][lv2ScoreName] for lv2 in sht2WithLv]
+    return getListOrderByList(currentUnitScore, scoreInLine)
+
+
+def getRidOfDuplicate(allScore):
+    """
+    算法实现，去除重复列表
+    :param allScore: [1,1,2,3,3]
+    :return: [1,2,3]
+    """
+    return list(set(allScore))
+
+
+def getListOrderByList(currentScore: list, allScore: list) -> list:
+    """
+    得到currentScore在allScore中每个数字的排名
+    :param currentScore: [...]
+    :param allScore: [[...], [...], [...]]
+    :return: currentScore 在 allScore 中每个数字的排名
+    """
+    if not allScore:
+        return []
+    # 去除在allScore里完全相同的分数
+    orderRes = [-1 for _ in range(len(allScore[0]))]
+    for num in range(len(currentScore)):  # 对每个分数求排名，放入结果
+        # 拿到每个单位的第num个分数 - getNumScore(scoreInLine[num], num)
+        currNums = [lv2Depart[num] for lv2Depart in allScore]
+        currNumsNoDup = getRidOfDuplicate(currNums)
+        currNumsNoDup.sort(reverse=True)  # Desc
+        # TODO： 2022-10-8 IndexError: list assignment index out of range
+        orderRes[num] = currNumsNoDup.index(currentScore[num]) + 1
+    return orderRes
+
+
+def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2WgtLst: list, lineData: dict) -> dict:
     """
     得到Sheet2中的数据,对指定单元格的分数进行求和 * 权重  以及新增部分求和
+    :param lineData:
     :param sht1WithLv: 从sheet1中获取的数据 [1,2,3 ... , 30]
     :param lv2UnitSpan: 二级指标的单元格范围 [ [1,3], [ 4, 8], [20, 30] ]
     :param lv1IndexSpan: 一级指标的单元格范围 [ [1, 3], [7, 10] ]
     :param sht2WgtLst: sheet2中的权重
     :return: sheet2中的数据{lv2:[1, 2, 3, 4, sum, 5, 6, 7, 8, sum, sum]}
     """
-    # TODO:  本线条排名计算 & 全公司排名计算
-    # TODO: 第一个单元合计之后，生成的位置应该在靠前一个 2022-10-7
     sht2WithLv = {}
     for lv2 in sht1WithLv:
         sht2WithLv.update({lv2: {}})
@@ -102,12 +182,15 @@ def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2W
             lv2IndexUnitScore = sumLv2IndexUnitScoreByWgt(sht1WithLv[lv2][lv3], lv2UnitSpan, sht2WgtLst)
             lv1IndexUnitScore = sht2SumLv1IndexUnitScore(lv2IndexUnitScore, lv1IndexSpan)
             sht2WithLv[lv2].update({title: lv1IndexUnitScore})
+
+    sht2WithLv = addRankForSht2(sht2WithLv, lineData)
     return sht2WithLv
 
 
 def getSht3WithLv(sht1WithLv: dict, lv1Name: str) -> dict:
     """得到sheet3中的数据
-    从Sheet1 中获取所有二级单位的分数"""
+    从Sheet1 中获取所有二级单位的分数
+    """
     sht3WithLv = {}
     allLv2 = []
     for lv2 in sht1WithLv:
@@ -116,6 +199,105 @@ def getSht3WithLv(sht1WithLv: dict, lv1Name: str) -> dict:
     allLv2Mean = getMeanScore(allLv2)
     sht3WithLv.update({lv1Name: allLv2Mean})
     return sht3WithLv
+
+
+def addRankForSht4(sht4WithLv):
+    """
+    一类分公司	城区一分公司 // 统计此
+                城区二分公司 // 统计此
+                城区三分公司 // 统计此
+                平均分
+    :param sht4WithLv:
+    :return:
+    """
+
+    def getLineScores(lineDepart):
+        """
+        得到线条内的所有分数
+        :param lineDepart:
+        :return:
+        """
+        res = list(lineDepart[lv2][-1] for lv2 in lineDepart.keys() if lv2 != "平均分")
+        return getRidOfDuplicate(res)
+
+    def getLineRanks(shtWithLv):
+        """
+        获得添加线条内排名
+        :param shtWithLv:
+        :return: {lv2: 3rd, v: 2nd}
+        """
+        ranksLine = {}
+        for lne in shtWithLv:
+            ranksLine[lne] = {}
+            lv2All = getLineScores(shtWithLv[lne])
+            lv2All.sort(reverse=True)
+            for lv2 in shtWithLv[lne]:
+                if lv2 == "平均分":
+                    continue
+                if lv2 not in ranksLine[lne]:
+                    ranksLine[lne].update({lv2: None})
+                assert shtWithLv[lne][lv2][-1] in lv2All
+                lineRank = lv2All.index(shtWithLv[lne][lv2][-1]) + 1
+                # lineDepart[lv2].append(lineRank)  # [原分数, +排名]
+                ranksLine[lne].update({lv2: lineRank})  # {原分数: +排名}
+        return ranksLine
+
+    def getAllDepartScore(shtWithLv):
+        """
+        获取所有二级部门的分数 - get all lv2 depart score
+        :param shtWithLv:
+        :return:
+        """
+        allDepartScore = []
+        for lne in shtWithLv:
+            for l2 in shtWithLv[lne]:
+                if l2 == "平均分":
+                    continue
+                allDepartScore.append(shtWithLv[lne][l2][-1])
+        return getRidOfDuplicate(allDepartScore)
+
+    def getAllDepartRank(shtWithLv) -> dict:
+        """
+        获取所有二级部门的排名 - get all lv2 depart rank
+        :return:
+        """
+        allDepartsRank = {}
+        allDepart = getAllDepartScore(shtWithLv)
+        allDepart.sort(reverse=True)
+        for lne in shtWithLv:
+            if lne not in allDepartsRank:
+                allDepartsRank.update({lne: {}})
+            for lv2 in shtWithLv[lne]:
+                if lv2 == "平均分":
+                    continue
+                if lv2 not in allDepartsRank[lne]:
+                    # 添加排序后的排名 - add rank after sort
+                    whichRank = allDepart.index(shtWithLv[lne][lv2][-1]) + 1
+                    allDepartsRank[lne].update({lv2: whichRank})
+
+        return allDepartsRank
+
+    def addRanks2Sht4(sht4WithLvs, ranksSht4WithLvs, allDepartRanks):
+        """
+        将全公司排名添加到sht4WithLv中
+        :param sht4WithLvs:
+        :param ranksSht4WithLvs:
+        :param allDepartRanks:
+        :return:
+        """
+        for lne in sht4WithLvs:
+            for lv2 in sht4WithLvs[lne]:
+                if lv2 == "平均分":
+                    continue
+                sht4WithLvs[lne][lv2].append(ranksSht4WithLvs[lne][lv2])
+                sht4WithLvs[lne][lv2].append(allDepartRanks[lne][lv2])
+        return sht4WithLvs
+
+    # 每个线条内添加排名
+    ranksSht4WithLv = getLineRanks(sht4WithLv)
+    # 全公司排名 - the rank of all departments
+    allDepartRank = getAllDepartRank(sht4WithLv)
+    return addRanks2Sht4(sht4WithLv, ranksSht4WithLv, allDepartRank)
 
 
 def getSht4WithLv(sht2WithLv: dict, sht4Hierarchy: list, lv1Name: str) -> dict:
@@ -148,7 +330,8 @@ def getSht4WithLv(sht2WithLv: dict, sht4Hierarchy: list, lv1Name: str) -> dict:
         sht4WithLv[class_lv2].update({"平均分": getMeanScore(list(sht4WithLv[class_lv2].values()))})
     # 对所有二级单位求平均分
     sht4WithLv.update({lv1Name: {"平均分": getMeanScore(allLv2)}})
-    return sht4WithLv
+    sht4WithLvRank = addRankForSht4(sht4WithLv)
+    return sht4WithLvRank
 
 
 def getSht4Class(lv2, sht4Hie):
@@ -182,7 +365,6 @@ def resetUnitSum(sht, sht2UnitScp, weightCol):
     """
     重置Sheet2中的单元格权重 = 与其他几个单元格的和
     reset the weight of sheet2 equal to the sum of other cells
-    :param startRow:
     :param sht:
     :param sht2UnitScp: [2, 4], [7, 10]
     :param weightCol:
@@ -276,6 +458,7 @@ def getDeptUnit(shtModule, scp) -> Dict[Optional[Any], List[Union[int, str, None
         if cls:
             if lastLtr:
                 clazz[1] = lastLtr
+                assert clazz[0] != -1  # 不能有未找到的值
                 clsScp.update({lastClz: clazz})
                 clazz = [-1, -1]
             clazz[0] = colLtr
@@ -298,7 +481,6 @@ def sumLv2IndexUnitScoreByWgt(lv3ScoreLst: list, lv2Unit: list, sht2_wgt: list):
     res = []
     for unitScp in lv2Unit:  # 添加每个单元的分数
         if unitScp[0] == unitScp[1]:  # 若单元只有一个单元格，则直接添加分数
-            # TODO: 为什么这里判分的数据长度与单元格不匹配 - why the length of score is not equal to the length of unit
             # unit=[28, 28], but score list length is 28
             try:
                 res.append(lv3ScoreLst[unitScp[0]])
@@ -329,10 +511,11 @@ def getSht2WgtLst(sht2_lv2Score) -> list:
     return sht2WgtLst
 
 
-def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp):
+def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp, departCode):
     """
     通过sht1的值 与 权重， 计算sheet2的分数。 原数据[1,2..., 30]
     calculate the score of the sht2_lv2Score
+    :param departCode:
     :param lv1UnitScp:
     :param sht1_lv2Result: sheet1
     :param sht2_lv2Score: sheet2
@@ -348,5 +531,23 @@ def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp
                                 skipCol="A", skipWords=["党廉", "纪检"])
     # lv1UnitSpan = getShtUnitScp(sht2_lv2Score, startRow=3, endRow=40,
     #                             unitCol="A", contentCol="B")
-    sht2WithLv = getSht2WithLv(sht1WithLv, lv2UnitSpan, lv1UnitScp, sht2WgtLst)
+
+    lineData = getLineData(departCode)
+    sht2WithLv = getSht2WithLv(sht1WithLv, lv2UnitSpan, lv1UnitScp, sht2WgtLst, lineData)
+    return sht2WithLv
+
+
+def addRankForSht2(sht2WithLv, lineData, lv2ScoreName="二级单位成绩"):
+    """为第二个sheet添加本线条排名，全公司排名
+
+    """
+
+    # TODO:  本线条排名计算 & 全公司排名计算
+    for lv2 in sht2WithLv:
+        # 拿出每个二级单位成绩，去线条里比较
+        currentUnitScore = sht2WithLv[lv2][lv2ScoreName]
+        # 比较
+        sht2WithLv[lv2].update({"本线条排名": getLineRank(currentUnitScore, lv2, lineData, sht2WithLv, lv2ScoreName)})
+        sht2WithLv[lv2].update({"全公司排名": getCompanyRank(currentUnitScore, sht2WithLv, lv2ScoreName)})
+
     return sht2WithLv

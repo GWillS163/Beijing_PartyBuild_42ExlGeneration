@@ -12,12 +12,12 @@ import xlwings as xw
 def combineMain(questLst, peopleQuestLst, sht1People, partyQuestLst, sht1Party):
     """
     依照统计表的答案顺序，将问卷的答案按照顺序排列，没有则为0.
-    :param questLst:
-    :param peopleQuestLst:
-    :param sht1People:
-    :param partyQuestLst:
-    :param sht1Party:
-    :return:
+    :param questLst: 统计结果表的答案顺序
+    :param peopleQuestLst: 问题顺序
+    :param sht1People: sht1PeopleData
+    :param partyQuestLst:  问题顺序
+    :param sht1Party:sht1PartyData
+    :return: sht1WithLv
     """
     # 得到答案的顺序 - get order of answer
     partyOrderLst = []
@@ -29,7 +29,7 @@ def combineMain(questLst, peopleQuestLst, sht1People, partyQuestLst, sht1Party):
         peopleIndex = getMappingIndex(quest, peopleQuestLst)
         peopleOrderLst.append(partyIndex)
         partyOrderLst.append(peopleIndex)
-    sortDebug(partyOrderLst, peopleOrderLst, partyQuestLst, peopleQuestLst, debug=True)
+    sortDebug(questLst, peopleOrderLst, partyOrderLst, partyQuestLst, peopleQuestLst, debug=True)
 
     # 依照统计表的答案顺序，将sht1WithLv整形
     sht1WithLvPeople = reformatSht1WithLv(sht1People, peopleOrderLst)
@@ -55,18 +55,24 @@ def reformatSht1WithLv(sht1WithLv, orderLst):
 
 
 def lastCombination(sht1WithLvPeople, sht1WithLvParty):
+    """
+    将people 与 party 结合起来。
+    :param sht1WithLvPeople:
+    :param sht1WithLvParty:
+    :return:
+    """
     sumSht1WithLv = sht1WithLvPeople.copy()
     # combine party to people
-    for lv2 in sht1WithLvParty.keys():  # 对于每一个党员的二级单位进行处理
+    for lv2 in sht1WithLvParty.keys():  # 对于每一个党员的二级单位进行处理 - for each lv2 of party
         if lv2 not in sumSht1WithLv.keys():
             sumSht1WithLv.update({lv2: sht1WithLvParty[lv2]})
             continue
-        # 如果有相同lv2
-        for lv3 in sht1WithLvParty[lv2].keys():  # 对于每一个党员的三级单位进行处理
+        # 如果有相同lv2 - if lv2 is same
+        for lv3 in sht1WithLvParty[lv2].keys():  # 对于每一个党员的三级单位进行处理 - for each lv3 of party
             if lv3 not in sumSht1WithLv[lv2].keys():
                 sumSht1WithLv[lv2].update({lv3: sht1WithLvParty[lv2][lv3]})
                 continue
-            # 如果有相同lv3
+            # 如果有相同lv3 -  if lv3 is same
             sumSht1WithLv[lv2][lv3] = sumSht1WithLv[lv2][lv3] + sht1WithLvParty[lv2][lv3]
     return sumSht1WithLv
 
@@ -85,9 +91,11 @@ def getMappingIndex(question, questLst):
     return index
 
 
-def sortDebug(partyOrderLst, peopleOrderLst, partyQuestLst, peopleQuestLst, debug=True):
+def sortDebug(questLst, peopleOrderLst, partyOrderLst, partyQuestLst, peopleQuestLst, debug=True):
     """
     用于调试排序
+    题目:19 11.【不定项选择题		19.【单选题】您所
+    :param questLst:
     :param partyQuestLst:
     :param peopleQuestLst:
     :param debug:
@@ -95,20 +103,23 @@ def sortDebug(partyOrderLst, peopleOrderLst, partyQuestLst, peopleQuestLst, debu
     :param peopleOrderLst:
     :return:
     """
-    print("party - people对应问题顺序:")
+    if not debug:
+        return
+    notFoundSign = "—————未找到—————"
+    print("\t\tparty \t people对应问题顺序:")
     n = 0
-    for index1, index2 in zip(partyOrderLst, peopleOrderLst):
-        n += 1
-        outputStr = ["", ""]
+    for index1, index2 in zip(peopleOrderLst, partyOrderLst):
         if index1 == -1:
-            outputStr[0] = "未找到"
+            peopleStr = notFoundSign
         else:
-            outputStr[0] = partyQuestLst[index1][:10]
+            peopleStr = partyQuestLst[index1]#[:10]
         if index2 == -1:
-            outputStr[1] = "未找到"
+            partyStr = notFoundSign
         else:
-            outputStr[1] = peopleQuestLst[index2][:10]
-        print(f"题目:{n}", "\t\t".join(outputStr))
+            partyStr = peopleQuestLst[index2]#[:10]
+        questAns = questLst[n] if "不计分" not in questLst[n] else questLst[n][:6] + "(不计分)"
+        print(f"题目{n}:\t{questAns:<20}\t{peopleStr:<20}\t{partyStr:<20}")
+        n += 1
 
 
 class scoreJudgement:
@@ -125,10 +136,11 @@ class scoreJudgement:
         self.app4Ans.display_alerts = False
         self.app4Ans.api.CutCopyMode = False
 
-    def getStaffData(self, ansExlPh, deBugPath, isDebug=True):
+    def getStaffData(self, ansExlPh, fileName, deBugPath, isDebug=True):
         """
         打开文件，获取答题后分数数据
         :param deBugPath:
+        :param fileName:
         :param ansExlPh:
         :param isDebug:
         :return:
@@ -136,48 +148,43 @@ class scoreJudgement:
         # 问卷表打开 - open the survey sheet
         ansExl = self.app4Ans.books.open(ansExlPh)
         staffWithLv, self.scoreExlTitle = step1StaffDict(ansExl.sheets[0], self.otherTitle)
-        print("staffWithLv:", staffWithLv)
-        print("scoreExlTitle:", self.scoreExlTitle)
         ansExl.close()
-        print("得到员工字典完毕")
-        print("开始分数计算")
-        staffWithLv = self.step2FormatScoreWithLv(staffWithLv, deBugPath,isDebug)
+        # print("得到员工字典完毕")
+        # print("开始分数计算")
+        staffWithLv = self.step2FormatScoreWithLv(staffWithLv, deBugPath, fileName, isDebug)
         scoreWithLv = getScoreWithLv(staffWithLv)
         # sht1WithLv = getSht1WithLv(scoreWithLv)
-
-        print("展示分数：")
-        # print(stuffWithLv) all score
         for lv2 in staffWithLv:
             for lv3 in staffWithLv[lv2]:
                 for stu in staffWithLv[lv2][lv3]:
                     print(stu.name, stu.scoreLst)
-
         return self.scoreExlTitle.answerLst, scoreWithLv  # sht1WithLv
 
-    def step2FormatScoreWithLv(self, staffScoreWithLv, debugPath, debug=True):
+    def step2FormatScoreWithLv(self, staffWithLv, debugPath, fileName, debug=True):
         """
         给每个人打分 得到stuffScoreWithLv Dict:
         :param debugPath:
-        :param staffScoreWithLv:
+        :param staffWithLv:
+        :param fileName:
         :param debug: whether save to debug csv
         :return:{lv2Depart: {lv3Depart: [stuff1, stuff2, ...]}}
         """
-        debugScoreLst = []  # store [name, questTitle, answer, rule, score] for debug
+        debugScoreAllLst = []  # store [name, questTitle, answer, rule, score] for debug
         lv2Num = 0
-        for lv2 in staffScoreWithLv:
+        for lv2 in staffWithLv:
             lv2Num += 1
             lv3Num = 0
-            for lv3 in staffScoreWithLv[lv2]:
+            for lv3 in staffWithLv[lv2]:
                 lv3Num += 1
-                print(f"Lv2:[{lv2Num}/{len(staffScoreWithLv.keys())}] "
-                      f"Lv3:[{lv3Num}/{len(staffScoreWithLv[lv2].keys())}]", end=" ")
-                stuffScoreList, debugScoreLst = self.calcEachStaff(staffScoreWithLv[lv2][lv3])
-                staffScoreWithLv[lv2][lv3] = stuffScoreList
-                debugScoreLst += debugScoreLst
-                print("")
+                print(f"Lv2:[{lv2Num}/{len(staffWithLv.keys())}] "
+                      f"Lv3:[{lv3Num}/{len(staffWithLv[lv2].keys())}]", end="\r")
+                stuffScoreList, debugScoreLst = self.calcEachStaff(staffWithLv[lv2][lv3])
+                staffWithLv[lv2][lv3] = stuffScoreList
+                debugScoreAllLst += debugScoreLst
+        print("")
         # if debug on, save the debugScoreLst to csv with current time
-        saveDebugLogIfTrue(debugScoreLst, "Debug", debug, debugPath)
-        return staffScoreWithLv
+        saveDebugLogIfTrue(debugScoreAllLst, fileName, debug, debugPath)
+        return staffWithLv
 
     def calcEachStaff(self, lv3StaffScoreList):
         """
@@ -218,23 +225,42 @@ class scoreJudgement:
         self.app4Ans.quit()
 
 
+def isLineValid(i: list) -> bool:
+    """
+    判断是否是有效行
+    :param i:
+    :return:
+    """
+    # if i is all None, skip
+    if not i:
+        return False
+
+    for j in i:  # 但凡有一个不是None，就不是空行 - if any one is not None, it is not empty
+        if j:
+            return True
+    return False
+
+
 def step1StaffDict(ansSht, otherTitle):
     """
-    从答案表得到数据
+    动态获取最大使用范围，从答案表得到数据
     get the stuff list from the surveySht
     :return: stuffLst
     """
     staffWithLv = {}
-    scoreWithLv = {}
+    # scoreWithLv = {}
     # use all range to the value
     lastRow = ansSht.used_range.last_cell.row
     lastCol = ansSht.used_range.last_cell.column
     content = ansSht.range((1, 1), (lastRow, lastCol)).value
     # content = ansSht.range(departmentScope).value
     scoreExlTitle = ""
+    addedSort = 0
     for i in content:
-        if not all(i):
+        if not isLineValid(i):
+            print("空行无效注意：", i)
             continue
+
         if i[0] == "序号":
             scoreExlTitle = Stuff(i[1], i[2], i[3], i[4], i[5], i[6], i[9:])
             continue
@@ -242,14 +268,17 @@ def step1StaffDict(ansSht, otherTitle):
         # print(stu)
         if stu.lv2Depart not in staffWithLv:
             staffWithLv[stu.lv2Depart] = {}
-            scoreWithLv[stu.lv2Depart] = {}
+            # scoreWithLv[stu.lv2Depart] = {}
         if not stu.lv3Depart:
             stu.lv3Depart = otherTitle
         if stu.lv3Depart not in staffWithLv[stu.lv2Depart]:
             staffWithLv[stu.lv2Depart][stu.lv3Depart] = []
-            scoreWithLv[stu.lv2Depart][stu.lv3Depart] = []
+            # scoreWithLv[stu.lv2Depart][stu.lv3Depart] = []
         staffWithLv[stu.lv2Depart][stu.lv3Depart].append(stu)
-        scoreWithLv[stu.lv2Depart][stu.lv3Depart].append(stu.scoreLst)
+        addedSort += 1
+        # scoreWithLv[stu.lv2Depart][stu.lv3Depart].append(stu.scoreLst)
+    flag = f"step1StaffDict: 原数据{lastRow}行，有效数据{addedSort}行" if lastRow - 1 != addedSort else "step1StaffDict: 有效数量 全部匹配"
+    print(flag)
     return staffWithLv, scoreExlTitle  # , scoreWithLv
 
 

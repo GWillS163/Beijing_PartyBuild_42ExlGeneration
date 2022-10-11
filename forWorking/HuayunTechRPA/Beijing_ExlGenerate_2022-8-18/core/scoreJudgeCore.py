@@ -172,7 +172,6 @@ def judgeAnswerGrade(answer, rule, quesType):
         if "单项" in quesType or "单选" in quesType:
             score = judgeGradeSingle(answerIntLst, ruleSelect, ruleScore)
         elif "不定项" in quesType:
-            # TODO: 2022-9-29 18题15题判断异常
             score = judgeGradeMulti(answerIntLst, ruleSelect, ruleScore)
         if score != -1:
             return score

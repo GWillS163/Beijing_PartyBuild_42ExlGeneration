@@ -10,6 +10,13 @@ from .shtDataCalc import *
 import xlwings as xw
 
 
+def printSht1Data(typ, staffWithLv, scoreExlTitle):
+    print("staffWithLv:", staffWithLv)
+    print("scoreExlTitle:", scoreExlTitle)
+    print(f"{typ}分数：")
+    # print(stuffWithLv) all score
+
+
 class Excel_Operation:
     surveyQuesTypeCol: str
     surveyRuleCol: str
@@ -30,11 +37,13 @@ class Excel_Operation:
         """
 
         # Saving File Settings
+        self.sht1DeptTltRan = "G:KZ"  # sht1的部门范围列
+        self.sht2DeptTltRan = "D:P"  # sht2的部门范围列
         self.orgShtName = '行政机构组织'
         self.otherTitle = "其他人员"
         self.lv2AvgTitle = "二级单位成绩"
         self.savePath = paramsCheckExist(surveyExlPath, partyAnsExlPh, peopleAnsExlPh, savePath)
-        self.sumSavePath = getSumSavePath(self.savePath, fileYear, fileName)
+        self.sumSavePathNoSuffix = getSumSavePathNoSuffix(self.savePath, fileYear, fileName)  # TODO: 修改文件名
 
         # self.surveyExlPath = surveyExlPath
         # self.scoreExlPath = scrExlPh
@@ -221,8 +230,8 @@ class Excel_Operation:
         # 从汇总表 获取 部门分类区间
         sht1Sum = self.resultExl.sheets[self.sht1NameRes]
         sht2Sum = self.resultExl.sheets[self.sht2NameGrade]
-        deptUnitSht1 = getDeptUnit(sht1Sum, "F:KZ")
-        deptUnitSht2 = getDeptUnit(sht2Sum, "D:P")
+        deptUnitSht1 = getDeptUnit(sht1Sum, self.sht1DeptTltRan)  # "F:KZ"
+        deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan)  # "D:P"
 
         print("新建部门文件 - create new excel with xlwings")
         app4Depart = xw.App(visible=True, add_book=False)
@@ -253,15 +262,15 @@ class Excel_Operation:
                 sht2BorderL, sht2BorderR = addOneDptData(sht2Sum, deptUnitSht2[deptName], self.deptCopyHeight,
                                                          sht2Dept, self.sht2TitleCopyTo)
 
-            # Save Excel
-            # TODO: 保存文件名需要 加上部门Code
+            # Save Excel 保存文件名需要 加上部门Code
             deptCode = ""
             try:
                 deptCode = departCode[deptName]['departCode']
             except:
                 pass
-            departFilePath = self.sumSavePath.replace(".xlsx", f"_{deptName}_{deptCode}.xlsx")
-            print(f"{n} - 正在保存:[{deptName}] ({departFilePath})")
+            # departFilePath = self.sumSavePath.replace(".xlsx", f"_{deptName}_{deptCode}.xlsx")
+            departFilePath = self.sumSavePathNoSuffix + f"_{deptCode}.xlsx"
+            print(f"{n:2} - 正在保存:[{deptCode}] - {deptName}")
             deptResultExl.save(departFilePath)
 
             # Method1: Clear the sheet for next loop dynamically
@@ -302,10 +311,11 @@ class Excel_Operation:
         print("sheet4 无数据页面生成完成")
         return [sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv2UnitScp]
 
-    def fillAllData(self, sht1WithLv, shtList):
+    def fillAllData(self, sht1WithLv, shtList, departCode:dict ):
         """
         使用sheet1的数据计算出来接下来的数据，然后填充到excel中, 获得汇总的1 个文件
         use sheet1 data to calculate the data of the next sheet, then fill it into the excel
+        :param departCode: 
         :param shtList: sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear 
         :param sht1WithLv: 
         :return: 
@@ -319,38 +329,43 @@ class Excel_Operation:
         # two Methods to set data
         # sht1PlcScoreByPD(self.sht1Module, sht1_lv2Result, staffWithLv, self.sht1MdlTltScope, dataStart)
         print("sht1WithLv：", sht1WithLv)
-        sht1SetData(sht1_lv2Result, sht1WithLv, getTltColRange(self.sht1DataColRan))
+        sht1SetData(sht1_lv2Result, sht1WithLv, getTltColRange(self.sht1DataColRan, 1))
 
         print("sheet2 填充数据 - Operation")
-        sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp)
+        sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp, departCode)
         print("sht2WithLv：", sht2WithLv)
-        sht2SetData(sht2_lv2Score, sht2WithLv, getTltColRange(self.sht2IndexCopyFromSvyScp))
+        sht2SetData(sht2_lv2Score, sht2WithLv, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
 
         print("sheet3 填充数据 - Operation")
         sht3WithLv = getSht3WithLv(sht1WithLv, self.lv1Name)
         print("sht3WithLv：", sht3WithLv)
         sht3SetData(sht3_ResYear, sht3WithLv, self.sht3DataColRan, self.lv1Name)
 
-        print("sheet4 填充数据 - Operation")
+        print("sheet4 填充横向数据 - Operation")
         sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
-        # TODO: Data 这里好像有问题，没有合计，没有总计
         sht4WithLv = getSht4WithLv(sht2WithLv, sht4Hie, self.lv1Name)
         print("sht4WithLv：", sht4WithLv)
         sht4SetData(sht4_surveyGradeByYear, sht4WithLv, self.sht4DataRowRan, self.lv1Name)
 
-        print(f"汇总表将保存在：{self.sumSavePath}")
-        self.resultExl.save(self.sumSavePath)
+        savePath = self.sumSavePathNoSuffix + "_200000000.xlsx"
+        print(f"汇总表将保存在：{savePath}")
+        self.resultExl.save(savePath)
 
     def getFirstSht1WithLvData(self, partyAnsExlPh, peopleAnsExlPh):
         """
         获取第一个sheet1的数据，用于计算其他sheet的数据， 使用后关闭答案
         :return:
         """
+        print("开始获取第一个sheet1的数据")
         debugPath = os.path.join(self.savePath, "分数判断记录")
         judges = scoreJudgement(self.sht0TestSurvey, self.otherTitle)
-        questionLst = self.sht0TestSurvey.range("E3:E32").value
-        peopleQuesLst, sht1PeopleData = judges.getStaffData(peopleAnsExlPh, debugPath, True)
-        partyQuesLst, sht1PartyData = judges.getStaffData(partyAnsExlPh, debugPath, True)
+        questionLst = self.sht0TestSurvey.range("E3:E32").value  # TODO: 参数抽调
+        print("开始获取群众数据 - Start to get people data")
+        peopleQuesLst, sht1PeopleData = judges.getStaffData(peopleAnsExlPh, "群众", debugPath, True)
+        printSht1Data("群众", sht1PeopleData, peopleQuesLst)
+        print("开始获取党员数据 - Start to get party data")
+        partyQuesLst, sht1PartyData = judges.getStaffData(partyAnsExlPh, "党员", debugPath, True)
+        printSht1Data("党员", sht1PartyData, partyQuesLst)
         sht1WithLvCombine = combineMain(questionLst, peopleQuesLst, sht1PeopleData, partyQuesLst, sht1PartyData)
         judges.close()
         return sht1WithLvCombine
@@ -361,7 +376,6 @@ class Excel_Operation:
         run the whole process, the main function.
         :return:
         """
-
         print("Start to run the process...")
         departCode = getAllOrgCode(self.surveyExl.sheets(self.orgShtName))
         print("获得所有部门代码：", departCode)
@@ -373,13 +387,13 @@ class Excel_Operation:
         print("\n二、填充边栏 - II. fill the sidebar")
         shtList = self.placeBar()
         print("\n三、填充数据、生成汇总文件 - III. fill data, generate summary file")
-        self.fillAllData(sht1WithLvCombine, shtList)
+        self.fillAllData(sht1WithLvCombine, shtList, departCode)
         self.surveyExl.close()
         self.app4Survey1.quit()
-        print("\n四、生成各部门文件 - IV. generate each department file")
-        self.genDepartFile(departCode)
-        self.resultExl.close()
-        self.app4Result3.quit()
+        # print("\n四、生成各部门文件 - IV. generate each department file")
+        # self.genDepartFile(departCode)
+        # self.resultExl.close()
+        # self.app4Result3.quit()
         print(f"\n全部完成！已保存至:{self.savePath}")
 
     def autoSetMdlData(self):
@@ -400,9 +414,10 @@ class Excel_Operation:
         # Sheet2:
         self.sht2TitleCopyFromMdlScp = "D1:L2"
         self.sht2TitleCopyTo = "D1"
+        # self.sht2TitleDataColScp = "D1:L2"
         self.sht2IndexCopyFromSvyScp = "A1:K32"
         self.sht2IndexCopyTo = "A1"
-        self.sht2WgtLstScp = "C3:C13"
+        # self.sht2WgtLstScp = "C3:C13"
         # self.sht2DeleteCopiedRowScp = "A32:A55"  # 要删除的部分需要动态获取 党廉&纪检 的区间
         self.sht2DeleteCopiedColScp = "C1:J1"
         # Sheet3:

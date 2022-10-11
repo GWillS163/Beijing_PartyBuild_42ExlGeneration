@@ -154,9 +154,10 @@ def sht1SetData(sht1_lv2Result, sht1WithLv, titleRan):
             options(transpose=True).value = sht1WithLv[lv2][lv3]
 
 
-def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan):
+def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
     """
     Sheet2 中，纵向放入 每个lv3部门的数据(如果有) * 该lv3部门的权重
+    :param titleRan: Range
     :param sht2_lv2Score:
     :param sht2WithLv:
     :return:
@@ -175,7 +176,8 @@ def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan):
         if lv3 not in sht2WithLv[lv2]:
             continue
         # print(f"{lv2} & {lv3} exists")
-        sht2_lv2Score.range(f"{colLtr}3").options(transpose=True).value = sht2WithLv[lv2][lv3]
+        sht2_lv2Score.range(f"{colLtr}3")\
+            .options(transpose=True).value = sht2WithLv[lv2][lv3]
 
 
 def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
@@ -225,7 +227,7 @@ def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
             continue
         if not lv2 in sht4WithLv[lv1]:
             continue
-        # place score list vertically
+        # place score list vertically,  row object of type 'int' has no len()
         sht4.range(f"C{row}").value = sht4WithLv[lv1][lv2]
 
 
@@ -249,6 +251,7 @@ def addOneDptData(shtSum, scpLst, height,
     shtCopyTo(shtSum, sht1DataZone,
               shtDept, shtTitleTo)
     return sht1BorderL, sht1BorderR
+
 
 def getUnitScpRowList(sht, unitCol: str, baseCol: str, keywords: list) -> list:
     """

@@ -7,7 +7,8 @@
 # sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18")
 from core.main import Excel_Operation
 
-surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\【测试问卷】模板更改2022-9-14_权重.xlsx"
+# surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\【测试问卷】模板更改2022-9-14_权重.xlsx"
+surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\【测试问卷】模板更改2022-10-9_权重.xlsx"
 partyAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
 peopleAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--群众.xlsx"
 moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18\origin\【RPA模板表(" \
@@ -42,4 +43,6 @@ if __name__ == '__main__':
     # shtList = test.placeBar()
     # test.fillAllData(sht1WithLv, shtList)
     # test.genDepartFile()
-
+    # TODO: 平均分是 非零求平均, 二级单位是所有人单独求平均
+    # TODO: 二级单位 都不为空
+    # TODO：党群纪检部 sht1
