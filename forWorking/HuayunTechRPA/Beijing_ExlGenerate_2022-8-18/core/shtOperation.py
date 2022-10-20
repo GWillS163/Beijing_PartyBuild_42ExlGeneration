@@ -13,11 +13,47 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     :param sht2Start:
     :return:
     """
+    # sht1.activate()
+    if not sht1.range(sht1Scp).value:
+        print(f"\t{sht1.name} - {sht1Scp} - 无数据")
+        return
     sht1.range(sht1Scp).api.Copy()
+    # judge whether clipboard is empty
     sht2.activate()
     sht2.range(sht2Start).api.Select()
-    # Cells(1, 1).Select
-    sht2.api.Paste()  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel', '类 Worksheet 的 Paste 方法无效', 'xlmain11.chm', 0, -2146827284), None)
+    sht2.api.Paste()  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel',
+    # '类 Worksheet 的 Paste 方法无效', 'xlmain11.chm', 0, -2146827284), None)
+
+    # if sht2.range(sht2Start).api.PasteSpecial(Paste=-4163):
+    #     print("   复制成功")
+    # else:
+    #     print("   复制失败")
+
+    # sht1.activate()
+
+def getLastColCell(sht):
+    """
+    获取标题行的起始单元格
+    :param sht:
+    :return:
+    """
+    print("   自动获取标题粘贴起点 - ",
+          end="")
+    lastColNum = sht.used_range.last_cell.column  # 这个封装好了， 稳定
+    # lastColNum = sht.range("A1").end("right").column  # 这个遇到空值会失效， 这个直观
+    shtTitleCopyTo = f"{getColLtr(lastColNum)}1"
+    print(f"{sht.name} - {shtTitleCopyTo}")
+    return shtTitleCopyTo
+
+
+def getLastRowCell(sht):
+    print("   自动获取sht4标题粘贴起点 -",
+          end="")
+    lastRowNum = sht.used_range.last_cell.row  # 这个封装好了， 稳定
+    # lastColNum = sht.range("A1").end("right").column  # 这个遇到空值会失效， 这个直观
+    lastCell = f"A{lastRowNum + 1}"
+    print(f"[{sht.name}] - {lastCell}")
+    return lastCell
 
 
 def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
@@ -42,15 +78,11 @@ def sht2AddSummary(sht2_lv2Score, sht2WithLv, row, startCol, endCol):
 def addUnitScpOffsite(unitScp: list, offsite: int = 2) -> list:
     """
     为unitScp添加偏移量
-    :param offsite:
+    :param offsite: 默认2 是包含标题行
     :param unitScp:
     :return:
     """
     return [[node + offsite for node in unit] for unit in unitScp]
-    # unitScpOffsite = []
-    # for unit in unitScp:
-    #     unitScpOffsite.append([unit[0] + 1, unit[1] + 1])
-    # return unitScpOffsite
 
 
 def sht2OprAddSummaryRows(sht2_lv2Score, unitScp: list):
@@ -137,7 +169,9 @@ def sht1SetData(sht1_lv2Result, sht1WithLv, titleRan):
     :return: None
     """
     lv2 = None
+    n = 0
     for colNum in titleRan:
+        n += 1
         colLtr = getColLtr(colNum)
         curLv2 = sht1_lv2Result.range(f"{colLtr}1").value
         lv3 = sht1_lv2Result.range(f"{colLtr}2").value
@@ -150,8 +184,10 @@ def sht1SetData(sht1_lv2Result, sht1WithLv, titleRan):
         if lv3 not in sht1WithLv[lv2]:
             continue
         # print(f"{lv2} & {lv3} exists")
+        print(f"Sheet1 Progress:{n}/{len(titleRan)} - [{lv2}-{lv3}]")  # , end="\r")
         sht1_lv2Result.range(f"{colLtr}3"). \
             options(transpose=True).value = sht1WithLv[lv2][lv3]
+    print("Sheet1 Progress:100% - [Done]")
 
 
 def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
@@ -163,7 +199,9 @@ def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
     :return:
     """
     lv2 = None
+    n = 0
     for colNum in titleRan:
+        n += 1
         colLtr = getColLtr(colNum)
         curLv2 = sht2_lv2Score.range(f"{colLtr}1").value
         lv3 = sht2_lv2Score.range(f"{colLtr}2").value
@@ -176,8 +214,10 @@ def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
         if lv3 not in sht2WithLv[lv2]:
             continue
         # print(f"{lv2} & {lv3} exists")
-        sht2_lv2Score.range(f"{colLtr}3")\
+        print(f"Sheet2 Progress:{n}/{len(titleRan)} - [{lv2}-{lv3}]")  # , end="\r")
+        sht2_lv2Score.range(f"{colLtr}3") \
             .options(transpose=True).value = sht2WithLv[lv2][lv3]
+    print("Sheet2 Progress:100% - [Done]")
 
 
 def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
@@ -192,7 +232,9 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
     """
     titleRan = getTltColRange(titleRange)
     # lv2Clz = None
+    n = 0
     for col in titleRan:
+        n += 1
         colLtr = getColLtr(col)
         lv2UpCurr = sht3.range(f"{colLtr}1").value
         lv2 = sht3.range(f"{colLtr}2").value
@@ -203,7 +245,9 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
         if not lv2 in sht3WithLv:
             continue
         # place score list vertically
+        print(f"Sheet3 Progress:{n}/{len(titleRan)} - [{lv2UpCurr}-{lv2}]")  # , end="\r")
         sht3.range(f"{colLtr}3").options(transpose=True).value = sht3WithLv[lv2]
+    print("Sheet3 Progress:100% - [Done]")
 
 
 def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
@@ -229,6 +273,7 @@ def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
             continue
         # place score list vertically,  row object of type 'int' has no len()
         sht4.range(f"C{row}").value = sht4WithLv[lv1][lv2]
+    print("Sheet4 Progress:100% - [Done]")
 
 
 def addOneDptData(shtSum, scpLst, height,
@@ -294,13 +339,14 @@ def dltOneDptData(shtDept, shtTitleCopyTo, deptCopyHeight, shtBorderL, shtBorder
     shtDept.range(f"{shtTitleCopyTo}:{borderEnd}{deptCopyHeight}").api.Delete()
 
 
-def getRuleByQuestion(questTitle, surveyTestSht, surveyQuesCol, surveyRuleCol):
+def getRuleByQuestionSurvey(name, questTitle, surveyTestSht, surveyQuesCol, surveyRuleCol):
     """
 
     # 找到所属规则 - locate which row is rule by questTitle in scoreExl
+    :param name:
     :param questTitle:
     :param surveyTestSht:
-    :param surveyQuesCol:
+    :param surveyQuesCol: 问题所在列
     :param surveyRuleCol:
     :return:
     """
@@ -315,9 +361,27 @@ def getRuleByQuestion(questTitle, surveyTestSht, surveyQuesCol, surveyRuleCol):
             answerRow = row
             break
     if answerRow == -1:
-        print(f"[not found]: {questTitle}")
+        print(f"{name} [not found]: {questTitle}")
         return answerRow, None
     # get rule in the surveyExl App
-    # rule = app4Survey1.range(f"{surveyRuleCol}{answerRow}").value
     rule = surveyTestSht.range(f"{surveyRuleCol}{answerRow}").value
     return answerRow, rule
+
+
+def getRuleByQuestionList( questTitle, surveyDataList):
+    """
+    读取到内存加速判断
+    # 找到所属规则 - locate which row is rule by questTitle in scoreExl
+    :param questTitle:
+    :param surveyDataList:
+    :return:
+    """
+    for row in surveyDataList:
+        # find the cell in the surveyExl by Question column
+        ruleQuest = row[0]  # 问题所在列
+        if not ruleQuest:
+            continue
+        if ruleQuest.strip() in questTitle:
+            return row[1], row[2]  # 类型， 规则
+
+    return None, None

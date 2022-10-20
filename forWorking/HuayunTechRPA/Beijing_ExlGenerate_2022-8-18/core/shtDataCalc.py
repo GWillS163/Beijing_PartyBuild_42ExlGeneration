@@ -10,27 +10,56 @@ from .utils import *
 
 
 def listMultipy(lst1, lst2):
-    return list(map(lambda x, y: round(x * y, 2), lst1, lst2))
+    """
+    需要考虑None类型 计算会报错
+    :param lst1:
+    :param lst2:
+    :return:
+    """
+    # 2022-10-20更新, 考虑了None值
+    res = []
+    for x, y in zip(lst1, lst2):
+        if x is None or y is None:
+            res.append(None)
+            continue
+        res.append(round(x * y, 2))
+    return res
+    # 旧版本，无None值
+    # return list(map(lambda x, y: round(x * y, 2), lst1, lst2))
+
+
+def recordNoneValuePosition(lst):
+    """
+    记录下None值的位置
+    :param lst:
+    :return:
+    """
+    return [i for i in range(len(lst)) if lst(i) is None]
 
 
 def getMeanScore(stuffScoreLst: list) -> list:
     """
     [[],[]] -> []
+    个别None忽略，全为None则为None
     return allLV3.mean() list"""
     if not stuffScoreLst:
         return []
     # get the mean list of stuffScoreLst
     res = []
     for i in range(len(stuffScoreLst[0])):
-        validLst = [lst[i] for lst in stuffScoreLst if lst[i] != 0]
-        cellValue = round(sum(validLst) / len(validLst), 2) if validLst else 0
+        # get the mean of each index, exclude the None value
+        validLst = [lst[i] for lst in stuffScoreLst if lst[i] is not None]
+        cellValue = round(sumWithNone(validLst) / len(validLst), 2) if validLst else None
         res.append(cellValue)
     return res
 
 
 def getScoreWithLv(staffWithLv):
-    """ 从staffWithLv中得到scoreWithLv
-    data PreProcess, get the score of each department"""
+    """
+    从staffWithLv中得到scoreWithLv
+    data PreProcess, get the score of each department
+    :param staffWithLv: {lv2:{lv3: [[staff], [staff], ...]}}
+    :return scoreWithLv: {lv2:{lv3: [[score], [score], ...]}}"""
     scoreWithLv = {}
     for lv2 in staffWithLv:
         scoreWithLv[lv2] = {}
@@ -56,14 +85,15 @@ def sht2SumLv1IndexUnitScore(lv3ScoreLst, lv1IndexSpan):
             continue
         unitLst = lv3ScoreLst[unitScp[0]:unitScp[1] + 1]
         res += unitLst  # 加入原单元分数部分
-        res.append(sum(unitLst))  # 加入本单元求和
-    res.append(sum(lv3ScoreLst))
+        res.append(sumWithNone(unitLst))  # 加入本单元求和
+    res.append(sumWithNone(lv3ScoreLst))
     return res  # 插入总分数
 
 
 def getSht1WithLv(scoreWithLv: dict) -> dict:
     """
-    每个三级部门求平均，及每个二级部门的平均
+    每个三级部门求平均，及每个二级部门的平均，
+    更新：含个别None忽略，全为None则为None
     统计每个二级单位下所有人的分数
     :param scoreWithLv:
     :return:
@@ -153,25 +183,23 @@ def getListOrderByList(currentScore: list, allScore: list) -> list:
     if not allScore:
         return []
     # 去除在allScore里完全相同的分数
-    orderRes = [-1 for _ in range(len(allScore[0]))]
+    orderRes = [-100 for _ in range(len(allScore[0]))]
     for num in range(len(currentScore)):  # 对每个分数求排名，放入结果
         # 拿到每个单位的第num个分数 - getNumScore(scoreInLine[num], num)
         currNums = [lv2Depart[num] for lv2Depart in allScore]
         currNumsNoDup = getRidOfDuplicate(currNums)
         currNumsNoDup.sort(reverse=True)  # Desc
-        # TODO： 2022-10-8 IndexError: list assignment index out of range
         orderRes[num] = currNumsNoDup.index(currentScore[num]) + 1
     return orderRes
 
 
-def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2WgtLst: list, lineData: dict) -> dict:
+def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, lineData: dict) -> dict:
     """
     得到Sheet2中的数据,对指定单元格的分数进行求和 * 权重  以及新增部分求和
     :param lineData:
     :param sht1WithLv: 从sheet1中获取的数据 [1,2,3 ... , 30]
     :param lv2UnitSpan: 二级指标的单元格范围 [ [1,3], [ 4, 8], [20, 30] ]
     :param lv1IndexSpan: 一级指标的单元格范围 [ [1, 3], [7, 10] ]
-    :param sht2WgtLst: sheet2中的权重
     :return: sheet2中的数据{lv2:[1, 2, 3, 4, sum, 5, 6, 7, 8, sum, sum]}
     """
     sht2WithLv = {}
@@ -179,7 +207,7 @@ def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, sht2W
         sht2WithLv.update({lv2: {}})
         for lv3 in sht1WithLv[lv2]:
             title = lv3 if lv3 != "二级单位" else "二级单位成绩"  # Rename
-            lv2IndexUnitScore = sumLv2IndexUnitScoreByWgt(sht1WithLv[lv2][lv3], lv2UnitSpan, sht2WgtLst)
+            lv2IndexUnitScore = sumLv2IndexUnitScore(sht1WithLv[lv2][lv3], lv2UnitSpan)
             lv1IndexUnitScore = sht2SumLv1IndexUnitScore(lv2IndexUnitScore, lv1IndexSpan)
             sht2WithLv[lv2].update({title: lv1IndexUnitScore})
 
@@ -321,17 +349,19 @@ def getSht4WithLv(sht2WithLv: dict, sht4Hierarchy: list, lv1Name: str) -> dict:
         # print(currClass)
         if not currClass:
             continue
-        sht4WithLv.update({currClass[0]:
-                               {currClass[1]: sht2WithLv[lv2]['二级单位成绩']}})
+        if not currClass[0] in sht4WithLv:
+            sht4WithLv.update({currClass[0]: {}})
+        if not currClass[1] in sht4WithLv[currClass[0]]:
+            sht4WithLv[currClass[0]].update({currClass[1]:
+                                                 sht2WithLv[lv2]['二级单位成绩']})
         allLv2.append(sht2WithLv[lv2]['二级单位成绩'])
 
     # 对每个部门分类求平均分
     for class_lv2 in sht4WithLv:
         sht4WithLv[class_lv2].update({"平均分": getMeanScore(list(sht4WithLv[class_lv2].values()))})
-    # 对所有二级单位求平均分
+    # 北京公司平均分： 对所有二级单位求平均分
     sht4WithLv.update({lv1Name: {"平均分": getMeanScore(allLv2)}})
-    sht4WithLvRank = addRankForSht4(sht4WithLv)
-    return sht4WithLvRank
+    return addRankForSht4(sht4WithLv)
 
 
 def getSht4Class(lv2, sht4Hie):
@@ -439,12 +469,16 @@ def getShtUnitScp(sht, startRow: int, endRow: int, unitCol: str, contentCol: str
     return resultSpan
 
 
-def getDeptUnit(shtModule, scp) -> Dict[Optional[Any], List[Union[int, str, None]]]:
+def getDeptUnit(shtModule, scp, offsite: int) -> Dict[Optional[Any], List[Union[int, str, None]]]:
     """
     获取分类的区间，以便裁剪sheet
-    {分类: ["F", "P"], ... }"""
+    {分类: ["F", "P"], ... }
+    :param shtModule:
+    :param scp:
+    :param offsite:
+    :return:"""
     clsScp = {}
-    titleRan = getTltColRange(scp)
+    titleRan = getTltColRange(scp, offsite)
     clazz = [-1, -1]
     lastClz = None
     lastLtr = None
@@ -469,13 +503,15 @@ def getDeptUnit(shtModule, scp) -> Dict[Optional[Any], List[Union[int, str, None
     return clsScp
 
 
-def sumLv2IndexUnitScoreByWgt(lv3ScoreLst: list, lv2Unit: list, sht2_wgt: list):
+def sumLv2IndexUnitScore(lv3ScoreLst: list, lv2Unit: list):
     """
     计算核心合并单元的分数
     [0, 1,2,3,4,5,6] & [0,1],[2,4],[6,6] * [0.2, 0.3, 0.5]
     -> [0+1, 2+4, 6]
     : params lv3ScoreLst: 分数序列（多少个问题就有多少个分数）
-    : params lv2Unit: 分数求和范围（单元格范围）"""
+    : params lv2Unit: 分数求和范围（单元格范围）
+    : return
+    """
     if not lv3ScoreLst:
         return []
     res = []
@@ -491,8 +527,17 @@ def sumLv2IndexUnitScoreByWgt(lv3ScoreLst: list, lv2Unit: list, sht2_wgt: list):
         if endBound > len(lv3ScoreLst):
             endBound = len(lv3ScoreLst)
         res.append(  # 若单元有多个单元格，则求和
-            sum(lv3ScoreLst[unitScp[0]:endBound]))
-    return listMultipy(res, sht2_wgt)
+            sumWithNone(lv3ScoreLst[unitScp[0]:endBound]))
+    return res
+
+
+def sumWithNone(lst):
+    """
+    处理包含None值的 列表求和
+    :param lst:
+    :return:
+    """
+    return sum([validNum for validNum in lst if validNum is not None])
 
 
 def getSht2WgtLst(sht2_lv2Score) -> list:
@@ -501,7 +546,7 @@ def getSht2WgtLst(sht2_lv2Score) -> list:
     :param sht2_lv2Score:
     :return:
     """
-    # 通过权重计算得到sht2WithLv TODO: 把参数抽调上去
+    # 通过权重计算得到sht2WithLv
     sht2WgtLstScp = "C3:C" + str(sht2_lv2Score.used_range.last_cell.row)
     sht2WgtLst = sht2_lv2Score.range(sht2WgtLstScp).value
     # # pop掉最后一个空值 - pop out the last empty value
@@ -511,29 +556,65 @@ def getSht2WgtLst(sht2_lv2Score) -> list:
     return sht2WgtLst
 
 
-def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht1WithLv, lv1UnitScp, departCode):
+def getSht1WgtLst(sht1_lv2Result, sht0_survey, questionCol: str) -> List[int]:
+    """
+    获取Sheet1中的权重列表
+    :param sht0_survey:
+    :param questionCol: 问题所在列：K
+    :param sht1_lv2Result:
+    :return:
+    """
+    # 通过权重计算得到sht2WithLv
+    sht1WgtLstScp = f"{questionCol}3:{questionCol}" + str(sht1_lv2Result.used_range.last_cell.row)
+    sht0WgtLst = sht0_survey.range(sht1WgtLstScp).value
+    # # pop掉最后一个空值 - pop out the last empty value
+    # for i in range(len(sht2WgtLst) - 1, -1, -1):
+    #     if sht2WgtLst[i] is None:
+    #         sht2WgtLst.pop(i)
+    return sht0WgtLst
+
+
+def addSht1Wgt2Sht1WithLv(sht1WithLv, sht1WgtLst: List[int]):
+    """
+    为每个lv2 下的lv3 添加权重
+    :param sht1WithLv:  {lv2: {lv3: [score]}}
+    :param sht1WgtLst:  [wgt, wgt, ...]
+    :return:
+    """
+    # sht1WithLvWgt = {}
+    for lv2 in sht1WithLv:
+        for lv3 in sht1WithLv[lv2]:
+            sht1WithLv[lv2][lv3] = listMultipy(sht1WithLv[lv2][lv3], sht1WgtLst)
+    return sht1WithLv
+
+
+def clacSheet2_surveyGrade(sht1_lv2Result, sht0_survey, questionCol, sht1WithLv, lv1UnitScp, departCode):
     """
     通过sht1的值 与 权重， 计算sheet2的分数。 原数据[1,2..., 30]
     calculate the score of the sht2_lv2Score
+    :param sht0_survey:
     :param departCode:
     :param lv1UnitScp:
     :param sht1_lv2Result: sheet1
-    :param sht2_lv2Score: sheet2
+    :param questionCol: 问题所在列：K
     :param sht1WithLv:
     :return:
     """
+
     print("开始计算sheet2数据，准备获取页面值")
-    sht2WgtLst = getSht2WgtLst(sht2_lv2Score)
-    print(f"获得 sht2 权重: {sht2WgtLst}, weight")
-    assert None not in sht2WgtLst, "权重列表中存在空值"
+    # sht2WgtLst = getSht2WgtLst(sht2_lv2Score)
+    # print(f"获得 sht2 权重: {sht2WgtLst}, weight")
+    sht1WgtLst = getSht1WgtLst(sht1_lv2Result, sht0_survey, questionCol)
+    print(f"获得 sht1 权重: {sht1WgtLst}, weight")
+    assert None not in sht1WgtLst, "权重列表中存在空值"
+    sht1WithLvWgt = addSht1Wgt2Sht1WithLv(sht1WithLv, sht1WgtLst)
     lv2UnitSpan = getShtUnitScp(sht1_lv2Result, startRow=3, endRow=40,
                                 unitCol="B", contentCol="D",
                                 skipCol="A", skipWords=["党廉", "纪检"])
     # lv1UnitSpan = getShtUnitScp(sht2_lv2Score, startRow=3, endRow=40,
     #                             unitCol="A", contentCol="B")
-
     lineData = getLineData(departCode)
-    sht2WithLv = getSht2WithLv(sht1WithLv, lv2UnitSpan, lv1UnitScp, sht2WgtLst, lineData)
+    sht2WithLv = getSht2WithLv(sht1WithLvWgt, lv2UnitSpan, lv1UnitScp, lineData)
     return sht2WithLv
 
 
@@ -542,7 +623,6 @@ def addRankForSht2(sht2WithLv, lineData, lv2ScoreName="二级单位成绩"):
 
     """
 
-    # TODO:  本线条排名计算 & 全公司排名计算
     for lv2 in sht2WithLv:
         # 拿出每个二级单位成绩，去线条里比较
         currentUnitScore = sht2WithLv[lv2][lv2ScoreName]

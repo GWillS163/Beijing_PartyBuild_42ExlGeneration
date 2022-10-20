@@ -11,7 +11,7 @@ def judgeGradeSingle(answerIntLst, ruleSelect, ruleScore):
     if len(answerIntLst) != 1:
         # print("识别到的数字不止一个，请检查！", end="")
         # print(debugPrint)
-        return -1
+        return -100
 
     # get the number in ruleSelect by regex
     numOfRuleDig = re.search(r"(\d{,3})([-|或])?(\d{,3})?", ruleSelect).groups()
@@ -26,7 +26,7 @@ def judgeGradeSingle(answerIntLst, ruleSelect, ruleScore):
             if int(numOfRuleDig[0]) <= answerIntLst[0] <= int(numOfRuleDig[2]):
                 return ruleScore
 
-    return -1
+    return -100
 
 
 def judgeGradeMulti(answerIntLst, ruleSelect, ruleScore):
@@ -58,28 +58,28 @@ def judgeGradeMulti(answerIntLst, ruleSelect, ruleScore):
         ruleSelect).groups()
     sglSlt, dblSlts, permitNumStart, permitNumEnd, isAllSlt, isAnySlt, permitQtyMin, permitQtyMax, isMore = scopeRan
 
-    # judge each score if is not in permit scope
+    # 判断是否在允许范围 judge each score if is not in permit scope
     if not permitNumStart and not permitNumEnd:
         permitNumStart, permitNumEnd = 1, 99  # default
+        validAns = answerIntLst
     else:
+        validAns = []
         permitScp = range(int(permitNumStart), int(permitNumEnd) + 1)
-        isInScope = False
         for num in answerIntLst:
             if int(num) in permitScp:
-                isInScope = True
-        if not isInScope:
-            return -1
+                validAns.append(num)
+        validAns = list(set(validAns))
 
     # e.g. 单个选择的规则: 4
-    if sglSlt and len(answerIntLst) == 1:
-        if answerIntLst[0] == int(sglSlt):
+    if sglSlt and len(validAns) == 1:
+        if validAns[0] == int(sglSlt):
             return ruleScore
 
     # 单个任选: e.g. 4或5, 一旦选了就给分
     elif dblSlts:
         permitNumLst = list(map(int, dblSlts.split("或")))
         # check some element of the answerIntLst is duplicate with permitNumLst
-        for num in answerIntLst:
+        for num in validAns:
             if int(num) in permitNumLst:
                 return ruleScore
 
@@ -89,9 +89,9 @@ def judgeGradeMulti(answerIntLst, ruleSelect, ruleScore):
         # return "多选 或部分全选"
         if not permitNumStart and permitNumEnd:
             print("全部选择与部分全选，需要指定范围！")
-            return -1
+            return -100
         # 选择的数量与范围一致
-        if len(answerIntLst) == len(range(int(permitNumStart), int(permitNumEnd) + 1)):
+        if len(validAns) == len(range(int(permitNumStart), int(permitNumEnd) + 1)):
             return ruleScore
 
     # 局部  (默认1-99)
@@ -107,14 +107,14 @@ def judgeGradeMulti(answerIntLst, ruleSelect, ruleScore):
 
         # 任选n个及以上
         if isMore:
-            if len(answerIntLst) >= int(permitQtyMin):
+            if len(validAns) >= int(permitQtyMin):
                 return ruleScore
         # 任选n(-m)个
         else:
-            if int(permitQtyMin) <= len(answerIntLst) <= int(permitQtyMax):
+            if int(permitQtyMin) <= len(validAns) <= int(permitQtyMax):
                 return ruleScore
 
-    return -1
+    return -100
 
 
 def judgeRulePreProcess(ruleP, debugPrint):
@@ -125,9 +125,9 @@ def judgeRulePreProcess(ruleP, debugPrint):
             break
 
     if not (ruleL and ruleR):
-        print("没有找到匹配的分隔字符，将处理为-1分 :")
+        print("没有找到匹配的分隔字符，将处理为-100分 :")
         print(debugPrint)
-        return -1, -1
+        return -100, -100
 
     # get permit scope
     if "分" in ruleL:
@@ -137,8 +137,8 @@ def judgeRulePreProcess(ruleP, debugPrint):
         ruleScore = int(ruleR.strip("分"))
         ruleSelect = ruleL
     else:
-        print("无法分辨哪边是分数! 将处理为-1分 :", debugPrint)
-        return -1, -1
+        print("无法分辨哪边是分数! 将处理为-100分 :", debugPrint)
+        return -100, -100
 
     return ruleScore, ruleSelect
 
@@ -147,7 +147,7 @@ def judgeAnswerGrade(answer, rule, quesType):
     debugPrint = f"\tanswer: {answer}\n" \
                  f"\trule: {rule}\n" \
                  f"\tquesType: {quesType}"
-    # match the number of digital in answer by regex, form is a number+分
+    # 如果能直接匹配分数则返回 - match the number of digital in answer by regex, form is a number+分
     answerInt = re.findall(r"(\d{,3}?)分", answer.strip())
     if answerInt and answerInt[0]:
         return int(answerInt[0])
@@ -158,21 +158,22 @@ def judgeAnswerGrade(answer, rule, quesType):
         return int(re.search(r"\d{0,3}", answer.strip()).group(0))
 
     # get RuleL & RuleR and verify
-    answerIntLst = list(map(int, re.findall(r"(\d{,3})\..*?", answer)))
+    answerIntLstDup = list(map(int, re.findall(r"(\d{,3})\..*?", answer)))
+    answerIntLst = list(set(answerIntLstDup))
     # check each rule to answer
     for ruleP in rule.split("\n"):
         if not ruleP:
             continue
         ruleScore, ruleSelect = judgeRulePreProcess(ruleP, debugPrint)
-        if ruleScore == -1 or ruleSelect == -1:
+        if ruleScore == -100 or ruleSelect == -100:
             continue
 
         # get answer scope with different type of ques
-        score = -1
+        score = -100
         if "单项" in quesType or "单选" in quesType:
             score = judgeGradeSingle(answerIntLst, ruleSelect, ruleScore)
         elif "不定项" in quesType:
             score = judgeGradeMulti(answerIntLst, ruleSelect, ruleScore)
-        if score != -1:
+        if score != -100:
             return score
-    return -1
+    return -100

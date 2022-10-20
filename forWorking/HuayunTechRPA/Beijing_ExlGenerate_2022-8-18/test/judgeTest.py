@@ -1,15 +1,9 @@
 #  Author : Github: @GWillS163
 #  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-
-#  Author : Github: @GWillS163
-#  Time: $(Date)
-from ..main import *
+import sys
+sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18\core")
+# 爆红但可用
+from scoreJudgeCore import *
 
 
 def scoreTest():
@@ -162,34 +156,110 @@ def ScoreJudgeBugFixCase2():
     print(judgeAnswerGrade(ans4, rule4, "不定项选择题"), 10)
     print(judgeAnswerGrade(ans5, rule4, "不定项选择题"), 10)
 
+def october13Fix():
+    octoAns = "4.党组织引领，发挥“岗区队”作用，支部品牌显性化、体系化落实落地," \
+              "3.量服务品牌、5G高价值业务品牌和5G高标准保障品牌 " \
+              "3.做到了分职责筑品牌，由书记牵头制定方案、委员集体研究商讨、党员大会宣贯部署、“岗区队”先锋党员明细职责、团青群众协同落实," \
+              "1.做到了分层级筑品牌，优化了二级部门品牌、创建了三级党支部品牌," \
+              "2.做到了分类别筑品牌，筑成了5G高效能网络品牌、5G高质量服务品牌、5G高价值业务品牌和5G高标准保障品牌 "
+    octoRule = """10分：1-4全选
+    8分：1-4任选3个
+    6分：1-4任选2个
+    4分：1-4任选1个
+    0分：5"""
+    print(judgeAnswerGrade(octoAns, octoRule, "不定项选择题"), 10)
+
+    ans2 = "10.以上都没有【互斥】"
+    rule2 = """10分：1-9任选8个及以上10分
+6分：1-9任选5-7个6分
+4分：1-9任选3-4个4分
+2分：1-9任选1-2个2分
+0分：0-1个
+0分：10"""
+    print(judgeAnswerGrade(ans2, rule2, "不定项选择题"), 0)
+
+    ans3 = "3.量服务品牌、5G高价值业务品牌和5G高标准保障品牌 " \
+           "3.做到了分职责筑品牌，由书记牵头制定方案、委员集体研究商讨、党员大会宣贯部署、“岗区队”先锋党员明细职责、团青群众协同落实," \
+           "4.党组织引领，发挥“岗区队”作用，支部品牌显性化、体系化落实落地," \
+           "2.做到了分类别筑品牌，筑成了5G高效能网络品牌、5G高质量服务品牌、5G高价值业务品牌和5G高标准保障品牌," \
+           "1.做到了分层级筑品牌，优化了二级部门品牌、创建了三级党支部品牌 "
+    rule3 ="""10分：1-4全选
+8分：1-4任选3个
+6分：1-4任选2个
+4分：1-4任选1个
+0分：5"""
+    print(judgeAnswerGrade(ans3, rule3, "不定项选择题"), 10)
+
+    ans4= "8.“五G党建赋能5G争先”," \
+          "7.集团公司及北京公司重要精神、理念、活动等宣传," \
+          "11.“无声的闪光者”先进典型宣传"
+    rule4 = """10分：1-6任选3个及以上
+9分：1-6任选2个
+8分：1-6任选1个
+6分：7
+0分：8"""
+    print(judgeAnswerGrade(ans4, rule4, "不定项选择题"), 999)
+
+    ans5 = "11.“无声的闪光者”先进典型宣传,9.“做好窗口”"
+    rule5 = """10分：1-6任选3个及以上
+9分：1-6任选2个
+8分：1-6任选1个
+6分：7
+0分：8"""
+    print(judgeAnswerGrade(ans5, rule5, "不定项选择题"), 999)
+
+    ans6 = "10.以上都没有【互斥】"
+    rule6 = """10分：1-9任选8个及以上10分
+6分：1-9任选5-7个6分
+4分：1-9任选3-4个4分
+2分：1-9任选1-2个2分
+0分：0-1个或10"""
+    print(judgeAnswerGrade(ans6, rule6, "不定项选择题"), 999)
+
+    ans7 ="12.以上都没有【互斥】"
+    rule7 = """10分：1-6任选3个及以上
+9分：1-6任选2个
+8分：1-6任选1个
+6分：7
+0分：8"""
+    # print(judgeAnswerGrade(ans7, rule7, "不定项选择题"), 999)
+
+def october19Test():
+    ans7 = "15.以上都没有【互斥】"
+    rule7 = """10分：1-16全选
+10分：1-13任选10个及以上
+10分：14
+9分：1-13任选8-9个
+8分：1-13任选7个
+6分：1-13任选4-6个
+4分：1-13任选2-3个
+1分：1个
+0分：0-1个
+0分：15或16"""
+    print(judgeAnswerGrade(ans7, rule7, "不定项选择题"), 999)
+
+def october20Fix():
+    rule = """10分：1-3全选
+8分：1-3任选2个
+6分：1-3任选1个
+0分：4"""
+    ans ="1.突出政治上的先进性。始终把政治标准放在首位，确保政治合格。从思想政治、能力素质、道德品行、现实表现等方面对入党积极分子和发展对象进行深入考察，着重看是否具有坚定的理想信念和良好的道德品行，是否自觉为党的纲领努力奋斗，是否在生产、工作、学习和社会生活中起先锋模范作用," \
+         "2.突出素质上的全面性。历史地、全面地、辩证地看待入党积极分子和发展对象的综合素质、一贯表现，不片面地以工作业绩或能人标准代替党员标准，忽视政治素质、思想品质和现实表现," \
+         "3.突出标准上的严肃性。坚持成熟一个发展一个，防止把不具备党员条件的人吸收入党，防止“带病入党“，保证吸收的每一名新党员都是合格的"
+
+    print(judgeAnswerGrade(ans, rule, "不定项选择题"), 999)
 
 def main():
-    # if result.xlsx is exist, resultExlPh named as result + time.xlsx
-    resultExlPh = "result" + time.strftime("%Y%m%d%H%M%S", time.localtime()) + ".xlsx"
+    # scoreTest()
+    # ScoreJudgeBugFixCase()
+    # ScoreJudgeBugFixCase2()
+    # october13Fix()
+    # october19Test()
 
-    surveyExlPh = "D:\work\考核RPA_Exl\Input\模板1：【测试问卷】标准模板示例（原文件修改）_2022-8-30.xlsx"
-    scoreExlPh = "D:\work\考核RPA_Exl\Input\模板2：党办调研问卷测试-8.15答题结果_（模板）_2022-8-30.xlsx"
-
-    test = Excel_Operation(surveyExlPh, scoreExlPh,
-                           "D:\\", "2022", "PartyBuildingSurvey", "20002100",
-                           )
-
-    # staffWithLv = testScripts.getStuffDict()
-    # scoreWithLv = testScripts.getStuffAllScore(staffWithLv)
-    #
-    # print("展示分数：")
-    # for lv2 in staffWithLv:
-    #     for lv3 in staffWithLv[lv2]:
-    #         for sta in staffWithLv[lv2][lv3]:
-    #             print(sta.name, sta.scoreLst)
-
-    # testScripts.addSheet1_surveyResult(stuffLst)
-    # testScripts.addSheet2_scoreResult(scoreWithLv)
-    test.fillAllData(,
-
-
+    october20Fix()
 if __name__ == '__main__':
     # scoreTest()
     # ScoreJudgeBugFixCase()
     # ScoreJudgeBugFixCase2()
     main()
+    # pass
