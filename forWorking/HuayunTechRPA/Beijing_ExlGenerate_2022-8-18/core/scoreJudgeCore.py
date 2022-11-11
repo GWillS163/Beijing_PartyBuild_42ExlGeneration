@@ -158,7 +158,9 @@ def judgeAnswerGrade(answer, rule, quesType):
         return int(re.search(r"\d{0,3}", answer.strip()).group(0))
 
     # get RuleL & RuleR and verify
-    answerIntLstDup = list(map(int, re.findall(r"(\d{,3})\..*?", answer)))
+    answerIntStr = re.findall(r"(\d{1,3})\..*?", answer)
+    assert answerIntStr, "answer is not a number, please check the answer"
+    answerIntLstDup = list(map(int, answerIntStr))
     answerIntLst = list(set(answerIntLstDup))
     # check each rule to answer
     for ruleP in rule.split("\n"):

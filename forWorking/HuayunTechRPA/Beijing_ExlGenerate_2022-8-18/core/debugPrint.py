@@ -30,6 +30,12 @@ def printSht1Data(typ, staffWithLv, scoreExlTitle):
     # print(stuffWithLv) all score
 
 
+def printLv2Lv3(lv2Lv3Dict: dict, additionalInfo: str = ""):
+    for lv2 in lv2Lv3Dict:
+        for lv3 in lv2Lv3Dict[lv2]:
+            print(f"[{additionalInfo}] - [{lv2}][{lv3}]： {lv2Lv3Dict[lv2][lv3]}")
+
+
 def printSht1WithLv(sht1WIthLv):
     """
     输出Sht1WithLv
@@ -81,10 +87,10 @@ def printAutoParamSht3(sht3IndexCopyFromSvyScp, sht3DataColRan, sht3TitleCopyFro
     print(f"\tsht3TitleCopyFromMdlScp: {sht3TitleCopyFromMdlScp}")
 
 
-def printAutoParamSht4(sht4IndexFromSht2Scp, sht4TitleFromSht2Scp, sht4SumTitleFromMdlScp,
+def printAutoParamSht4(sht4IndexFromSht2Scp, sht4SumTitleFromMdlScp,
                        ):
     print(f"Sheet4 自Sht4模板自动获取的参数如下: ")
     print(f"\tsht4IndexFromSht2Scp: {sht4IndexFromSht2Scp}")
-    print(f"\tsht4TitleFromSht2Scp: {sht4TitleFromSht2Scp}")
+    # print(f"\tsht4TitleFromSht2Scp: {sht4TitleFromSht2Scp}")
     print(f"\tsht4SumTitleFromMdlScp: {sht4SumTitleFromMdlScp}")
     # print(f"\tsht4DataRowRan: {sht4DataRowRan}")

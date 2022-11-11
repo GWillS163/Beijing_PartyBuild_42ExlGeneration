@@ -22,8 +22,10 @@ exlMain = Excel_Operation(
     # Sheet2 生成配置: C1:J1, D
     sht2DeleteCopiedColScp, sht2MdlTltStt,
     # Sheet3 生成配置:  "L", "J", "K"
-    sht3MdlTltStt, sht3SurLastCol, sht3ResTltStt,
+    sht3MdlTltStt, sht0SurLastCol, sht3ResTltStt,
     # Sheet4 生成配置:
-    sht4IndexFromMdl4Scp, sht4TitleFromSht2Scp, sht4SumTitleFromMdlScp  # , sht4DataRowRan
+    sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,  # , sht4DataRowRan
+    isGenDepartments  # 是否生成部门
+
 )
 exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)

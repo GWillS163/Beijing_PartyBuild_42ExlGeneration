@@ -8,6 +8,7 @@ from .debugPrint import printAutoParamSht1, printAutoParamSht2, printAutoParamSh
 import datetime
 import os
 
+
 def autoGetSht1Params(sht1Module, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol):
     """
     通过少量用户输入, 自动获取问卷模板的参数.
@@ -82,10 +83,10 @@ def autoGetSht3Params(sht3Mdl, sht0Sur, mdlTltStt, surLastCol, resTltStt):
     mdlTltEnd = sht3Mdl.used_range.last_cell.address.split("$")[1]  # "BA"
     sht3TitleCopyFromMdlScp = f"{mdlTltStt}1:{mdlTltEnd}2"
 
-    # index侧栏 - 从测试问卷中获取
+    # index侧栏 - 从测试问卷中获取 TODO: 用户指定
     # surLastCol = "J"
     surLastRow = sht0Sur.used_range.last_cell.address.split("$")[2]  # 54不是 "32"
-    sht3IndexCopyFromSvyScp = f"A1:{surLastCol}32"
+    sht3IndexCopyFromSvyScp = f"A1:{surLastCol}32"  # TODO: 这个32是两个大单元的行数
 
     # result结果表 - 粘贴的起始点
     # resTltStt = "K"
@@ -96,11 +97,10 @@ def autoGetSht3Params(sht3Mdl, sht0Sur, mdlTltStt, surLastCol, resTltStt):
     return sht3IndexCopyFromSvyScp, sht3DataColRan, sht3TitleCopyFromMdlScp
 
 
-def autoGetSht4Params(sht4, sht4IndexFromMdl4Scp, sht4TitleFromSht2Scp, sht4SumTitleFromMdlScp, sht4DataRowRan=None):
+def autoGetSht4Params(sht4, sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp, sht4DataRowRan=None):
     """
     通过少量用户输入, 自动获取sht4问卷模板的参数
     :param sht4IndexFromMdl4Scp: 'A4:B52'  # Sht4固定两列AB公司, 长度是变量  title标题 - 从模板中获取
-    :param sht4TitleFromSht2Scp: 'A1:C17'  # Sht2模板中的index侧栏，长度是固定的
     :param sht4SumTitleFromMdlScp: "P1:Q3"  # 汇总单元格（本线条、全公司排名）
     :param sht4DataRowRan: 扫描行范围
     :param sht4:
@@ -117,9 +117,9 @@ def autoGetSht4Params(sht4, sht4IndexFromMdl4Scp, sht4TitleFromSht2Scp, sht4SumT
     # 默认值 sht4TitleCopyTo = 'A1'  # 默认值 - 无需修改
     # 已自动获取最后一列 sht4SumTitleCopyTo = "R1"  # 有改动, 应该要根据sht2的标题行数自动调整
 
-    printAutoParamSht4(sht4IndexFromMdl4Scp, sht4TitleFromSht2Scp, sht4SumTitleFromMdlScp,
+    printAutoParamSht4(sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,
                        )
-    return sht4IndexFromMdl4Scp, sht4TitleFromSht2Scp, sht4SumTitleFromMdlScp,
+    return sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,
 
 
 def paramsCheckExist(surveyExlPath, partyAnsExlPh, peopleAnsExlPh):

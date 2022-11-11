@@ -166,11 +166,18 @@ def getCompanyRank(currentUnitScore, sht2WithLv, lv2ScoreName="二级单位成�
 
 def getRidOfDuplicate(allScore):
     """
-    算法实现，去除重复列表
+    去除重复列表
     :param allScore: [1,1,2,3,3]
     :return: [1,2,3]
     """
     return list(set(allScore))
+
+
+def useDuplicate(allScore):
+    """应要求，更新，不去重
+
+    """
+    return allScore
 
 
 def getListOrderByList(currentScore: list, allScore: list) -> list:
@@ -187,9 +194,10 @@ def getListOrderByList(currentScore: list, allScore: list) -> list:
     for num in range(len(currentScore)):  # 对每个分数求排名，放入结果
         # 拿到每个单位的第num个分数 - getNumScore(scoreInLine[num], num)
         currNums = [lv2Depart[num] for lv2Depart in allScore]
-        currNumsNoDup = getRidOfDuplicate(currNums)
-        currNumsNoDup.sort(reverse=True)  # Desc
-        orderRes[num] = currNumsNoDup.index(currentScore[num]) + 1
+        # currNumsSorted = getRidOfDuplicate(currNums)
+        currNumsSorted = useDuplicate(currNums)
+        currNumsSorted.sort(reverse=True)  # Desc
+        orderRes[num] = currNumsSorted.index(currentScore[num]) + 1
     return orderRes
 
 
@@ -215,15 +223,15 @@ def getSht2WithLv(sht1WithLv: dict, lv2UnitSpan: list, lv1IndexSpan: list, lineD
     return sht2WithLv
 
 
-def getSht3WithLv(sht1WithLv: dict, lv1Name: str) -> dict:
+def getSht3WithLv(sht1WithLv: dict, lv1Name: str, lv2Mean) -> dict:
     """得到sheet3中的数据
     从Sheet1 中获取所有二级单位的分数
     """
     sht3WithLv = {}
     allLv2 = []
     for lv2 in sht1WithLv:
-        sht3WithLv.update({lv2: sht1WithLv[lv2]['二级单位']})
-        allLv2.append(sht1WithLv[lv2]['二级单位'])
+        sht3WithLv.update({lv2: sht1WithLv[lv2][lv2Mean]})
+        allLv2.append(sht1WithLv[lv2][lv2Mean])
     allLv2Mean = getMeanScore(allLv2)
     sht3WithLv.update({lv1Name: allLv2Mean})
     return sht3WithLv
@@ -246,7 +254,8 @@ def addRankForSht4(sht4WithLv):
         :return:
         """
         res = list(lineDepart[lv2][-1] for lv2 in lineDepart.keys() if lv2 != "平均分")
-        return getRidOfDuplicate(res)
+        # return getRidOfDuplicate(res)
+        return useDuplicate(res)
 
     def getLineRanks(shtWithLv):
         """
@@ -282,7 +291,8 @@ def addRankForSht4(sht4WithLv):
                 if l2 == "平均分":
                     continue
                 allDepartScore.append(shtWithLv[lne][l2][-1])
-        return getRidOfDuplicate(allDepartScore)
+        # return getRidOfDuplicate(allDepartScore)
+        return useDuplicate(allDepartScore)
 
     def getAllDepartRank(shtWithLv) -> dict:
         """
@@ -631,3 +641,72 @@ def addRankForSht2(sht2WithLv, lineData, lv2ScoreName="二级单位成绩"):
         sht2WithLv[lv2].update({"全公司排名": getCompanyRank(currentUnitScore, sht2WithLv, lv2ScoreName)})
 
     return sht2WithLv
+
+
+# 2022-11-11 更新 增加参与率计算
+def calcParticipateRatioCore(parts, staffs) -> list:
+    """计算参与率"""
+    return [parts, staffs, f"{parts / staffs:.2%}"]
+
+
+def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean):
+    """
+    计算所有部门参与率
+    :param lv2Mean: 二级部门
+    :param allStaffNum:  { lv2 : {lv3: 33, lv3 : 2}}
+    :param orgInfo:  { lv2/lv3 : {staffNum: 0}}
+    :return:
+    """
+    basicParticipates = {}
+
+    def getDepartStaffNum(LV2, LV3):
+        if LV3 in orgInfo:
+            return orgInfo[LV3]["staffNum"]
+        elif LV2 in orgInfo:
+            return orgInfo[LV2]["staffNum"]
+        print(f"未找到 {LV2} 或 {LV3} 的人数")
+        return 0
+
+    def getParticipatesData(LV2: str, LV3: str):
+        participates = allStaffNum[LV2][LV3]  # 本部门参与人数
+        allStaff = getDepartStaffNum(LV2, LV3)  # 本部门总人数
+        return [participates, allStaff,
+                calcParticipateRatioCore(participates, allStaff)]  # 本部门参与率
+
+    for lv2 in allStaffNum:
+        basicParticipates[lv2] = {}
+        lv2PartsSum = 0
+        lv2StaffSum = 0
+        for lv3 in allStaffNum[lv2]:
+            parts, staffs, ratio = getParticipatesData(lv2, lv3)
+            basicParticipates[lv2][lv3] = [parts, staffs, ratio]
+            lv2PartsSum += parts
+            lv2StaffSum += staffs
+        basicParticipates[lv2][lv2Mean] = [lv2PartsSum, lv2StaffSum, f'{lv2PartsSum / lv2StaffSum * 100}%']
+    return basicParticipates
+
+
+def getSht1Ratio(basicParticipateRatio):
+    return basicParticipateRatio
+
+
+def getSht2Ratio(basicParticipateRatio):
+    return basicParticipateRatio
+
+
+def getSht3Ratio(basicParticipateRatio: dict, lv1Name, lv2Mean: str) -> dict:
+    lv1Parts = 0
+    lv1Staffs = 0
+    sht3Ratio = {}
+    for lv2 in basicParticipateRatio:
+        for lv3 in basicParticipateRatio[lv2]:
+            if lv3 == lv2Mean:
+                sht3Ratio.update({lv2: basicParticipateRatio[lv2][lv2Mean]})
+                continue
+            lv1Parts += basicParticipateRatio[lv2][lv3][0]
+            lv1Staffs += basicParticipateRatio[lv2][lv3][1]
+    sht3Ratio.update({lv1Name: [lv1Parts, lv1Staffs,
+                                calcParticipateRatioCore(lv1Parts, lv1Staffs)]})
+    return sht3Ratio
+
+

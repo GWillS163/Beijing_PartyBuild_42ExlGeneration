@@ -1,5 +1,8 @@
-#  Author : Github: @GWillS163
-#  Time: $(Date)
+# Github: GWillS163
+# User: 駿清清 
+# Date: 10/11/2022 
+# Time: 15:48
+
 import datetime
 import os.path
 import time
@@ -7,6 +10,7 @@ import warnings
 import openpyxl
 import xlrd
 
+# 最终文件处理
 
 def parasCheck(file1, file2, path, fileName):
     """
@@ -155,5 +159,7 @@ def main(file1, file2, path, fileName, today=""):
     print("Done" if saveStatus else "Failed")
     return saveStatus
 
-
 # main(file1, file2, path, fileName)
+# main(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\maintain_2022-9-23\input\2022-11-10\20221110152654.xlsx",
+#      r"D:\Project\python_scripts\forWorking\HuayunTechRPA\maintain_2022-9-23\input\2022-11-10\20221110152752.xlsx",
+#      ".\\output", "result.xlsx")

@@ -61,21 +61,45 @@ def getLineData(allOrgCode):
     return lineData
 
 
-def getAllOrgCode(orgSht):
+def getAllOrgInfo(orgSht):
     """返回所有的部门代码"""
     lastRow = orgSht.used_range.last_cell.row
     lastCol = orgSht.used_range.last_cell.column
     values = orgSht.range(f"A2:{getColLtr(lastCol)}{lastRow}").value
-    allOrgCode = {}
+    allOrgInfo = {}
     for row in values:
-        allOrgCode.update({row[0]: {
+        allOrgInfo.update({row[0]: {
             "departCode": row[1],
             "level": row[2],
             "line": row[3],
             "parent": row[4],
+            "staffNum": row[5] if row[5] else 10,  # TODO: 暂时设置, 人数为空的话则为0
         }})
-    print("所有部门代码：", allOrgCode)
-    return allOrgCode
+    print("所有部门代码：", allOrgInfo)
+    return allOrgInfo
+
+
+def countDepartStaffNum(sht1PeopleData: dict, sht1PartyData: dict):
+    """
+    统计部门人数
+    :param sht1PeopleData:
+    :param sht1PartyData:
+    :return:
+    """
+    departStaffNum = {}
+
+    def addDepartStaffNum(data):
+        for lv2 in data:
+            if lv2 not in departStaffNum:
+                departStaffNum.update({lv2: {}})
+            for lv3 in data[lv2]:
+                if lv3 not in departStaffNum[lv2]:
+                    departStaffNum[lv2].update({lv3: 0})
+                departStaffNum[lv2][lv3] += len(data[lv2][lv3])
+    addDepartStaffNum(sht1PeopleData)
+    addDepartStaffNum(sht1PartyData)
+
+    return departStaffNum
 
 
 def getSht2DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> str:
