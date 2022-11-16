@@ -4,9 +4,9 @@
 # Time: 17:38
 
 # surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\【测试问卷】模板更改2022-9-14_权重.xlsx"
-surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\党建表格输入配置表_2022-10-18.xlsx"
-partyAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
-peopleAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--群众.xlsx"
+surveyExlPh = r"..\Input\2022-9-27\党建表格输入配置表_2022-10-18.xlsx"
+partyAnsExlPh = r"..\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
+peopleAnsExlPh = r"..\2022-9-27\220926党建工作成效调研测试问卷--群众.xlsx"
 # moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18\origin\【RPA模板表(" \
 #               r"测试)】中国移动北京公司2021年度党建工作成效调研.xlsx "
 savePath = r"D:\work\考核RPA_Exl\Output"
