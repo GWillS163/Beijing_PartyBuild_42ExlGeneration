@@ -8,7 +8,7 @@ from .shtOperation import *
 from .userParamsProcess import *
 
 lv1Name = "北京公司"
-lv2Mean = "二级单位"
+lv2MeanStr = "二级单位"
 
 
 def getSht4Ratio(sht3Ratio):
@@ -29,6 +29,33 @@ def placeSht1Ratio(sht1_lv2Result, sht1Ratio):
             continue
         sht1_lv2Result.range(f"{insertRow}{col}"). \
             options(transpose=True).value = sht1Ratio
+
+
+def combineSht2ParticipateRate(sht2WithLv, basicParticipateRatio):
+    print("开始生成参与率")
+    basicParticipateRatio = getBasicParticipates(self.allStaffNum, orgInfo, lv2MeanStr)
+
+    print("sheet1 新增参与率 - Sheet1 add participate ratio")
+    sht1Ratio = getSht1Ratio(basicParticipateRatio)
+    printLv2Lv3(sht1Ratio, "sht1Ratio")
+    sht1_lv2Result.activate()
+    placeSht1Ratio(sht1_lv2Result, sht1Ratio)
+
+    print("sheet2 新增参与率 - sheet2 add participate ratio")
+    sht2Ratio = combineSht2Ratio(basicParticipateRatio)
+    printLv2Lv3(sht2Ratio, "sht2Ratio")
+    # sht2_lv2Score.activate()
+    # placeSht2Ratio(sht2Ratio)
+
+    print("sheet3 新增参与率 - sheet3 add participate ratio")
+    sht3Ratio = getSht3Ratio(basicParticipateRatio, lv1Name, lv2MeanStr)
+    printLv2Lv3(sht3Ratio, "sht3Ratio")
+    # sht3_ResYear.activate()
+    # placeSht3Ratio(sht3Ratio)
+
+    print("sheet4 新增参与率 - Sheet4 add participate ratio")
+    sht4Ratio = getSht4Ratio(sht3Ratio)
+    printLv2Lv3(sht4Ratio, "sht4Ratio")
 
 
 class Excel_Operation:
@@ -99,12 +126,17 @@ class Excel_Operation:
 
         # Sheet1  每次更改模板表后之后请留意
         self.sht1IndexScpFromSht0 = sht1IndexScpFromSht0  # "A1:F31"
+        self.sht1MdlPartRatioRowScp = "A3:D5"  # 新增的参与率区域 参与率粘贴的位置，一般不需要修改
+        self.sht1PartitionInsertPoint = "A3"  # 插入，无法自动获取
         sht1Res = autoGetSht1Params(self.sht1Mdl,
                                     sht1TitleCopyFromSttCol,
                                     sht1TitleCopyToSttCol)
         self.sht1TitleCopyFromMdlScp, self.sht1DeptTltRan, self.sht1DataColRan = sht1Res
 
         # Sheet2:
+        self.sht2MdlPartRatioRowScp = "A3:C5"  # Sheet2 参与率部分的范围
+        self.sht2PartitionInsertPoint = "A3"  # Sheet2 插入参与率的位置 无法自动获取
+        self.sht2DeleteUnitList = ['党廉', '纪检']  # 删除的单位
         self.sht2TitleCopyTo = None  # 自动获取sheet2 title 起始点
         sht2Res = autoGetSht2Params(self.sht2Mdl, self.sht0TestSurvey,
                                     sht2DeleteCopiedColScp,  # ="C1:J1"
@@ -112,6 +144,8 @@ class Excel_Operation:
         self.sht2DeleteCopiedColScp, self.sht2TitleCopyFromMdlScp, self.sht2DeptTltRan,  self.sht2IndexCopyFromSvyScp, self.sht2IndexCopyTo = sht2Res
 
         # Sheet3:
+        self.sht3MdlPartRatioRowScp = "A3:E5"
+        self.sht3PartitionInsertPoint = "A3"
         self.sht3TitleCopyTo = None  # 自动获取sheet3 title 起始点
         sht3Res = autoGetSht3Params(self.sht3Mdl, self.sht0TestSurvey, sht3MdlTltStt, sht0SurLastCol, sht3ResTltStt)  # "L", "J", "K"
         self.sht3IndexCopyFromSvyScp, self.sht3DataColRan, self.sht3TitleCopyFromMdlScp = sht3Res
@@ -151,35 +185,22 @@ class Excel_Operation:
         # Step2.1: copy left column the surveySht to sht1 partially with style
         # UnitScpRowList = getUnitScpRowList(self.sht0TestSurvey, "A", "D", ["党建", "宣传文化"])
 
-        print("Sheet1 Index Columns Processing...")
+        print("Sheet1 侧栏问题列处理 - Index Columns Processing...")
         shtCopyTo(self.sht0TestSurvey, self.sht1IndexScpFromSht0,
                   sht1_lv2Result, f"A1")
+        print("Sheet1 复制参与率部分 - Copying Participation Rate...")
+        sht1OprAddPartRatio(self.sht1Mdl, self.sht1MdlPartRatioRowScp,
+                            sht1_lv2Result, self.sht1PartitionInsertPoint)
+
         # 记录左侧栏的范围 为生成部门文件时使用 - Record the left column range for generating department files
-        self.sht1IndexScp4Depart = sht1_lv2Result.used_range
+        self.sht1IndexScp4Depart = sht1_lv2Result.used_range.address
 
         # Step2.2: copy title
-        print("Sheet1 Title Rows Processing...")
+        print("Sheet1 部门标题处理 - Title Rows Processing...")
         self.sht1TitleCopyTo = getLastColCell(sht1_lv2Result)
-        print("Sheet1 title Rows Processing...")
         shtCopyTo(self.sht1Mdl, self.sht1TitleCopyFromMdlScp,
                   sht1_lv2Result, self.sht1TitleCopyTo)  # sht1_tltScope = "F1:KZ2"
         return sht1_lv2Result
-
-    # def addSheet1_singleDepartment(self, deptUnitScp):
-    #     """
-    #     add a single department to the sht1_lv2Result
-    #     :param deptUnitScp:
-    #     :return:
-    #     """
-    #     sht1_lv2Result = self.deptResultExl.sheets.add(self.sht1NameRes)
-    #
-    #     # Step2.1: copy left column the surveySht to sht1 partially with style
-    #     shtCopyTo(self.surveyTestSht, self.sht1CopyFromMdlColScp,
-    #               sht1_lv2Result, self.sht1CopyFromMdlColScp.split(":")[0])
-    #     shtCopyTo(self.sht1Module, deptUnitScp,
-    #               sht1_lv2Result, self.sht1TitleCopyTo)  # sht1_tltScope = "F1:KZ2"
-    #
-    #     return sht1_lv2Result
 
     def addSheet2_surveyGrade(self):
         """
@@ -192,10 +213,10 @@ class Excel_Operation:
 
         print("Sheet2 表头和侧栏部分处理 - header and sidebar section")
         sht2_lv2Score.range("B1").column_width = 18.8
-        print("Step2: 整体复制侧栏 - copy left column the surveySht to sht1, with style")
+        print("Step2: 从Sht0整体复制侧栏 - copy left column the surveySht to sht1, with style")
         shtCopyTo(self.sht0TestSurvey, self.sht2IndexCopyFromSvyScp, sht2_lv2Score, self.sht2IndexCopyTo)
         print("Step2.1 删除多余行(党廉&纪检) - delete the row of left column redundant")
-        sht2DeleteCopiedRowScp = getSht2DeleteCopiedRowScp(sht2_lv2Score, ['党廉', '纪检'])
+        sht2DeleteCopiedRowScp = getSht2DeleteCopiedRowScp(sht2_lv2Score, self.sht2DeleteUnitList)
         sht2_lv2Score.range(sht2DeleteCopiedRowScp).api.EntireRow.Delete()
 
         print("Step2.2: 删除左侧多余单元行 - delete the row of left column redundant")
@@ -216,7 +237,9 @@ class Excel_Operation:
         print("Step3: 增加合计行 -  add summary row")
         lv2UnitScp = getShtUnitScp(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow, "A", "B")
         sht2OprAddSummaryRows(sht2_lv2Score, lv2UnitScp)
-
+        
+        print("Step4: 增加参与率统计 - add participation rate statistics")
+        sht2OprAddPartRatio(self.sht2Mdl, self.sht2MdlPartRatioRowScp, sht2_lv2Score, self.sht2PartitionInsertPoint)
         # 记录左侧栏的范围 为生成部门文件时使用 及Sheet4使用 - Record the left column range for generating department files
         self.sht2IndexScp4Depart = sht2_lv2Score.used_range.address
 
@@ -239,7 +262,10 @@ class Excel_Operation:
         # Step2: Set Index column
         shtCopyTo(self.sht0TestSurvey, self.sht3IndexCopyFromSvyScp, sht3_ResYear,
                   self.sht3IndexCopyFromSvyScp.split(":")[0])
-
+        
+        print("\t 新增参与率统计")
+        sht3OprAddPartRatio(self.sht3Mdl, self.sht3MdlPartRatioRowScp, sht3_ResYear, self.sht3PartitionInsertPoint)
+        
         # Step3: copy title
         self.sht3TitleCopyTo = getLastColCell(sht3_ResYear)
         shtCopyTo(self.sht3Mdl, self.sht3TitleCopyFromMdlScp, sht3_ResYear, self.sht3TitleCopyTo)
@@ -270,7 +296,7 @@ class Excel_Operation:
         shtCopyTo(self.sht4Mdl, self.sht4SumTitleFromMdlScp,
                   sht4_surveyGradeByYear, self.sht4TitleCopyTo)
         # set column B width = 20
-        sht4_surveyGradeByYear.range("B1").column_width = 13
+        sht4_surveyGradeByYear.range("B1").column_width = 28
         return sht4_surveyGradeByYear
 
     def genDepartFile(self, departCode, sumSavePathNoSuffix):
@@ -297,7 +323,7 @@ class Excel_Operation:
         sht2Dept = deptResultExl.sheets.add(self.sht2NameGrade, after=sht1Dept)
         try:
             deptResultExl.sheets["Sheet1"].delete()
-        except:
+        except Exception as e:
             pass
         print("从汇总表 复制 边栏")
         # sht1Dept.activate()
@@ -359,7 +385,7 @@ class Excel_Operation:
         self.resultExl.close()
         self.app4Result3.quit()
 
-    def placeBar(self) -> list:
+    def placeBarWithoutData(self) -> list:
         # Add Title & column
         sht1_lv2Result = self.addSheet1_surveyResult()
         print("sheet1 无数据页面生成完成\n")
@@ -382,6 +408,9 @@ class Excel_Operation:
         :return: 
         """""
         sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitScp = shtList
+        print("开始生成参与率")
+        basicParticipateRatio = getBasicParticipates(self.allStaffNum, departCode, lv2MeanStr)
+
         # Step3: Set data
         if sht1WithLv:
             sht1WithLv = sht1WithLv  # mock data, will be deleted
@@ -391,19 +420,24 @@ class Excel_Operation:
         # two Methods to set data
         # sht1PlcScoreByPD(self.sht1Module, sht1_lv2Result, staffWithLv, self.sht1MdlTltScope, dataStart)
         printShtWithLv("sht1WithLv：", sht1WithLv)
-        sht1SetData(sht1_lv2Result, sht1WithLv, getTltColRange(self.sht1DataColRan, 1))
+        sht1WithLvPtRt = combineSht1Ratio(sht1WithLv, basicParticipateRatio)
+        printShtWithLv("sht1WithLvPtRt：", sht1WithLvPtRt)
+        sht1SetData(sht1_lv2Result, sht1WithLvPtRt, getTltColRange(self.sht1DataColRan, 1))
 
         print("sheet2 填充数据 - sheet2 fill data vertically")
         sht2_lv2Score.activate()
         sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, self.sht0TestSurvey, self.surveyWgtCol, sht1WithLv, lv1UnitScp, departCode)
-        print("sht2WithLv：", sht2WithLv)
-        sht2SetData(sht2_lv2Score, sht2WithLv, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
+        sht2WithLvPtRt = combineSht2Ratio(sht2WithLv, basicParticipateRatio)
+        print("sht2WithLv：", sht2WithLvPtRt)
+        sht2SetData(sht2_lv2Score, sht2WithLvPtRt, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
 
         print("sheet3 填充数据 - sheet3 fill data vertically")
         sht3_ResYear.activate()
-        sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2Mean)
+        sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2MeanStr)
         print("sht3WithLv：", sht3WithLv)
-        sht3SetData(sht3_ResYear, sht3WithLv, self.sht3DataColRan, lv1Name)
+        sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio)
+        print("sht3WithLv：", sht3WithLvPtRt)
+        sht3SetData(sht3_ResYear, sht3WithLvPtRt, self.sht3DataColRan, lv1Name)
         # sht3 set conditional formatting partially
 
         print("sheet4 填充横向数据 - Sheet4 fill data horizontally")
@@ -411,10 +445,12 @@ class Excel_Operation:
         sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
         sht4WithLv = getSht4WithLv(sht2WithLv, sht4Hie, lv1Name)
         print("sht4WithLv：", sht4WithLv)
+        sht4WithLvPtRt = combineSht4Ratio(sht3WithLv, basicParticipateRatio)
+        print("sht4WithLv：", sht4WithLvPtRt)
         # Get last row Num by used_range
         sht4LastRow = sht4_surveyGradeByYear.used_range.last_cell.row
         sht4DataRowRan = range(4, sht4LastRow + 1)
-        sht4SetData(sht4_surveyGradeByYear, sht4WithLv, sht4DataRowRan, lv1Name)
+        sht4SetData(sht4_surveyGradeByYear, sht4WithLvPtRt, sht4DataRowRan, lv1Name)
 
         print("删除无用的sheet - Delete useless sheet")
         self.resultExl.sheets["Sheet1"].delete()
@@ -423,43 +459,6 @@ class Excel_Operation:
         self.resultExl.save(savePath)
         self.surveyExl.close()
         self.app4Survey1.quit()
-
-    def addParticipateRatio(self, shtList: list, orgInfo: dict):
-        """
-        生成参与率 2022-11-11
-        :return: {lv2: {lv3: [30, 50, "60%"],
-                        lv3: [30, 50, "80%"],
-        """
-        sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitScp = shtList
-
-        print("开始生成参与率")
-        basicParticipateRatio = getBasicParticipates(self.allStaffNum, orgInfo, lv2Mean)
-
-        print("sheet1 新增参与率 - Sheet1 add participate ratio")
-        sht1Ratio = getSht1Ratio(basicParticipateRatio)
-        printLv2Lv3(sht1Ratio, "sht1Ratio")
-        sht1_lv2Result.activate()
-        placeSht1Ratio(sht1_lv2Result, sht1Ratio)
-
-        print("sheet2 新增参与率 - sheet2 add participate ratio")
-        sht2Ratio = getSht2Ratio(basicParticipateRatio)
-        printLv2Lv3(sht2Ratio, "sht2Ratio")
-        # sht2_lv2Score.activate()
-        # placeSht2Ratio(sht2Ratio)
-
-        print("sheet3 新增参与率 - sheet3 add participate ratio")
-        sht3Ratio = getSht3Ratio(basicParticipateRatio, lv1Name, lv2Mean)
-        printLv2Lv3(sht3Ratio, "sht3Ratio")
-        # sht3_ResYear.activate()
-        # placeSht3Ratio(sht3Ratio)
-
-        print("sheet4 新增参与率 - Sheet4 add participate ratio")
-        sht4Ratio = getSht4Ratio(sht3Ratio)
-        printLv2Lv3(sht4Ratio, "sht4Ratio")
-        # sht4_surveyGradeByYear.activate()
-        # placeSht4Ratio(sht4Ratio)
-
-        print("参与率生成完毕 - Participate ratio generated")
 
     def getFirstSht1WithLvData(self, partyAnsExlPh, peopleAnsExlPh, savePath):
         """
@@ -499,13 +498,14 @@ class Excel_Operation:
         print(f"\n\033[33m\nGetScore time: {int(time.time() - stt)}s \033[0m")
 
         print("\n二、填充边栏 - II. fill the sidebar")
-        shtList = self.placeBar()
+        shtList = self.placeBarWithoutData()
         print(f"\n\033[33m\nPlaceBar time: {int(time.time() - stt)}s \033[0m")
 
-        print("\n三、填充数据、生成汇总文件 - III. fill data, generate summary file")
+        print("\n三、填充参与率&分数数据、生成汇总文件 - III. fill data, generate summary file")
         self.fillAllData(sht1WithLvCombine, shtList, departsInfo, sumSavePathNoSuffix)
         print(f"\n\033[33m\nFillData time: {int(time.time() - stt)}s \033[0m")
 
+        # TODO: 更改参与率生成方式
         print("\n四、生成参与率 - IV. generate participate ratio")
         self.addParticipateRatio(shtList, departsInfo)
         print(f"\n\033[33m\nAddParticipateRatio time: {int(time.time() - stt)}s \033[0m")

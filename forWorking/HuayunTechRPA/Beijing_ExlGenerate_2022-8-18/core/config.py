@@ -5,30 +5,45 @@
 
 surveyExlPh1013 = r"D:\work\考核RPA_Exl\Input\2022-9-27\党建表格输入配置表_2022-10-18.xlsx"
 surveyExlPh1111 = r"D:\work\考核RPA_Exl\Input\2022-11-11\党建表格输入配置表_2022-11-10.xlsx"
-partyAnsExlPh0926 = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
+surveyExlPh1116 = r"D:\work\考核RPA_Exl\Input\2022-11-16\党建表格输入配置表_2022-11-16_样式更改.xlsx"
 peopleAnsExlPh0926 = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--群众.xlsx"
-partyAnsExlPh1103 = r"D:\work\考核RPA_Exl\Input\2022-11-3\edited\221101党建工作成效调研测试问卷--党员.xlsx"
 peopleAnsExlPh1103 = r"D:\work\考核RPA_Exl\Input\2022-11-3\edited\221101党建工作成效调研测试问卷--群众.xlsx"
+peopleAnsExlPh1116 = r"D:\work\考核RPA_Exl\Input\2022-11-16\2022年度党建工作成效调研问卷-群众.xlsx"
+partyAnsExlPh0926 = r"D:\work\考核RPA_Exl\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
+partyAnsExlPh1116 = r"D:\work\考核RPA_Exl\Input\2022-11-16\2022年度党建工作成效调研问卷-党员.xlsx"
+partyAnsExlPh1103 = r"D:\work\考核RPA_Exl\Input\2022-11-3\edited\221101党建工作成效调研测试问卷--党员.xlsx"
 # partyAnsExlPh = partyAnsExlPh0926
 # peopleAnsExlPh = peopleAnsExlPh0926
-partyAnsExlPh = partyAnsExlPh1103
-peopleAnsExlPh = peopleAnsExlPh1103
-surveyExlPh = surveyExlPh1111
+# partyAnsExlPh = partyAnsExlPh1103
+# peopleAnsExlPh = peopleAnsExlPh1103
+# surveyExlPh = surveyExlPh1111
+surveyExlPh = surveyExlPh1116
+peopleAnsExlPh = peopleAnsExlPh1116
+partyAnsExlPh = partyAnsExlPh1116
 
 isGenDepartments = False
 
 savePath = r"D:\work\考核RPA_Exl\Output"
 fileYear = ""
 fileName = "PartyBuild"
-surveyTestShtName = "测试问卷"
-sht1ModuleName = "调研结果_输出模板"
-sht2ModuleName = "调研成绩_输出模板"
-sht3ModuleName = "调研结果（2022年）_输出模板"
-sht4ModuleName = "调研成绩（2022年）_输出模板"
-sht1Name = "调研结果"
-sht2Name = "调研成绩"
-sht3Name = "调研结果（2022年）"
-sht4Name = "调研成绩（2022年）"
+# surveyTestShtName = "测试问卷"
+surveyTestShtName = "2022年调研问卷"
+# sht1ModuleName = "调研结果_输出模板"
+sht1ModuleName = "二级单位调研结果"
+# sht2ModuleName = "调研成绩_输出模板"
+sht2ModuleName = "二级单位调研成绩"
+# sht3ModuleName = "调研结果（2022年）_输出模板"
+sht3ModuleName = "公司整体调研结果"
+# sht4ModuleName = "调研成绩（2022年）_输出模板"
+sht4ModuleName = "公司整体调研成绩"
+# sht1Name = "调研结果"
+sht1Name = "二级单位调研结果"
+# sht2Name = "调研成绩"
+sht2Name = "二级单位调研成绩"
+# sht3Name = "调研结果（2022年）"
+sht3Name = "公司整体调研结果"
+# sht4Name = "调研成绩（2022年）"
+sht4Name = "公司整体调研成绩"
 
 # Sheet1 生成配置 : F, G
 sht1IndexScpFromSht0 = "A1:F31"

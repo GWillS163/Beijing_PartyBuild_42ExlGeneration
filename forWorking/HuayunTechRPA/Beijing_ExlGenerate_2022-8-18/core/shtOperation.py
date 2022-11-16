@@ -385,3 +385,57 @@ def getRuleByQuestionList( questTitle, surveyDataList):
             return row[1], row[2]  # 类型， 规则
 
     return None, None
+
+
+# 2022-11-16 更新内容: 新增参与率等
+
+# placeBar 函数更改的部分 ： 新增了参与率三个单元格
+# placeData 部分： 在插入数据的时候，将参与率的数据插入进去
+def genericAddParticipateRatio(mdlSht, partitionRowScp, sht, insertPoint):
+    # insert 3 rows in sht1
+    sht.range(insertPoint).api.EntireRow.Insert()
+    sht.range(insertPoint).api.EntireRow.Insert()
+    sht.range(insertPoint).api.EntireRow.Insert()
+    shtCopyTo(mdlSht, partitionRowScp,  sht, insertPoint)
+
+    # # entire row copy and paste
+    # mdlSht1.range(partitionRowScp).api.EntireRow.Copy()
+    # # paste
+    # sht1.range(insertPoint).api.EntireRow.PasteSpecial(Paste=-4163)
+
+
+def sht1OprAddPartRatio(mdlSht1, partitionRowScp, sht1, insertPoint="A3"):
+    """
+    在 sht1 中插入参与率
+    :param mdlSht1:
+    :param partitionRowScp:
+    :param sht1:
+    :param insertPoint:
+    :return:
+    """
+    genericAddParticipateRatio(mdlSht1, partitionRowScp, sht1, insertPoint)
+
+
+def sht2OprAddPartRatio(mdl1Sht2, participateRowScp, sht2, insertPoint="A3"):
+    """
+    在 sht2 中插入参与率
+    :param mdl1Sht2:
+    :param participateRowScp:
+    :param sht2:
+    :param insertPoint:
+    :return:
+    """
+
+    genericAddParticipateRatio(mdl1Sht2, participateRowScp, sht2, insertPoint)
+
+
+def sht3OprAddPartRatio(mdl1Sht3, participateRowScp, sht3, insertPoint="A3"):
+    """
+    在 sht3 中插入参与率
+    :param mdl1Sht3:
+    :param participateRowScp:
+    :param sht3:
+    :param insertPoint:
+    :return:
+    """
+    genericAddParticipateRatio(mdl1Sht3, participateRowScp, sht3, insertPoint)
