@@ -397,7 +397,7 @@ def getSht4Hierarchy(sht4):
             clazz = row[0]
         if row[1] == "平均分":
             continue
-        sht4Hie.append([clazz, row[1].strip("\n")])
+        sht4Hie.append([clazz, row[1].strip("\n") if row[1] else None])
     return sht4Hie
 
 
@@ -649,7 +649,7 @@ def calcParticipateRatioCore(parts, staffs) -> list:
     return [staffs, parts, f"{parts / staffs:.2%}"]
 
 
-def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean):
+def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean, lv1Str):
     """
     计算所有部门参与率
     :param lv2Mean: 二级部门
@@ -672,33 +672,83 @@ def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean):
         allStaff = getDepartStaffNum(LV2, LV3)  # 本部门总人数
         return calcParticipateRatioCore(participates, allStaff)  # 本部门参与率
 
+    allPartsNums = 0
+    allStaffNums = 0
     for lv2 in allStaffNum:
         basicParticipates[lv2] = {}
         lv2PartsSum = 0
         lv2StaffSum = 0
         for lv3 in allStaffNum[lv2]:
             parts, staffs, ratio = getParticipatesData(lv2, lv3)
-            basicParticipates[lv2][lv3] = [parts, staffs, ratio]
+            basicParticipates[lv2].update({lv3: [parts, staffs, ratio]})
             lv2PartsSum += parts
             lv2StaffSum += staffs
-        basicParticipates[lv2][lv2Mean] = calcParticipateRatioCore(lv2PartsSum, lv2StaffSum)
+        basicParticipates[lv2].update({lv2Mean: calcParticipateRatioCore(lv2PartsSum, lv2StaffSum)})
+        allPartsNums += lv2PartsSum
+        allStaffNums += lv2StaffSum
+    basicParticipates.update({lv1Str: calcParticipateRatioCore(allPartsNums, allStaffNums)})
     return basicParticipates
 
 
+def combineShtRatioCore(shtWithLvOri, basicRatio):
+    """
+    将参与率数据合并到shtWithLv中
+    :param shtWithLvOri:
+    :param basicRatio:
+    :return:
+    """
+    # hard copy shtWithLv
+    shtWithLv = {}
+    defaultRatio = [None, None, None]
+    for lv2 in shtWithLvOri:
+        shtWithLv[lv2] = {}
+        isExists = lv2 in basicRatio
+        for lv3 in shtWithLvOri[lv2]:
+            isExists = lv3 in basicRatio[lv2] if isExists else False
+            # 对所有三级单位新增参与率部分。没有值则为空
+            extendRatio = basicRatio[lv2][lv3] if isExists else defaultRatio
+            shtWithLv[lv2][lv3] = extendRatio + shtWithLvOri[lv2][lv3]
+
+    return shtWithLv
+
+
 def combineSht1Ratio(sht1WithLv, basicParticipateRatio):
-    return basicParticipateRatio
+    return combineShtRatioCore(sht1WithLv, basicParticipateRatio)
 
 
 def combineSht2Ratio(sht2WithLv, basicParticipateRatio):
-    return basicParticipateRatio
+    return combineShtRatioCore(sht2WithLv, basicParticipateRatio)
 
 
-def combineSht3Ratio(sht2WithLv, basicParticipateRatio):
-    return basicParticipateRatio
+def combineShtRatioCore2(shtWithLv, basicRatio, lv2MeanStr, lv1Str):
+    """
+    将参与率数据合并到sht3WithLv中
+    :param shtWithLv:
+    :param basicRatio:
+    :param lv2MeanStr: "二级单位"字段
+    :return:
+    """
+    defaultRatio = [None, None, None]
+    newShtWithLv = {}
+    lv1AllParts = 0
+    for lv2 in shtWithLv:
+        if lv2 == lv1Str:
+            continue
+        # 对所有三级单位新增参与率部分。没有值则为空
+        extendRatio = basicRatio[lv2][lv2MeanStr] if lv2 in basicRatio else defaultRatio
+        newShtWithLv[lv2] = extendRatio + shtWithLv[lv2]
+        lv1AllParts += extendRatio[1] if extendRatio[1] else 0
+    newShtWithLv[lv1Str] = basicRatio[lv1Str] + shtWithLv[lv1Str]
+    return newShtWithLv
 
 
-def combineSht4Ratio(sht2WithLv, basicParticipateRatio):
-    return basicParticipateRatio
+def combineSht3Ratio(sht3WithLv, basicRatio, lv2MeanStr, lv1Str):
+    return combineShtRatioCore2(sht3WithLv, basicRatio, lv2MeanStr, lv1Str)
+
+
+def combineSht4Ratio(sht4WithLv, basicRatio, lv2MeanStr, lv1Str):
+    # TODO： 有个北京公司，需要特殊处理
+    return combineShtRatioCore2(sht4WithLv, basicRatio, lv2MeanStr, lv1Str)
 
 
 def getSht3Ratio(basicParticipateRatio: dict, lv1Name, lv2Mean: str) -> dict:
@@ -715,5 +765,20 @@ def getSht3Ratio(basicParticipateRatio: dict, lv1Name, lv2Mean: str) -> dict:
     sht3Ratio.update({lv1Name: [lv1Parts, lv1Staffs,
                                 calcParticipateRatioCore(lv1Parts, lv1Staffs)]})
     return sht3Ratio
-
-
+#
+#
+# if __name__ == '__main__':
+#     basicRatio = {'党委办公室': {'党委工作室': [5.0, 5, '100.00%'], '党建工作室': [5.0, 9, '180.00%'], '职能管理部党委办公室': [4.0, 2, '50.00%'], '企业文化室': [3.0, 4, '133.33%'], '青年工作室': [2.0, 1, '50.00%'], '二级单位': [21, 19.0, '90.48%']}}
+#     sht1WithLv = {'党委办公室': {
+#                         '党委工作室': [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, -1.0, 10.0, 10.0,
+#                                   0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+#                         '党建工作室': [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, -1.0, 10.0,
+#                                        10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+#                         '1级单位': [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, -1.0, 10.0, 10.0,
+#                                  0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 0.0, 10.0, 10.0, 10.0, 10.0]},
+#          }
+#     res = combineSht1Ratio(sht1WithLv, basicRatio)
+#     from pprint import pprint
+#     pprint(res)
+#
+#     print(sht1WithLv == res)

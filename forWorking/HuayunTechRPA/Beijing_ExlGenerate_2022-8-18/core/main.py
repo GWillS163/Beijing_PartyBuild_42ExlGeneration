@@ -11,52 +11,6 @@ lv1Name = "北京公司"
 lv2MeanStr = "二级单位"
 
 
-def getSht4Ratio(sht3Ratio):
-    # TODO: 需要更新
-    return sht3Ratio
-
-
-def placeSht1Ratio(sht1_lv2Result, sht1Ratio):
-    insertRow = 2  # 自动获取
-    sht1_lv2Result.insert_row(insertRow, values="参与率")
-    sht1_lv2Result.insert_row(insertRow, values="总人数")
-    sht1_lv2Result.insert_row(insertRow, values="参与数")
-
-    lastCol = sht1_lv2Result.max_column
-    for col in range(2, lastCol + 1):
-        currentLv2 = sht1_lv2Result.cell(1, col).value
-        if currentLv2 not in sht1Ratio:
-            continue
-        sht1_lv2Result.range(f"{insertRow}{col}"). \
-            options(transpose=True).value = sht1Ratio
-
-
-def combineSht2ParticipateRate(sht2WithLv, basicParticipateRatio):
-    print("开始生成参与率")
-    basicParticipateRatio = getBasicParticipates(self.allStaffNum, orgInfo, lv2MeanStr)
-
-    print("sheet1 新增参与率 - Sheet1 add participate ratio")
-    sht1Ratio = getSht1Ratio(basicParticipateRatio)
-    printLv2Lv3(sht1Ratio, "sht1Ratio")
-    sht1_lv2Result.activate()
-    placeSht1Ratio(sht1_lv2Result, sht1Ratio)
-
-    print("sheet2 新增参与率 - sheet2 add participate ratio")
-    sht2Ratio = combineSht2Ratio(basicParticipateRatio)
-    printLv2Lv3(sht2Ratio, "sht2Ratio")
-    # sht2_lv2Score.activate()
-    # placeSht2Ratio(sht2Ratio)
-
-    print("sheet3 新增参与率 - sheet3 add participate ratio")
-    sht3Ratio = getSht3Ratio(basicParticipateRatio, lv1Name, lv2MeanStr)
-    printLv2Lv3(sht3Ratio, "sht3Ratio")
-    # sht3_ResYear.activate()
-    # placeSht3Ratio(sht3Ratio)
-
-    print("sheet4 新增参与率 - Sheet4 add participate ratio")
-    sht4Ratio = getSht4Ratio(sht3Ratio)
-    printLv2Lv3(sht4Ratio, "sht4Ratio")
-
 
 class Excel_Operation:
     surveyRuleCol: str
@@ -169,7 +123,8 @@ class Excel_Operation:
         self.sht1TitleCopyTo = None
 
         # 新增参与率统计 - 2022-11-11
-        self.allStaffNum = {}  # 保存所有人员的人数
+        self.allStaffNum = {}  # TODO:下面mockData改掉 保存所有人员的人数
+        self.allStaffNum = {'党委办公室（党群工作部、职能管理部党委）': {'党委工作室': 5, '党建工作室': 9, '职能管理部党委办公室': 2, '企业文化室': 4, '青年工作室': 1}}  # 保存所有人员的人数
 
     def addSheet1_surveyResult(self):
         """
@@ -409,7 +364,7 @@ class Excel_Operation:
         """""
         sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitScp = shtList
         print("开始生成参与率")
-        basicParticipateRatio = getBasicParticipates(self.allStaffNum, departCode, lv2MeanStr)
+        basicParticipateRatio = getBasicParticipates(self.allStaffNum, departCode, lv2MeanStr, lv1Name)
 
         # Step3: Set data
         if sht1WithLv:
@@ -426,7 +381,8 @@ class Excel_Operation:
 
         print("sheet2 填充数据 - sheet2 fill data vertically")
         sht2_lv2Score.activate()
-        sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, self.sht0TestSurvey, self.surveyWgtCol, sht1WithLv, lv1UnitScp, departCode)
+        sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, self.sht0TestSurvey, self.surveyWgtCol,
+                                            sht1WithLv, lv1UnitScp, departCode)
         sht2WithLvPtRt = combineSht2Ratio(sht2WithLv, basicParticipateRatio)
         print("sht2WithLv：", sht2WithLvPtRt)
         sht2SetData(sht2_lv2Score, sht2WithLvPtRt, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
@@ -435,8 +391,8 @@ class Excel_Operation:
         sht3_ResYear.activate()
         sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2MeanStr)
         print("sht3WithLv：", sht3WithLv)
-        sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio)
-        print("sht3WithLv：", sht3WithLvPtRt)
+        sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio, lv2MeanStr, lv1Name)
+        print("sht3WithLvPtRt：", sht3WithLvPtRt)
         sht3SetData(sht3_ResYear, sht3WithLvPtRt, self.sht3DataColRan, lv1Name)
         # sht3 set conditional formatting partially
 
@@ -445,7 +401,7 @@ class Excel_Operation:
         sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
         sht4WithLv = getSht4WithLv(sht2WithLv, sht4Hie, lv1Name)
         print("sht4WithLv：", sht4WithLv)
-        sht4WithLvPtRt = combineSht4Ratio(sht3WithLv, basicParticipateRatio)
+        sht4WithLvPtRt = combineSht4Ratio(sht3WithLv, basicParticipateRatio, lv2MeanStr, lv1Name)
         print("sht4WithLv：", sht4WithLvPtRt)
         # Get last row Num by used_range
         sht4LastRow = sht4_surveyGradeByYear.used_range.last_cell.row
@@ -484,7 +440,7 @@ class Excel_Operation:
         printSht1WithLv(sht1WithLvCombine)
         return sht1WithLvCombine
 
-    def run(self, partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix):
+    def run(self, partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix, mockSht1WithLV=None):
         """
         主程序
         run the whole process, the main function.
@@ -494,9 +450,11 @@ class Excel_Operation:
         stt = time.time()
         departsInfo = getAllOrgInfo(self.surveyExl.sheets(self.orgShtName))
         print("一、获取答题数据，开始判分 - 0. get data of score sheet, start to calculate score")
-        sht1WithLvCombine = self.getFirstSht1WithLvData(partyAnsExlPh, peopleAnsExlPh, outputDir)
-        print(f"\n\033[33m\nGetScore time: {int(time.time() - stt)}s \033[0m")
-
+        if mockSht1WithLV is None:
+            sht1WithLvCombine = self.getFirstSht1WithLvData(partyAnsExlPh, peopleAnsExlPh, outputDir)
+            print(f"\n\033[33m\nGetScore time: {int(time.time() - stt)}s \033[0m")
+        else:
+            sht1WithLvCombine = mockSht1WithLV
         print("\n二、填充边栏 - II. fill the sidebar")
         shtList = self.placeBarWithoutData()
         print(f"\n\033[33m\nPlaceBar time: {int(time.time() - stt)}s \033[0m")
@@ -504,11 +462,6 @@ class Excel_Operation:
         print("\n三、填充参与率&分数数据、生成汇总文件 - III. fill data, generate summary file")
         self.fillAllData(sht1WithLvCombine, shtList, departsInfo, sumSavePathNoSuffix)
         print(f"\n\033[33m\nFillData time: {int(time.time() - stt)}s \033[0m")
-
-        # TODO: 更改参与率生成方式
-        print("\n四、生成参与率 - IV. generate participate ratio")
-        self.addParticipateRatio(shtList, departsInfo)
-        print(f"\n\033[33m\nAddParticipateRatio time: {int(time.time() - stt)}s \033[0m")
 
         print("\n五、生成各部门文件 - IV. generate each department file")
         self.genDepartFile(departsInfo, sumSavePathNoSuffix)
