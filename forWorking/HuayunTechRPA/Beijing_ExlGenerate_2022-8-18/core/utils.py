@@ -23,6 +23,8 @@ def getColNum(colLtr: str) -> int:
     :param colLtr: the Column Letter of Excel
     :return the sequence number of Excel column
     """
+    # turn to upper case
+    colLtr = colLtr.upper()
     if len(colLtr) == 1:
         return ord(colLtr) - 65
     else:
