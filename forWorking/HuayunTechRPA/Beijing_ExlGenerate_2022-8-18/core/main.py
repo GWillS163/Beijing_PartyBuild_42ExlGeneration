@@ -8,6 +8,13 @@ from .shtOperation import *
 from .userParamsProcess import *
 
 
+def getNewApp():
+    app = xw.App(visible=True, add_book=False)
+    app.display_alerts = False
+    app.screen_updating = False
+    return app
+
+
 class Excel_Operation:
     surveyRuleCol: str
     surveyQuesCol: str
@@ -40,12 +47,8 @@ class Excel_Operation:
 
         # self.surveyExlPath = surveyExlPath
         # self.scoreExlPath = scrExlPh
-        self.app4Survey1 = xw.App(visible=True, add_book=False)
-        self.app4Result3 = xw.App(visible=True, add_book=False)
-        self.app4Survey1.display_alerts = False
-        self.app4Result3.display_alerts = False
-        self.app4Survey1.api.CutCopyMode = False
-        self.app4Result3.api.CutCopyMode = False
+        self.app4Survey1 = getNewApp()
+        self.app4Result3 = getNewApp()
         # open the survey file with xlwings
         self.surveyExl = self.app4Survey1.books.open(surveyExlPath)
         self.resultExl = self.app4Result3.books.add()
@@ -283,10 +286,8 @@ class Excel_Operation:
         deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan, 0)
 
         print("新建部门文件 - create new excel with xlwings")
-        app4Depart = xw.App(visible=True, add_book=False)
+        app4Depart = getNewApp()
         deptResultExl = app4Depart.books.add()
-        app4Depart.display_alerts = False
-        app4Depart.api.CutCopyMode = False
         sht1Dept = deptResultExl.sheets.add(self.sht1NameRes)
         sht2Dept = deptResultExl.sheets.add(self.sht2NameGrade, after=sht1Dept)
         try:
