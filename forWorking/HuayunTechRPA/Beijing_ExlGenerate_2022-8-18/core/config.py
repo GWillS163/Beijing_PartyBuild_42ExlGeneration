@@ -3,12 +3,11 @@
 # Date: 17/10/2022 
 # Time: 17:38
 
-# surveyExlPh = r"D:\work\考核RPA_Exl\Input\2022-9-27\【测试问卷】模板更改2022-9-14_权重.xlsx"
-surveyExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18\Input\2022-11-16\党建表格输入配置表_2022-11-3_old.xlsx"
-peopleAnsExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18\Input\2022-11-16\2022年度党建工作成效调研问卷-群众.xlsx"
-partyAnsExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18\Input\2022-11-16\2022年度党建工作成效调研问卷-党员.xlsx"
-# moduleExlPh = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Exl_Opr_2022-8-18\origin\【RPA模板表(" \
-#               r"测试)】中国移动北京公司2021年度党建工作成效调研.xlsx "
+surveyExlPh = r"" \
+              r"D:\work\考核RPA_Exl\Input\2022-11-28_正式\党建表格输入配置表_2022-11-3.xlsx"
+peopleAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-11-28_正式\2022年度党建工作成效调研问卷-群众 .xlsx"
+partyAnsExlPh = r"D:\work\考核RPA_Exl\Input\2022-11-28_正式\2022年度党建工作成效调研问卷-党员 .xlsx"
+
 savePath = r"D:\work\考核RPA_Exl\Output"
 fileYear = ""
 fileName = "PartyBuild"
