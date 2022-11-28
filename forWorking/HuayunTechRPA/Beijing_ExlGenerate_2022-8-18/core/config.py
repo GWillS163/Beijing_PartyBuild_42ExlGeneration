@@ -12,16 +12,20 @@ peopleAnsExlPh1116 = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijin
 partyAnsExlPh0926 = r"..\Input\2022-9-27\220926党建工作成效调研测试问卷--党员.xlsx"
 partyAnsExlPh1103 = r"..\Input\2022-11-3\edited\221101党建工作成效调研测试问卷--党员.xlsx"
 partyAnsExlPh1116 = r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18\Input\2022-11-16\2022年度党建工作成效调研问卷-党员.xlsx"
+peopleAnsExlPh1128 = r"D:\work\考核RPA_Exl\Input\2022-11-28_正式\2022年度党建工作成效调研问卷-群众 .xlsx"
+partyAnsExlPh1128 = r"D:\work\考核RPA_Exl\Input\2022-11-28_正式\2022年度党建工作成效调研问卷-党员 .xlsx"
 
 # partyAnsExlPh = partyAnsExlPh0926
 # peopleAnsExlPh = peopleAnsExlPh0926
 # partyAnsExlPh = partyAnsExlPh1103
 # peopleAnsExlPh = peopleAnsExlPh1103
+# peopleAnsExlPh = peopleAnsExlPh1116
+# partyAnsExlPh = partyAnsExlPh1116
+peopleAnsExlPh = peopleAnsExlPh1128
+partyAnsExlPh = partyAnsExlPh1128
+# surveyExlPh = surveyExlPh1111
 # surveyExlPh = surveyExlPh1111
 surveyExlPh = surveyExlPh1116
-peopleAnsExlPh = peopleAnsExlPh1116
-partyAnsExlPh = partyAnsExlPh1116
-
 isGenDepartments = False
 
 savePath = r"D:\work\考核RPA_Exl\Output"
