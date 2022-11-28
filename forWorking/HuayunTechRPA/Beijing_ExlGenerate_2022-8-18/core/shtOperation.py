@@ -19,17 +19,26 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
         return
     sht1.range(sht1Scp).api.Copy()
     # judge whether clipboard is empty
-    sht2.activate()
-    sht2.range(sht2Start).api.Select()
-    sht2.api.Paste()  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel',
+    # retry 3 times
+    error = None
+    for t in range(30):
+        try:
+            sht2.activate()
+            sht2.range(sht2Start).api.Select()
+            sht2.api.Paste()
+            # sht2.range(sht2Start).api.PasteSpecial(
+            #     Paste=-4163, Operation=2, SkipBlanks=False, Transpose=False)
+            return
+        except Exception as e:
+            error = e
+            print(f"\t重试{t} - 复制失败\n"
+                  f"\t{sht1.name}[{sht1Scp}] -> {sht2.name}[{sht2Start}]\n"
+                  f"\t{e}")
+            time.sleep(t * 0.1)
+            continue  # 总是会报错，不知道为什么pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel',
+    raise error
     # '类 Worksheet 的 Paste 方法无效', 'xlmain11.chm', 0, -2146827284), None)
 
-    # if sht2.range(sht2Start).api.PasteSpecial(Paste=-4163):
-    #     print("   复制成功")
-    # else:
-    #     print("   复制失败")
-
-    # sht1.activate()
 
 def getLastColCell(sht):
     """
