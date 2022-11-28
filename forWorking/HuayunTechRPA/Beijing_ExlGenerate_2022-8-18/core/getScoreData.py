@@ -9,7 +9,6 @@ from .scoreJudgeCore import *
 from .debugPrint import *
 import xlwings as xw
 
-
 def combineMain(questLst, peopleQuestLst, sht1People, partyQuestLst, sht1Party, debugPath):
     """
     依照统计表的答案顺序，将问卷的答案按照顺序排列，没有则为0.

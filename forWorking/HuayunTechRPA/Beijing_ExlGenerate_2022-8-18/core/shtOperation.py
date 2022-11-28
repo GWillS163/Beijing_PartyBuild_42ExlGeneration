@@ -265,7 +265,7 @@ def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
         lv2 = sht4.range(f"B{row}").value
         if lv1Curr:
             if lv1Curr == lv1Name:
-                sht4.range(f"C{row}").value = sht4WithLv[lv1Name]
+                sht4.range(f"C{row}").value = sht4WithLv[lv1Name][lv2]
             lv1 = lv1Curr
         if not lv1 in sht4WithLv:
             continue
