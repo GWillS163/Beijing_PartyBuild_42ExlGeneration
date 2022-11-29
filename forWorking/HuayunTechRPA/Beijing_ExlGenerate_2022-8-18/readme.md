@@ -1,7 +1,7 @@
 # TODO
 自动识别单元格大小, 识别需要删除的行。
 自动汇总本单元格数据。
-![img.png](img.png)
+![img.png](test/img.png)
 # 目录介绍
 - main_xlwings.py  为主程序，调用了其他模块，包括：
 - scoreJudge.py  为判断分数是否合格的模块
