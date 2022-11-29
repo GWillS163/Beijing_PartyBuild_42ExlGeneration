@@ -1,0 +1,21 @@
+# Project exclude paths
+/venv/
+AutoSelenium/
+
+forWorking/QYT_2021/
+
+qyt_bat_scripts/
+
+QYTsale_qq/
+/anki_plugin/
+/Auto_office_keyboard/
+/AutoSelenium/
+/gwills_tools/
+/mongodb/
+/ocr/
+/PictureUtils/
+/qq_msg_tool/
+/qyt_bat_scripts/
+/QYTsale_qq/
+/spider/
+/tkinter/
