@@ -9,12 +9,51 @@ import datetime
 import os
 
 
-def autoGetSht1Params(sht1Module, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol):
+def printAutoParamSht0(surveyQuesCol, surveyRuleCol, surveyQuesTypeCol,
+                       sht0QuestionScp):
+    print(f"surveyQuesCol: {surveyQuesCol}")
+    print(f"surveyRuleCol: {surveyRuleCol}")
+    print(f"surveyQuesTypeCol: {surveyQuesTypeCol}")
+    print(f"sht0QuestionScp: {sht0QuestionScp}")
+    return surveyQuesCol, surveyRuleCol, surveyQuesTypeCol, \
+        sht0QuestionScp
+
+
+def autoGetSht0Params(sht0, sht0LastValidRow):
+    """
+    得到Sht1复制Sht0的区间, 需要排除excludeSht0UnitLst
+    """
+    # get the top header of sht0
+    sht0TopHeader = sht0.range("A1").expand('right').value
+    res = []
+    findKeyWords = {"问题": "E",
+                    "赋分方式": "J",
+                    "题型": "G"
+                    }
+    for key, value in findKeyWords.items():
+        if key in sht0TopHeader:
+            indexColNum = sht0TopHeader.index("问题")
+        else:
+            indexColNum = value
+            print(f"Sht0的表头不符合要求(无{key}, {sht0TopHeader}), 请检查, 已默认")
+        res.append(getColLtr(indexColNum))
+    surveyQuesCol, surveyRuleCol, surveyQuesTypeCol = res
+
+    sht0QuestionScp = f"{surveyQuesTypeCol}3:" \
+                      f"{surveyQuesTypeCol}{sht0LastValidRow}"  # "E3:E31" 问题列 问题题目.
+
+    return printAutoParamSht0(surveyQuesCol, surveyRuleCol, surveyQuesTypeCol, \
+                              sht0QuestionScp
+                              )
+
+
+def autoGetSht1Params(sht1Module, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol, Sht0LastValidRow):
     """
     通过少量用户输入, 自动获取问卷模板的参数.
     :param sht1Module: 问卷模板Sheet1
     :param sht1TitleCopyFromSttCol: "G" 给定模板的标题起始点，自动获取标题的范围
     :param sht1TitleCopyToSttCol: "G"  给定粘贴的起始点，自动获取标题粘贴和数据栏的范围
+    :param Sht0LastValidRow: 问卷模板Sheet0的最后一行 (非党廉&纪检)
     :return:
     """
     # 获得模板表标题范围 - get the last column of the sht1Module
@@ -28,8 +67,10 @@ def autoGetSht1Params(sht1Module, sht1TitleCopyFromSttCol, sht1TitleCopyToSttCol
     sht1DeptTltRan = f"{sht1TitleCopyToSttCol}:{sht1TitleCopyToEndCol}"
     # 运行时自动获取 > sht1TitleCopyTo = f"{sht1TitleCopyToSttCol}1"
     sht1DataColRan = f"{sht1TitleCopyToSttCol}:{sht1TitleCopyToEndCol}"
+    # Sht0的总体侧栏范围 - get the left column of the sht1Module
+    sht1IndexScpFromSht0 = f"A1:F{Sht0LastValidRow}"  # 选项列的 最后一行非党廉数据
     printAutoParamSht1(sht1TitleCopyFromMdlScp, sht1DeptTltRan, sht1DataColRan)
-    return sht1TitleCopyFromMdlScp, sht1DeptTltRan, sht1DataColRan
+    return sht1TitleCopyFromMdlScp, sht1DeptTltRan, sht1DataColRan, sht1IndexScpFromSht0
 
 
 def autoGetSht2Params(sht2Mdl, sht0Sur, sht2DeleteCopiedColScp, mdlTltStt):

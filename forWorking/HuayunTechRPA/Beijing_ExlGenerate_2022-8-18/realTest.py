@@ -30,3 +30,7 @@ exlMain = Excel_Operation(
 )
 # exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix, mockSht1WithLV=sht1WithLv)
 exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
+# TODO：参与率统计核对，出现了异常数据
+# Sheet1 数据多了一行，需要删除
+# Sheet3 侧栏少了1行, 数据多了一行
+#

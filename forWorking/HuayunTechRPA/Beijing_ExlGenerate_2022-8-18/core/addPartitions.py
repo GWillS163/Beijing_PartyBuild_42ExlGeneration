@@ -16,7 +16,7 @@ def addSht1Partitions(mdlSht1, partitionScp, sht1, insertPoint="A3"):
     sht1.insert_rows(3, 3)
     shtCopyTo(mdlSht1, partitionScp, sht1, insertPoint)
 
-
     sht1.insert_row(insertRow, values="参与率")
     sht1.insert_row(insertRow, values="总人数")
     sht1.insert_row(insertRow, values="参与数")
+

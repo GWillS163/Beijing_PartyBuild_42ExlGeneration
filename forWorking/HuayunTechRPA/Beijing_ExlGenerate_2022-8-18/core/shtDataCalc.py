@@ -646,6 +646,8 @@ def addRankForSht2(sht2WithLv, lineData, lv2ScoreName="二级单位成绩"):
 # 2022-11-11 更新 增加参与率计算
 def calcParticipateRatioCore(parts, staffs) -> list:
     """计算参与率"""
+    if parts is None or staffs is None or parts == 0 or staffs == 0:
+        return [0, 0, "0.00%"]
     return [staffs, parts, f"{parts / staffs:.2%}"]
 
 
@@ -746,9 +748,88 @@ def combineSht3Ratio(sht3WithLv, basicRatio, lv2MeanStr, lv1Str):
     return combineShtRatioCore2(sht3WithLv, basicRatio, lv2MeanStr, lv1Str)
 
 
-def combineSht4Ratio(sht4WithLv, basicRatio, lv2MeanStr, lv1Str):
-    # TODO： 有个北京公司，需要特殊处理
-    return combineShtRatioCore2(sht4WithLv, basicRatio, lv2MeanStr, lv1Str)
+def getLv2Class(lv2, sht4Hie):
+    """
+    获取二级单位的类别
+    :param lv2:
+    :param sht4Hie:
+    :return:
+    """
+    for row in sht4Hie:
+        if lv2 == row[1]:
+            return row[0]
+    return ""
+
+
+def turnSht4Ratio(basicRatio, sht4Hie, lv1Str, lv2Mean):
+    """
+     转换为sht4格式的参与率数据。
+    : basicRatio: 基础参与率数据 ： {城区一分公司:{综合部, 市场部}, 城区二分公司: {网络部, ..} }
+    : sht4Hie:[['分公司', '城区一分公司'] ['分公司', '城区二分公司']...]
+    :
+    : return {分公司:{城区一分公司，城区二分公司}, 北京公司:{平均分}}
+    """
+    sht4Ratio = {}
+    for lv2 in basicRatio:  # 拿出来每个lv2的总数
+        if lv2 == lv1Str:
+            continue
+        lv2Class = getLv2Class(lv2, sht4Hie)
+        if lv2Class not in sht4Ratio:
+            sht4Ratio[lv2Class] = {}
+        if lv2 not in sht4Ratio:
+            sht4Ratio[lv2Class][lv2] = {}
+
+        sht4Ratio[lv2Class].update({lv2: basicRatio[lv2][lv2Mean]})
+
+    def getListMean(lst: List[int]) -> float:
+        return sum(lst) / len(lst)
+
+    # 新增每个分类的总数, 分公司的平均分
+    # lv2ClassParts = []
+    # lv2ClassStaffs = []
+    # for lv2Class in sht4Ratio:
+    #     for lv2 in sht4Ratio[lv2Class]:
+    #         lv2ClassParts.append(sht4Ratio[lv2Class][lv2][0])
+    #         lv2ClassStaffs.append(sht4Ratio[lv2Class][lv2][1])
+    sht4Ratio.update({lv1Str: {}})
+    sht4Ratio[lv1Str].update({"平均分": basicRatio[lv1Str]
+    #     [
+    #     lv2ClassParts,
+    #     lv2ClassStaffs,
+    #     round((lv2ClassParts / lv2ClassStaffs), 2)
+    # ]
+    })
+
+    return sht4Ratio
+
+
+def combineSht4Ratio(sht4WithLv, sht4Ratio, lv2MeanStr, lv1Str):
+    """
+    将参与率数据合并到sht4WithLv中
+    """
+    meanStr = "平均分"
+    defaultRatio = [None, None, None]
+    newShtWithLv = {}
+    for lv2Class in sht4WithLv:
+        if lv2Class == lv1Str:
+            newShtWithLv.update({lv1Str: {meanStr: []}})
+            newShtWithLv[lv1Str][meanStr] = sht4Ratio[lv1Str][meanStr] + sht4WithLv[lv1Str][meanStr]
+            continue
+        for lv2 in sht4WithLv[lv2Class]:
+            if lv2 == meanStr:
+                # 取出来basicRatio的平均分
+                newShtWithLv.update({lv1Str: {meanStr: []}})
+                newShtWithLv[lv1Str][meanStr] = sht4Ratio[lv1Str][meanStr] + sht4WithLv[lv1Str][meanStr]
+                continue
+            ratioLst = sht4Ratio[lv2Class][lv2] if lv2Class in sht4Ratio and lv2 in sht4Ratio[lv2Class] \
+                else defaultRatio
+            if lv2Class not in newShtWithLv:
+                newShtWithLv[lv2Class] = {}
+            if lv2 not in newShtWithLv[lv2Class]:
+                newShtWithLv[lv2Class][lv2] = []
+            newShtWithLv[lv2Class][lv2] = ratioLst + sht4WithLv[lv2Class][lv2]
+            # lv1AllParts += ratioLst[1] if ratioLst[1] else 0
+    return newShtWithLv
 
 
 def getSht3Ratio(basicParticipateRatio: dict, lv1Name, lv2Mean: str) -> dict:

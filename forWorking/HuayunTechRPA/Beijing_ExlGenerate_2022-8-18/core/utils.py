@@ -73,7 +73,7 @@ def getAllOrgInfo(orgSht):
             "level": row[2],
             "line": row[3],
             "parent": row[4],
-            "staffNum": row[5] if row[5] else 10,  # TODO: 暂时设置, 人数为空的话则为0
+            "staffNum": row[5] if row[5] else 0,  # 人数为空的话则为0
         }})
     print("所有部门代码：", allOrgInfo)
     return allOrgInfo
@@ -102,9 +102,9 @@ def countDepartStaffNum(sht1PeopleData: dict, sht1PartyData: dict):
     return departStaffNum
 
 
-def getSht2DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> str:
+def getSht0DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> list:
     """
-    获得需要删除的区间, keywords开始到结束的区间行
+    获得每个单元中间需要删除的区间, keywords开始到结束的区间行
     :param keywords:  关键词列表
     :param sht2_lv2Score:
     :return:
@@ -116,7 +116,8 @@ def getSht2DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> str:
             break
         row += 1
     lastRow = sht2_lv2Score.used_range.last_cell.row
-    return f"A{row}:A{lastRow}  "  # f"A32:A52"
+    sht0LastValidRow = row
+    return [f"A{row}:A{lastRow}  ", sht0LastValidRow]  # f"A32:A52"
 
 
 def saveDebugLogIfTrue(debugScoreLst, pathPre, debug, debugPath):
