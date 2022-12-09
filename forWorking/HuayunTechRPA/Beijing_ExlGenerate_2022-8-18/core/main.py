@@ -280,7 +280,18 @@ class Excel_Operation:
         deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan, 0)
 
         print("新建部门文件 - create new excel with xlwings")
-        app4Depart = xw.App(visible=True, add_book=False)
+        # try 5 times to create new excel
+        for i in range(5):
+            try:
+                app4Depart = xw.App(visible=True, add_book=False)
+                break
+            except:
+                print("新建部门文件失败，重试 - Failed to create new excel, retry")
+                time.sleep(1)
+                continue
+        else:
+            print("新建部门文件失败，退出 - Failed to create new excel, exit")
+            return
         deptResultExl = app4Depart.books.add()
         app4Depart.display_alerts = False
         app4Depart.api.CutCopyMode = False
@@ -481,3 +492,4 @@ class Excel_Operation:
 
         print(f"\n\033[33m\nTotal time: {int(time.time() - stt)}s [ll Done! Saved to:\033[0m "
               f"\n\033[32m{outputDir}\033[0m")
+        return outputDir

@@ -5,7 +5,7 @@
 
 # import sys
 # sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18")
-from core.config import *
+# from core.config import *
 from core.main import *
 
 
@@ -29,8 +29,4 @@ exlMain = Excel_Operation(
 
 )
 # exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix, mockSht1WithLV=sht1WithLv)
-exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
-# TODO：参与率统计核对，出现了异常数据
-# Sheet1 数据多了一行，需要删除
-# Sheet3 侧栏少了1行, 数据多了一行
-#
+outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
