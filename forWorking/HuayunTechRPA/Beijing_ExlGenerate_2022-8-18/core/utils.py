@@ -180,7 +180,7 @@ class Stuff:
         self.lv3Code = lv3Code
         self.ID = ID
         self.answerLst = answerLst
-        self.scoreLst = [0 for _ in range(len(answerLst))]
+        self.scoreLst = [None for _ in range(len(answerLst))]
 
     def __str__(self):
         return f"{self.name} {self.lv2Depart} {self.lv2Code} {self.lv3Depart} {self.lv3Code} {self.ID} {self.answerLst}"

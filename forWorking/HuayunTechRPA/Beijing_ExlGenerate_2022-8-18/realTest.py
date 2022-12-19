@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # Github: GWillS163
 # User: 駿清清 
 # Date: 29/09/2022 
@@ -5,9 +7,8 @@
 
 # import sys
 # sys.path.append(r"D:\Project\python_scripts\forWorking\HuayunTechRPA\Beijing_ExlGenerate_2022-8-18")
-# from core.config import *
+from core.config import *
 from core.main import *
-
 
 print("Start to run the process...")
 outputDir, sumSavePathNoSuffix = getSavePath(savePath, fileYear, fileName)
@@ -28,5 +29,6 @@ exlMain = Excel_Operation(
     isGenDepartments  # 是否生成部门
 
 )
-# exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix, mockSht1WithLV=sht1WithLv)
+# outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,
+#                         mockSht1WithLv=sht1WithLv, basIcPrPt=basIcPrPt)
 outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)

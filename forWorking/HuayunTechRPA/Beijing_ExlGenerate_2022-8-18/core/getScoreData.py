@@ -215,7 +215,8 @@ class scoreJudgement:
                 lv3Num += 1
                 print(f"Lv2:[{lv2Num}/{len(staffWithLv.keys())}] "
                       f"Lv3:[{lv3Num}/{len(staffWithLv[lv2].keys())}]", end="\r")
-                stuffScoreList, debugScoreLst = self.calcEachStaff(staffWithLv[lv2][lv3], surveyData)
+                stuffScoreList, debugScoreLst = self.calcEachStaff(
+                    staffWithLv[lv2][lv3], surveyData)
                 staffWithLv[lv2][lv3] = stuffScoreList
                 debugScoreAllLst += debugScoreLst
         print("")
@@ -236,8 +237,6 @@ class scoreJudgement:
         for staff in lv3StaffScoreList:  # each staff in the lv3Depart
             # every staff need to get the all score
             for questionNum in range(len(self.scoreExlTitle.answerLst)):
-                if not staff.answerLst[questionNum]:
-                    continue
                 # 得到每个问题的Title - get every questTitle by questTitle num
                 questTitle = self.scoreExlTitle.answerLst[questionNum]
                 # 如果是不计分的题目，跳过 - if the questTitle is not score, skip
@@ -246,8 +245,8 @@ class scoreJudgement:
                 #     continue
                 # 得到员工答案 - get staff staffAns
                 staffAns = staff.answerLst[questionNum]
-                if not staffAns:  # 员工没有答案则零分 - if staffAns is None, score is 0
-                    staff.scoreLst[questionNum] = 0
+                if not staffAns:  # 员工没有答案则空分 - if staffAns is None, score is 0
+                    staff.scoreLst[questionNum] = None
                     continue
                 # 找到问题所属判分规则 - locate which row is rule by questTitle in scoreExl
                 # (answerRow, rule) = getRuleByQuestionSurvey(staff.name, questTitle, self.testSurveySht,
