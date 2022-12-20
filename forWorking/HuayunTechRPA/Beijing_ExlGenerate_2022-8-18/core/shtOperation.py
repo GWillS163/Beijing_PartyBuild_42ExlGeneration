@@ -236,7 +236,7 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
     :param lv1Name: 默认是 北京公司
     :return:
     """
-    titleRan = getTltColRange(titleRange)
+    titleRan = getTltColRange(titleRange, offsite=1)
     # lv2Clz = None
     n = 0
     for col in titleRan:
@@ -256,7 +256,7 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
     print("Sheet3 Progress:100% - [Done]")
 
 
-def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
+def sht4SetData(sht4, sht4WithLv, titleStt, titleEnd, lv1Name):
     """
     Sheet4 中，横放入 每个lv2部门的数据(如果有)
     :param lv1Name:
@@ -265,13 +265,17 @@ def sht4SetData(sht4, sht4WithLv, titleRan, lv1Name):
     :param titleRan:
     :return:
     """
+    lv1CurrLst = sht4.range(f"A{titleStt}:A{titleEnd}").value
+    lv2Lst = sht4.range(f"B{titleStt}:B{titleEnd}").value
     lv1 = None
-    for row in titleRan:
-        lv1Curr = sht4.range(f"A{row}").value
-        lv2 = sht4.range(f"B{row}").value
+    for row in range(titleStt, titleEnd):
+        # lv1Curr = sht4.range(f"A{row}").value
+        # lv2 = sht4.range(f"B{row}").value
+        lv1Curr = lv1CurrLst[row - titleStt]
+        lv2 = lv2Lst[row - titleStt]
         if lv1Curr:
             if lv1Curr == lv1Name:
-                sht4.range(f"C{row}").value = sht4WithLv[lv1Name]
+                sht4.range(f"C{row}").value = sht4WithLv[lv1Name]["平均分"]
             lv1 = lv1Curr
         if not lv1 in sht4WithLv:
             continue

@@ -51,6 +51,7 @@ def getMeanScore(stuffScoreLst: list) -> list:
     for i in range(len(stuffScoreLst[0])):
         # get the mean of each index, exclude the None value
         validLst = [lst[i] for lst in stuffScoreLst if lst[i] is not None]
+        # 单独计算 有效数据，并用来计算平均值
         cellValue = round(sumWithNone(validLst) / len(validLst), 2) if validLst else None
         res.append(cellValue)
     return res
@@ -182,6 +183,14 @@ def useDuplicate(allScore):
     return allScore
 
 
+def descSortWithNone(currNumsSorted):
+    """
+    降序排序，None放在最后
+    """
+    currNumsSorted.sort(key=lambda x: x if x is not None else -100, reverse=True)
+    return currNumsSorted
+
+
 def getListOrderByList(currentScore: list, allScore: list) -> list:
     """
     得到currentScore在allScore中每个数字的排名
@@ -198,12 +207,12 @@ def getListOrderByList(currentScore: list, allScore: list) -> list:
         currNums = [lv2Depart[num] for lv2Depart in allScore]
         # currNumsSorted = getRidOfDuplicate(currNums)
         currNumsSorted = useDuplicate(currNums)
-        currNumsSorted.sort(reverse=True)  # Desc
+        descSortWithNone(currNumsSorted)  # Desc
         orderRes[num] = currNumsSorted.index(currentScore[num]) + 1
     return orderRes
 
 
-def getSht2WithLv(sht1WithLv: dict,  lv1IndexSpan: list, lv2UnitSpan: list, lineData: dict) -> dict:
+def getSht2WithLvData(sht1WithLv: dict, lv1IndexSpan: list, lv2UnitSpan: list, lineData: dict) -> dict:
     """
     得到Sheet2中的数据,对指定单元格的分数进行求和 * 权重  以及新增部分求和
     :param lineData:
@@ -415,7 +424,7 @@ def resetUnitSum(sht, sht2UnitScp, weightCol):
     weightLst = sht.range(f"{weightCol}1:{weightCol}{sht2UnitScp[-1][-1]}").value
     for unit in sht2UnitScp:
         cellSum = 0
-        unitWeight = weightLst[unit[0] - 1 : unit[1]]
+        unitWeight = weightLst[unit[0] - 1: unit[1]]
         weight = sumWithNone(unitWeight)
         # for edge in range(unit[0], unit[1] + 1):
         #     # weight = sht.range(f"{weightCol}{edge}").value
@@ -425,9 +434,11 @@ def resetUnitSum(sht, sht2UnitScp, weightCol):
         #         print("weight is not int:", e)
         #         weight = 0
         #     # print(f"\t 获得单元格值:{weightCol}{edge} = {weight} get value of weightCell: ")
+        if not type(weight) == float or type(weight) == int:
+            weight = 0
         cellSum += weight
         # print(f"求和放至首格：{weightCol}{unit[0]}={cellSum} - place the sum to the first cell of the unit\n")
-        sht.range(f"{weightCol}{unit[0]}").value = f"{round(cellSum * 10, 1)}%"
+        sht.range(f"{weightCol}{unit[0]}").value = f"{round(cellSum * 100, 1)}%"
 
 
 def getSht2DeleteRowLst(sht2UnitScp: list) -> List[int]:
@@ -559,6 +570,8 @@ def sumWithNone(lst):
     :param lst:
     :return:
     """
+    if all([i is None for i in lst]):  # 若全为None，则返回None
+        return None
     return sum([validNum for validNum in lst if validNum is not None])
 
 
@@ -619,10 +632,10 @@ def addSht1Wgt2Sht1WithLv(sht1WithLv, sht1WgtLst: List[int]):
     return sht1WithLvWgt
 
 
-def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1WithLv,
-                           lv1UnitSpan, lv2UnitSpan, departCode,
+def getSht2WithLv(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1WithLv,
+                  lv1UnitSpan, lv2UnitSpan, departCode,
 
-                           ):
+                  ):
     """
     通过sht1的值 与 权重， 计算sheet2的分数。 原数据[1,2..., 30]
     calculate the score of the sht2_lv2Score
@@ -648,7 +661,7 @@ def clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionC
     #                             unitCol="A", contentCol="B")
     lineData = getLineData(departCode)
     # 单元格求和
-    sht2WithLv = getSht2WithLv(sht1WithLvWgt, lv1UnitSpan, lv2UnitSpan, lineData)
+    sht2WithLv = getSht2WithLvData(sht1WithLvWgt, lv1UnitSpan, lv2UnitSpan, lineData)
     return sht2WithLv
 
 

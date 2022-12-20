@@ -29,6 +29,6 @@ exlMain = Excel_Operation(
     isGenDepartments  # 是否生成部门
 
 )
-# outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,
-#                         mockSht1WithLv=sht1WithLv, basIcPrPt=basIcPrPt)
-outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
+outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,
+                        mockSht1WithLv=sht1WithLv, basIcPrPt=basIcPrPt)
+# outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)

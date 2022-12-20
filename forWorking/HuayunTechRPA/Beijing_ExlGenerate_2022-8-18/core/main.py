@@ -200,7 +200,7 @@ class Excel_Operation:
         sht2UnitScpOffsite = getNewUnitWgts(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow, self.lv2UnitColLtr, self.sht2WgtColLtr)
         # 给所有单元格边缘增加偏移 - add offset to all cells edge
         resetUnitSum(sht2_lv2Score, sht2UnitScpOffsite, self.weightColLtr)
-        print("Step2.2.3: 重设单元值完成 - Reset unit value completed")
+        print("Step2.2.3: 重设权重单元值完成 - Reset unit value completed")
         sht2DeleteRowLst = getSht2DeleteRowLst(sht2UnitScpOffsite)
         for _ in range(len(sht2DeleteRowLst)):
             row = sht2DeleteRowLst.pop()
@@ -394,7 +394,7 @@ class Excel_Operation:
         """""
         sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitSpan, lv2UnitScp = shtList
         if basIcPrpt:
-            print("使用已算出的数据")
+            print("使用已算出的参与率数据")
             # sht1WithLv = sht1WithLv
             basicParticipateRatio = basIcPrpt
         else:
@@ -413,9 +413,9 @@ class Excel_Operation:
 
         print("sheet2 填充数据 - sheet2 fill data vertically")
         sht2_lv2Score.activate()
-        sht2WithLv = clacSheet2_surveyGrade(sht1_lv2Result, sht2_lv2Score, self.sht0TestSurvey, self.surveyWgtCol,
-                                            sht1WithLv, lv1UnitSpan, lv2UnitScp, departCode
-                                            )
+        sht2WithLv = getSht2WithLv(sht1_lv2Result, sht2_lv2Score, self.sht0TestSurvey, self.surveyWgtCol,
+                                   sht1WithLv, lv1UnitSpan, lv2UnitScp, departCode
+                                   )
         sht2WithLvPtRt = combineSht2Ratio(sht2WithLv, basicParticipateRatio)
         print("sht2WithLv：", sht2WithLvPtRt)
         sht2SetData(sht2_lv2Score, sht2WithLvPtRt, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
@@ -440,7 +440,7 @@ class Excel_Operation:
         # Get last row Num by used_range
         sht4LastRow = sht4_surveyGradeByYear.used_range.last_cell.row
         sht4DataRowRan = range(4, sht4LastRow + 1)
-        sht4SetData(sht4_surveyGradeByYear, sht4WithLvPtRt, sht4DataRowRan, lv1Name)
+        sht4SetData(sht4_surveyGradeByYear, sht4WithLvPtRt, 4, sht4LastRow + 1, lv1Name)
 
         print("删除无用的sheet - Delete useless sheet")
         self.resultExl.sheets["Sheet1"].delete()
@@ -505,6 +505,6 @@ class Excel_Operation:
         print("\n五、生成各部门文件 - IV. generate each department file")
         self.genDepartFile(departsInfo, sumSavePathNoSuffix)
 
-        print(f"\n\033[33m\nTotal time: {int(time.time() - stt)}s [ll Done! Saved to:\033[0m "
+        print(f"\n\033[33m\nTotal time: {int(time.time() - stt)}s All Done! Saved to:\033[0m "
               f"\n\033[32m{outputDir}\033[0m")
         return outputDir
