@@ -136,7 +136,7 @@ class Excel_Operation:
         self.sht1TitleCopyTo = None
 
         # 新增参与率统计 - 2022-11-11
-        self.allStaffNum = {}
+        self.allPartsStaffNum = {}
         # self.allStaffNum = {
         #     '党委办公室（党群工作部、职能管理部党委）': {'党委工作室': 5, '党建工作室': 9, '职能管理部党委办公室': 2, '企业文化室': 4, '青年工作室': 1}}  # 保存所有人员的人数
 
@@ -399,16 +399,16 @@ class Excel_Operation:
             basicParticipateRatio = basIcPrpt
         else:
             print("开始生成参与率")
-            basicParticipateRatio = getBasicParticipates(self.allStaffNum, departCode, lv2MeanStr, lv1Name)
+            basicParticipateRatio = getBasicParticipates(self.allPartsStaffNum, departCode, lv2MeanStr, lv1Name)
 
             print("sheet1 填充数据 - Sheet1 fill data vertically")
             sht1_lv2Result.activate()
             # two Methods to set data
             # sht1PlcScoreByPD(self.sht1Module, sht1_lv2Result, staffWithLv, self.sht1MdlTltScope, dataStart)
-            printShtWithLv("sht1WithLv：", sht1WithLv)
+            # printShtWithLv("sht1WithLv：", sht1WithLv)
 
         sht1WithLvPtRt = combineSht1Ratio(sht1WithLv, basicParticipateRatio)
-        printShtWithLv("sht1WithLvPtRt：", sht1WithLvPtRt)
+        # printShtWithLv("sht1WithLvPtRt：", sht1WithLvPtRt)
         sht1SetData(sht1_lv2Result, sht1WithLvPtRt, getTltColRange(self.sht1DataColRan, 1))
 
         print("sheet2 填充数据 - sheet2 fill data vertically")
@@ -417,15 +417,15 @@ class Excel_Operation:
                                    sht1WithLv, lv1UnitSpan, lv2UnitScp, departCode
                                    )
         sht2WithLvPtRt = combineSht2Ratio(sht2WithLv, basicParticipateRatio)
-        print("sht2WithLv：", sht2WithLvPtRt)
+        # print("sht2WithLv：", sht2WithLvPtRt)
         sht2SetData(sht2_lv2Score, sht2WithLvPtRt, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
 
         print("sheet3 填充数据 - sheet3 fill data vertically")
         sht3_ResYear.activate()
         sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2MeanStr)
-        print("sht3WithLv：", sht3WithLv)
+        # print("sht3WithLv：", sht3WithLv)
         sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio, lv2MeanStr, lv1Name)
-        print("sht3WithLvPtRt：", sht3WithLvPtRt)
+        # print("sht3WithLvPtRt：", sht3WithLvPtRt)
         sht3SetData(sht3_ResYear, sht3WithLvPtRt, self.sht3DataColRan, lv1Name)
         # sht3 set conditional formatting partially
 
@@ -433,13 +433,13 @@ class Excel_Operation:
         sht4_surveyGradeByYear.activate()
         sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
         sht4WithLv = getSht4WithLv(sht2WithLv, sht4Hie, lv1Name, lv2MeanStr)
-        print("sht4WithLv：", sht4WithLv)
+        # print("sht4WithLv：", sht4WithLv)
         sht4Ratio = turnSht4Ratio(basicParticipateRatio, sht4Hie, lv1Name, lv2MeanStr)
         sht4WithLvPtRt = combineSht4Ratio(sht4WithLv, sht4Ratio, lv2MeanStr, lv1Name)
-        print("sht4WithLvPtRt：", sht4WithLvPtRt)
+        # print("sht4WithLvPtRt：", sht4WithLvPtRt)
         # Get last row Num by used_range
         sht4LastRow = sht4_surveyGradeByYear.used_range.last_cell.row
-        sht4DataRowRan = range(4, sht4LastRow + 1)
+        # sht4DataRowRan = range(4, sht4LastRow + 1)
         sht4SetData(sht4_surveyGradeByYear, sht4WithLvPtRt, 4, sht4LastRow + 1, lv1Name)
 
         print("删除无用的sheet - Delete useless sheet")
@@ -463,17 +463,17 @@ class Excel_Operation:
         print("开始获取群众数据 - Start to get people data")
         surveyData = getSurveyData(self.sht0TestSurvey)
         peopleQuesLst, sht1PeopleData = judges.getStaffData(peopleAnsExlPh, "群众", debugPath, surveyData, True)
-        printSht1Data("群众", sht1PeopleData, peopleQuesLst)
+        # printSht1Data("群众", sht1PeopleData, peopleQuesLst)
         print("开始获取党员数据 - Start to get party data")
         partyQuesLst, sht1PartyData = judges.getStaffData(partyAnsExlPh, "党员", debugPath, surveyData, True)
-        printSht1Data("党员", sht1PartyData, partyQuesLst)
+        # printSht1Data("党员", sht1PartyData, partyQuesLst)
         # 计算所有部门人数
-        self.allStaffNum = countDepartStaffNum(sht1PeopleData, sht1PartyData)
+        self.allPartsStaffNum = countDepartStaffNum(sht1PeopleData, sht1PartyData)
         questionSortDebugPath = os.path.join(savePath, "题目对应记录")
         sht1WithLvCombine = combineMain(questionLst, peopleQuesLst, sht1PeopleData, partyQuesLst, sht1PartyData,
                                         questionSortDebugPath)
         judges.close()
-        printSht1WithLv(sht1WithLvCombine)
+        # printSht1WithLv(sht1WithLvCombine)
         return sht1WithLvCombine
 
     def run(self, partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,

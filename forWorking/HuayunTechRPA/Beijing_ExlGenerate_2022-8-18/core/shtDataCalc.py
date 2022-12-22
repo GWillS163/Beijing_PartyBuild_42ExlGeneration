@@ -89,7 +89,7 @@ def addAllTotal(lv3ScoreLst, lv1IndexSpan):
         unitLst = lv3ScoreLst[unitScp[0]:unitScp[1] + 1]
         res += unitLst  # 加入原单元分数部分
         res.append(getSht2UnitWgtScore(unitLst))  # 加入本单元求和
-    res.append(getSht2UnitWgtScore(lv3ScoreLst))
+    res.append(getSht2UnitWgtScore(lv3ScoreLst))  # 加入总分
     return res  # 插入总分数
 
 
@@ -579,7 +579,7 @@ def getSht2UnitWgtScore(lst):
     sumScore = sumWithNone(lst)
     if sumScore == 0:
         return sumScore
-    return round(sumScore / 10, 2)
+    return round(sumScore, 2)
 
 
 def getSht2WgtLst(sht2_lv2Score) -> list:
@@ -689,45 +689,71 @@ def addRankForSht2(sht2WithLv, lineData, lv2ScoreName="二级单位"):
 # 2022-11-11 更新 增加参与率计算
 def calcParticipateRatioCore(parts, staffs) -> list:
     """计算参与率"""
-    if parts is None or staffs is None or parts == 0 or staffs == 0:
-        return [0, 0, "0.00%"]
-    return [staffs, parts, f"{parts / staffs:.2%}"]
+    if parts is None:
+        parts = 0
+    if staffs is None:
+        staffs = 0
+    if not staffs or not parts:
+        percentage = f"0.00%"
+    else:
+        percentage = f"{parts / staffs:.2%}"
+    return [staffs, parts, percentage]
 
 
-def getBasicParticipates(allStaffNum: dict, orgInfo: dict, lv2Mean, lv1Str):
+def getBasicParticipates(allPartsNum: dict, orgInfo: dict, lv2Mean, lv1Str):
     """
     计算所有部门参与率
     :param lv2Mean: 二级部门
-    :param allStaffNum:  { lv2 : {lv3: 33, lv3 : 2}}
+    :param allPartsNum:  { lv2 : {lv3: 33, lv3 : 2}}
     :param orgInfo:  { lv2/lv3 : {staffNum: 0}}
     :return:
     """
     basicParticipates = {}
 
-    def getDepartStaffNum(LV2, LV3):
-        if LV3 in orgInfo:
-            return orgInfo[LV3]["staffNum"]
-        elif LV2 in orgInfo:
-            return orgInfo[LV2]["staffNum"]
+    def getLv3StaffNum(LV2, LV3):
+        """
+        获取部门人数
+        """
+        if LV3 == "其他人员":  # 获取二级部门其他人员的人数
+            LV3 = LV2
+        if LV2 in orgInfo and LV3 in orgInfo[LV2]:
+            return orgInfo[LV2][LV3]["staffNum"]
         print(f"未找到 {LV2} 或 {LV3} 的人数")
         return 0
 
     def getParticipatesData(LV2: str, LV3: str):
-        participates = allStaffNum[LV2][LV3]  # 本部门参与人数
-        allStaff = getDepartStaffNum(LV2, LV3)  # 本部门总人数
+        participates = allPartsNum[LV2][LV3]  # 本部门参与人数
+        allStaff = getLv3StaffNum(LV2, LV3)  # 本部门总人数
         return calcParticipateRatioCore(participates, allStaff)  # 本部门参与率
+
+    def getLv2AllStaffNum(LV2: str):
+        """
+        获取二级部门所有员工人数
+        """
+        allStaffs = 0
+        if LV2 in orgInfo:
+            for k, v in orgInfo[LV2].items():
+                allStaffs += v["staffNum"]
+        return allStaffs
+
+    def getLv2AllPartsNum(LV2: str):
+        """
+        获取二级部门所有参与的人数
+        """
+        allParts = 0
+        if LV2 in allPartsNum:
+            allParts += sum(allPartsNum[LV2].values())
+        return allParts
 
     allPartsNums = 0
     allStaffNums = 0
-    for lv2 in allStaffNum:
+    for lv2 in allPartsNum:
         basicParticipates[lv2] = {}
-        lv2PartsSum = 0
-        lv2StaffSum = 0
-        for lv3 in allStaffNum[lv2]:
-            staffs, parts, ratio = getParticipatesData(lv2, lv3)
+        lv2PartsSum = getLv2AllPartsNum(lv2)
+        lv2StaffSum = getLv2AllStaffNum(lv2)
+        for lv3 in allPartsNum[lv2]:
             basicParticipates[lv2].update({lv3: getParticipatesData(lv2, lv3)})
-            lv2PartsSum += parts
-            lv2StaffSum += staffs
+
         basicParticipates[lv2].update({lv2Mean: calcParticipateRatioCore(lv2PartsSum, lv2StaffSum)})
         allPartsNums += lv2PartsSum
         allStaffNums += lv2StaffSum

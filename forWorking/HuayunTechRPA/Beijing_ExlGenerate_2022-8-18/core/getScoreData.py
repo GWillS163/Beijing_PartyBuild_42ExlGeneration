@@ -193,7 +193,7 @@ class scoreJudgement:
         staffWithLv = self.step2JudgeScoreWithLv(staffWithLv, deBugPath, fileName, surveyData, isDebug)
         scoreWithLv = getScoreWithLv(staffWithLv)
         # sht1WithLv = getSht1WithLv(scoreWithLv)
-        printStaffWithLv(staffWithLv)
+        # printStaffWithLv(staffWithLv)
         return self.scoreExlTitle.answerLst, scoreWithLv  # sht1WithLv
 
     def step2JudgeScoreWithLv(self, staffWithLv, debugPath, fileName, surveyData, debug=True):

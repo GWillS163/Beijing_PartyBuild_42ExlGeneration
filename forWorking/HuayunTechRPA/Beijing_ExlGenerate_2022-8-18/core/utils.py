@@ -53,11 +53,17 @@ def getLineData(allOrgCode):
     :return: {线条: [部门, 部门, ...]}
     """
     lineData = {}
-    for orgName, orgInfo in allOrgCode.items():
-        if orgInfo["line"] not in lineData:
-            lineData.update({orgInfo["line"]: [orgName]})
-            continue
-        lineData[orgInfo["line"]] += [orgName]
+    for lv2 in allOrgCode:
+        for lv3 in allOrgCode[lv2]:
+            line = allOrgCode[lv2][lv3]["line"]  # 取出每个3级部门的线条
+            if line not in lineData:
+                lineData.update({line: []})
+            lineData[line].append(lv3)
+    # for orgName, orgInfo in allOrgCode.items():
+    #     if orgInfo["line"] not in lineData:
+    #         lineData.update({orgInfo["line"]: [orgName]})
+    #         continue
+    #     lineData[orgInfo["line"]] += [orgName]
     return lineData
 
 
@@ -68,12 +74,14 @@ def getAllOrgInfo(orgSht):
     values = orgSht.range(f"A2:{getColLtr(lastCol)}{lastRow}").value
     allOrgInfo = {}
     for row in values:
-        allOrgInfo.update({row[0]: {
-            "departCode": row[1],
-            "level": row[2],
-            "line": row[3],
-            "parent": row[4],
-            "staffNum": row[5] if row[5] else 0,  # 人数为空的话则为0
+        if row[4] not in allOrgInfo:
+            allOrgInfo.update({row[4]: {}})  # 上级部门
+        allOrgInfo[row[4]]\
+            .update({row[0]: {
+                    "departCode": row[1],
+                    "level": row[2],
+                    "line": row[3],
+                    "staffNum": row[5] if row[5] else 0,  # 人数为空的话则为0
         }})
     print("所有部门代码：", allOrgInfo)
     return allOrgInfo
@@ -81,7 +89,7 @@ def getAllOrgInfo(orgSht):
 
 def countDepartStaffNum(sht1PeopleData: dict, sht1PartyData: dict):
     """
-    统计部门人数
+    统计部门人数, 逻辑错误， 这个是参与人数
     :param sht1PeopleData:
     :param sht1PartyData:
     :return:
