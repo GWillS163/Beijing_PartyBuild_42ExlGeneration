@@ -105,6 +105,8 @@ def sht2OprAddSummaryRows(sht2_lv2Score, unitScp: list):
     sht2_lv2Score.range(f"A{endRow}").api.EntireRow.Insert()
     sht2_lv2Score.range(f"B{endRow}").value = "总计"
     sht2_lv2Score.range(f"C{endRow}").value = f"=SUM({sumStr})"
+    # set this entire row to bold
+    sht2_lv2Score.range(f"{endRow}:{endRow}").api.Font.Bold = True
 
     # 为Sheet2 添加合计行 - add summary rows to sheet2
     while unitScpOffsite:
@@ -113,6 +115,7 @@ def sht2OprAddSummaryRows(sht2_lv2Score, unitScp: list):
         sht2_lv2Score.range(f"B{insertRow}").api.EntireRow.Insert()
         sht2_lv2Score.range(f"B{insertRow}").value = "合计"
         sht2_lv2Score.range(f"C{insertRow}").value = f"=SUM(C{unit[0]}:C{unit[-1]})"
+        sht2_lv2Score.range(f"{insertRow}:{insertRow}").api.Font.Bold = True
 
     # insertRow = []
     # for row in range(4, 20):
@@ -273,6 +276,9 @@ def sht4SetData(sht4, sht4WithLv, titleStt, titleEnd, lv1Name):
         # lv2 = sht4.range(f"B{row}").value
         lv1Curr = lv1CurrLst[row - titleStt]
         lv2 = lv2Lst[row - titleStt]
+        # set entire row bold
+        if lv2 == "平均分":
+            sht4.range(f"{row}:{row}").api.Font.Bold = True
         if lv1Curr:
             if lv1Curr == lv1Name:
                 sht4.range(f"C{row}").value = sht4WithLv[lv1Name]["平均分"]
