@@ -27,7 +27,8 @@ exlMain = Excel_Operation(
     # Sheet4 生成配置:
     sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,  # , sht4DataRowRan
     isGenDepartments,  # 是否生成部门
-    excludeSht0UnitLst
+    excludeSht0UnitLst,
+    isOriginPlan # 是否是原始计划
 
 )
 # outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,
