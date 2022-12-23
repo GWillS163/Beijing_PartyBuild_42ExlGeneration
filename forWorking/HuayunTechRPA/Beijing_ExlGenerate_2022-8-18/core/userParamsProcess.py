@@ -40,7 +40,7 @@ def autoGetSht0Params(sht0, sht0LastValidRow):
     surveyQuesCol, surveyRuleCol, surveyQuesTypeCol = res
 
     sht0QuestionScp = f"{surveyQuesTypeCol}3:" \
-                      f"{surveyQuesTypeCol}{sht0LastValidRow}"  # "E3:E31" 问题列 问题题目.
+                      f"{surveyQuesTypeCol}{sht0LastValidRow - 1}"  # "E3:E31" 问题列 问题题目.
 
     return printAutoParamSht0(surveyQuesCol, surveyRuleCol,
                               surveyQuesTypeCol, sht0QuestionScp

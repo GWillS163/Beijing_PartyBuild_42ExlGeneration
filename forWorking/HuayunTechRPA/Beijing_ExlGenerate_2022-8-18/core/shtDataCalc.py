@@ -212,13 +212,13 @@ def getListOrderByList(currentScore: list, allScore: list) -> list:
     return orderRes
 
 
-def getSht2WithLvData(sht1WithLv: dict, lv1IndexSpan: list, lv2UnitSpan: list, lineData: dict) -> dict:
+def getSht2WithLvData(sht1WithLv: dict, smallIndexSpan: list, bigUnitSpan: list, lineData: dict) -> dict:
     """
     得到Sheet2中的数据,对指定单元格的分数进行求和 * 权重  以及新增部分求和
     :param lineData:
     :param sht1WithLv: 从sheet1中获取的数据 [1,2,3 ... , 30]
-    :param lv2UnitSpan: 二级指标的单元格范围 [ [1,3], [ 4, 8], [20, 30] ]
-    :param lv1IndexSpan: 一级指标的单元格范围 [ [1, 3], [7, 10] ]
+    :param bigUnitSpan: 二级指标的单元格范围 [ [1,3], [ 4, 8], [20, 30] ]
+    :param smallIndexSpan: 一级指标的单元格范围 [ [1, 3], [7, 10] ]
     :return: sheet2中的数据{lv2:[1, 2, 3, 4, sum, 5, 6, 7, 8, sum, sum]}
     """
     sht2WithLv = {}
@@ -226,8 +226,8 @@ def getSht2WithLvData(sht1WithLv: dict, lv1IndexSpan: list, lv2UnitSpan: list, l
         sht2WithLv.update({lv2: {}})
         for lv3 in sht1WithLv[lv2]:
             lv2Avg = "二级单位" if "二级单位" in lv3 else lv3  # Rename
-            eachUnitScore = sumEachSmallUnitScore(sht1WithLv[lv2][lv3], lv1IndexSpan)
-            bigUnitSum = addAllTotal(eachUnitScore, lv2UnitSpan)
+            eachUnitScore = sumEachSmallUnitScore(sht1WithLv[lv2][lv3], smallIndexSpan)
+            bigUnitSum = addAllTotal(eachUnitScore, bigUnitSpan)
             sht2WithLv[lv2].update({lv2Avg: bigUnitSum})
 
     sht2WithLv = addRankForSht2(sht2WithLv, lineData)
@@ -478,7 +478,6 @@ def getShtUnitScp(sht, startRow: int, endRow: int, unitCol: str, contentCol: str
     while n < endRow:
         row = startRow + n - 1
         if skipCol:
-            # part = sht.range(f"{skipCol}{row}").value
             part = partLst[row]
             # detect skip words if part equal skip words, thus skip this row
             if part in skipWords:
@@ -647,7 +646,7 @@ def reshapeWgtLstByScoreLength(sht1WithLv, sht1WgtLst):
 
 
 def getSht2WithLv(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1WithLv,
-                  lv1UnitSpan, lv2UnitSpan, departCode
+                  smallIndexSpan, bigIndexSpan, departCode
 
                   ):
     """
@@ -676,12 +675,13 @@ def getSht2WithLv(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1W
     #                             unitCol="A", contentCol="B")
     lineData = getLineData(departCode)
     # 单元格求和
-    sht2WithLv = getSht2WithLvData(sht1WithLvWgt, lv1UnitSpan, lv2UnitSpan, lineData)
+    sht2WithLv = getSht2WithLvData(sht1WithLvWgt, smallIndexSpan, bigIndexSpan, lineData)
     return sht2WithLv
 
 
 def getNewUnitWgts(sht2_lv2Score, sht2SttRow, sht2EndRow, lv2UnitColLtr, WgtColLtr):
     sht2UnitScp = getShtUnitScp(sht2_lv2Score, sht2SttRow, sht2EndRow, lv2UnitColLtr, WgtColLtr)
+
     sht2UnitScpOffsite = [[edge + sht2SttRow for edge in eachUnit] for eachUnit in sht2UnitScp]
     return sht2UnitScpOffsite
 

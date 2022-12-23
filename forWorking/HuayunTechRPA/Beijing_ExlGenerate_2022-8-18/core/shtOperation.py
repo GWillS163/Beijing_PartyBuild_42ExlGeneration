@@ -3,7 +3,7 @@
 from .utils import *
 
 
-def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
+def shtCopyTo(sht1, sht1Scp, sht2, sht2Start, retryTimes=5):
     """
     将sht1中的数据复制到sht2中
     copy data and format from sht1 to sht2
@@ -11,6 +11,7 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     :param sht1Scp:
     :param sht2:
     :param sht2Start:
+    :param retryTimes:
     :return:
     """
     # sht1.activate()
@@ -21,13 +22,15 @@ def shtCopyTo(sht1, sht1Scp, sht2, sht2Start):
     # judge whether clipboard is empty
     # retry 3 times
     error = None
-    for _ in range(3):
+    for _ in range(retryTimes):
         try:
             sht2.activate()
             sht2.range(sht2Start).api.Select()
             sht2.api.Paste()
             # sht2.range(sht2Start).api.PasteSpecial(
             #     Paste=-4163, Operation=2, SkipBlanks=False, Transpose=False)
+            if error is not None:
+                print(f"\t{sht1.name} - {sht1Scp} - 重试成功")
             return
         except Exception as e:
             error = e
@@ -105,6 +108,8 @@ def sht2OprAddSummaryRows(sht2_lv2Score, unitScp: list):
     sht2_lv2Score.range(f"A{endRow}").api.EntireRow.Insert()
     sht2_lv2Score.range(f"B{endRow}").value = "总计"
     sht2_lv2Score.range(f"C{endRow}").value = f"=SUM({sumStr})"
+    # set the border of A1 cells
+    # sht2_lv2Score.range(f"A{endRow}:C{endRow}").api.Borders(9).LineStyle = 10
     # set this entire row to bold
     sht2_lv2Score.range(f"{endRow}:{endRow}").api.Font.Bold = True
 
@@ -115,6 +120,8 @@ def sht2OprAddSummaryRows(sht2_lv2Score, unitScp: list):
         sht2_lv2Score.range(f"B{insertRow}").api.EntireRow.Insert()
         sht2_lv2Score.range(f"B{insertRow}").value = "合计"
         sht2_lv2Score.range(f"C{insertRow}").value = f"=SUM(C{unit[0]}:C{unit[-1]})"
+        # set the border of this row
+        # sht2_lv2Score.range(f"A{insertRow}:C{insertRow}").api.Borders(9).LineStyle = 10
         sht2_lv2Score.range(f"{insertRow}:{insertRow}").api.Font.Bold = True
 
     # insertRow = []
@@ -179,6 +186,7 @@ def sht1SetData(sht1_lv2Result, sht1WithLv, titleRan):
     """
     lv2 = None
     n = 0
+    outPutObj = printAni("正在填充Sheet1")
     for colNum in titleRan:
         n += 1
         colLtr = getColLtr(colNum)
@@ -193,10 +201,13 @@ def sht1SetData(sht1_lv2Result, sht1WithLv, titleRan):
         if lv3 not in sht1WithLv[lv2]:
             continue
         # print(f"{lv2} & {lv3} exists")
-        print(f"Sheet1 Progress:{n}/{len(titleRan)} - [{lv2}-{lv3}]")  # , end="\r")
+        next(outPutObj)
+        print(f":{n}/{len(titleRan)} - [{lv2}-{lv3}]", end="")
+
         sht1_lv2Result.range(f"{colLtr}3"). \
             options(transpose=True).value = sht1WithLv[lv2][lv3]
-    print("Sheet1 Progress:100% - [Done]")
+    # color \033 print
+    print("\r\033[1;32m[Done]\033[0m Sheet1 Progress:100% \n")
 
 
 def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
@@ -209,6 +220,7 @@ def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
     """
     lv2 = None
     n = 0
+    outPutObj = printAni("正在填充Sheet2")
     for colNum in titleRan:
         n += 1
         colLtr = getColLtr(colNum)
@@ -223,10 +235,11 @@ def sht2SetData(sht2_lv2Score, sht2WithLv, titleRan: range):
         if lv3 not in sht2WithLv[lv2]:
             continue
         # print(f"{lv2} & {lv3} exists")
-        print(f"Sheet2 Progress:{n}/{len(titleRan)} - [{lv2}-{lv3}]")  # , end="\r")
+        next(outPutObj)
+        print(f":{n}/{len(titleRan)} - [{lv2}-{lv3}]", end="")
         sht2_lv2Score.range(f"{colLtr}3") \
             .options(transpose=True).value = sht2WithLv[lv2][lv3]
-    print("Sheet2 Progress:100% - [Done]")
+    print("\r\033[1;32m[Done]\033[0m Sheet2 Progress:100% \n")
 
 
 def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
@@ -242,6 +255,7 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
     titleRan = getTltColRange(titleRange, offsite=1)
     # lv2Clz = None
     n = 0
+    outPutObj = printAni("正在填充Sheet3")
     for col in titleRan:
         n += 1
         colLtr = getColLtr(col)
@@ -254,9 +268,10 @@ def sht3SetData(sht3, sht3WithLv: dict, titleRange: str, lv1Name: str):
         if not lv2 in sht3WithLv:
             continue
         # place score list vertically
-        print(f"Sheet3 Progress:{n}/{len(titleRan)} - [{lv2UpCurr}-{lv2}]")  # , end="\r")
+        next(outPutObj)
+        print(f"{n}/{len(titleRan)} - [{lv2UpCurr}-{lv2}]", end="")
         sht3.range(f"{colLtr}3").options(transpose=True).value = sht3WithLv[lv2]
-    print("Sheet3 Progress:100% - [Done]")
+    print("\r\033[1;32m[Done]\033[0m Sheet3 Progress:100% \n")
 
 
 def sht4SetData(sht4, sht4WithLv, titleStt, titleEnd, lv1Name):
@@ -264,13 +279,13 @@ def sht4SetData(sht4, sht4WithLv, titleStt, titleEnd, lv1Name):
     Sheet4 中，横放入 每个lv2部门的数据(如果有)
     :param lv1Name:
     :param sht4:
-    :param sht4WithLv:
-    :param titleRan:
+    :param sht4WithLv
     :return:
     """
     lv1CurrLst = sht4.range(f"A{titleStt}:A{titleEnd}").value
     lv2Lst = sht4.range(f"B{titleStt}:B{titleEnd}").value
     lv1 = None
+    outPutObj = printAni("正在填充Sheet4")
     for row in range(titleStt, titleEnd):
         # lv1Curr = sht4.range(f"A{row}").value
         # lv2 = sht4.range(f"B{row}").value
@@ -287,9 +302,11 @@ def sht4SetData(sht4, sht4WithLv, titleStt, titleEnd, lv1Name):
             continue
         if not lv2 in sht4WithLv[lv1]:
             continue
+        next(outPutObj)
+        print(f"进行中 ", end="")
         # place score list vertically,  row object of type 'int' has no len()
         sht4.range(f"C{row}").value = sht4WithLv[lv1][lv2]
-    print("Sheet4 Progress:100% - [Done]")
+    print("\r\033[1;32m[Done]\033[0m Sheet4 Progress:100% \n")
 
 
 def addOneDptData(shtSum, scpLst, height,

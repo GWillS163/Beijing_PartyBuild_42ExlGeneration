@@ -76,12 +76,12 @@ def getAllOrgInfo(orgSht):
     for row in values:
         if row[4] not in allOrgInfo:
             allOrgInfo.update({row[4]: {}})  # 上级部门
-        allOrgInfo[row[4]]\
+        allOrgInfo[row[4]] \
             .update({row[0]: {
-                    "departCode": row[1],
-                    "level": row[2],
-                    "line": row[3],
-                    "staffNum": row[5] if row[5] else 0,  # 人数为空的话则为0
+            "departCode": row[1],
+            "level": row[2],
+            "line": row[3],
+            "staffNum": row[5] if row[5] else 0,  # 人数为空的话则为0
         }})
     print("所有部门代码：", allOrgInfo)
     return allOrgInfo
@@ -104,6 +104,7 @@ def countDepartStaffNum(sht1PeopleData: dict, sht1PartyData: dict):
                 if lv3 not in departStaffNum[lv2]:
                     departStaffNum[lv2].update({lv3: 0})
                 departStaffNum[lv2][lv3] += len(data[lv2][lv3])
+
     addDepartStaffNum(sht1PeopleData)
     addDepartStaffNum(sht1PartyData)
 
@@ -118,15 +119,15 @@ def getSht0DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> list:
     :return:
     """
     unitLst = sht2_lv2Score.used_range.value
-    row = 3
+    rows = 1
     for entireRow in unitLst:
         unit = entireRow[0]
         if unit in keywords:
             break
-        row += 1
+        rows += 1
     lastRow = sht2_lv2Score.used_range.last_cell.row
-    sht0LastValidRow = row - 1
-    return [f"A{row}:A{lastRow}  ", sht0LastValidRow]  # f"A32:A52"
+    sht0LastValidRow = rows
+    return [f"A{lastRow + 1}:A{sht0LastValidRow}  ", sht0LastValidRow]  # f"A32:A52"
 
 
 def saveDebugLogIfTrue(debugScoreLst, pathPre, debug, debugPath):
@@ -196,3 +197,15 @@ class Stuff:
 
     def __repr__(self):
         return f"{self.name}, answers:{len(self.answerLst)}"  # lv2:{self.lv2Depart[:10]}, lv3:{self.lv3Depart[:10]},
+
+
+def printAni(strs):
+    """
+    打印动画
+    :param strs:
+    :return:
+    """
+    while True:
+        for c in "-\\|/":
+            print(f"\r \033[1;36m{c}\033[0m {strs}", end="")
+            yield

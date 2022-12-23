@@ -37,7 +37,7 @@ class Excel_Operation:
         :param scrExlPh:
         """
         # Saving File Settings
-        self.lv2UnitScp = []  #  二级单位范围，由addSheet1函数生成
+        self.lv2UnitScp = []  # 二级单位范围，由addSheet1函数生成
         self.surveyWgtCol = "K"
         self.orgShtName = '行政机构组织'
         self.otherTitle = "其他人员"
@@ -91,12 +91,16 @@ class Excel_Operation:
                               sht1TitleCopyFromSttCol,
                               sht1TitleCopyToSttCol, sht0LastValidRow)
         # Sheet2:
-        # IndexColumns 设定
+        # When add Sheet 2
+        self.Sht2Lv1UnitColLtr = "A"
+        self.Sht2Lv2UnitColLtr = "B"
+        self.sht2ContentColLtr = "D"
+        self.sht2WeightColLtr = "C"
+        self.sht2SttRow = 3
+        self.sht2EndRow = 40
 
+        # IndexColumns 设定
         self.sht2WgtColLtr = "D"
-        self.unitCol = "B"
-        self.contentCol = "D"
-        self.skipCol = "A"
 
         self.sht2MdlPartRatioRowScp = "A3:C5"  # Sheet2 参与率部分的范围
         self.sht2PartitionInsertPoint = "A3"  # Sheet2 插入参与率的位置 无法自动获取
@@ -121,12 +125,6 @@ class Excel_Operation:
         self.sht4TitleFromSht2Scp = None  # 'A1:C17'  # Sht2模板中的index侧栏，长度是固定的
         self.sht4IndexFromMdl4Scp, self.sht4SumTitleFromMdlScp = \
             autoGetSht4Params(self.sht4Mdl, sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp)
-
-        # When add Sheet 2
-        self.lv2UnitColLtr = "B"
-        self.weightColLtr = "K"
-        self.sht2SttRow = 3
-        self.sht2EndRow = 40
 
         # When generate department file
         self.isGenDepartments = isGenDepartments
@@ -192,24 +190,34 @@ class Excel_Operation:
         print("Step2.1 删除多余行(党廉&纪检) - delete the row of left column redundant")
         sht2_lv2Score.range(self.sht0DeleteCopiedRowScp).api.EntireRow.Delete()
 
-        lv1UnitSpan = getShtUnitScp(sht2_lv2Score, startRow=3, endRow=40, unitCol="B", contentCol="D")
         print("Step2.2: 删除左侧多余单元行 - delete the row of left column redundant")
-        print("Step2.2.1: 删除多余行 - delete the row of left column redundant")
-        print("Step2.2.2: 为单元格重新计算权重 - recalculate the weight to the cell")
-        sht2UnitScpOffsite = getNewUnitWgts(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow, self.lv2UnitColLtr, self.sht2WgtColLtr)
-        # 给所有单元格边缘增加偏移 - add offset to all cells edge
-        resetUnitSum(sht2_lv2Score, sht2UnitScpOffsite, self.weightColLtr)
-        print("Step2.2.3: 重设权重单元值完成 - Reset unit value completed")
-        sht2DeleteRowLst = getSht2DeleteRowLst(sht2UnitScpOffsite)
-        for _ in range(len(sht2DeleteRowLst)):
-            row = sht2DeleteRowLst.pop()
-            sht2_lv2Score.range(f"{self.lv2UnitColLtr}{row}").api.EntireRow.Delete()
+        print("Step2.2.1: 为单元格重新计算权重 - recalculate the weight to the cell")
+
+        smallIndexSpan = getShtUnitScp(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow,
+                                       self.Sht2Lv2UnitColLtr, self.sht2WgtColLtr)
+        sht2UnitScpOffsite = getNewUnitWgts(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow,
+                                            self.Sht2Lv2UnitColLtr, self.sht2WgtColLtr)
         print("Step2.3 删除多余列 - delete the column C to I")
         sht2_lv2Score.range(self.sht2DeleteCopiedColScp).api.EntireColumn.Delete()
 
+        # 给所有单元格边缘增加偏移 - add offset to all cells edge
+        resetUnitSum(sht2_lv2Score, sht2UnitScpOffsite, self.sht2WeightColLtr)
+        print("Step2.2.2: 重设权重单元值完成 - Reset unit value completed")
+        print("Step2.2.3: 删除多余行 - delete the row of left column redundant")
+        sht2DeleteRowLst = getSht2DeleteRowLst(sht2UnitScpOffsite)
+        for _ in range(len(sht2DeleteRowLst)):
+            row = sht2DeleteRowLst.pop()
+            sht2_lv2Score.range(f"{self.Sht2Lv2UnitColLtr}{row}").api.EntireRow.Delete()
+
+        # 用来每个单元合计的范围
+        bigIndexSpan = getShtUnitScp(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow,
+                                     self.Sht2Lv1UnitColLtr, self.Sht2Lv2UnitColLtr,
+                                     skipCol=self.Sht2Lv1UnitColLtr, skipWords=self.skipUnitWords
+                                     )
         print("Step3: 增加合计行 -  add summary row")
-        lv2UnitScp = getShtUnitScp(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow, "A", "B")
-        sht2OprAddSummaryRows(sht2_lv2Score, lv2UnitScp)
+        lv2UnitScpForSumRow = getShtUnitScp(sht2_lv2Score, self.sht2SttRow, self.sht2EndRow,
+                                            self.Sht2Lv1UnitColLtr, self.Sht2Lv2UnitColLtr)
+        sht2OprAddSummaryRows(sht2_lv2Score, lv2UnitScpForSumRow)
 
         print("Step4: 增加参与率统计 - add participation rate statistics")
         sht2OprAddPartRatio(self.sht2Mdl, self.sht2MdlPartRatioRowScp, sht2_lv2Score, self.sht2PartitionInsertPoint)
@@ -221,7 +229,7 @@ class Excel_Operation:
         self.sht2TitleCopyTo = getLastColCell(sht2_lv2Score)
         shtCopyTo(self.sht2Mdl, self.sht2TitleCopyFromMdlScp, sht2_lv2Score, self.sht2TitleCopyTo)
 
-        return sht2_lv2Score,  lv1UnitSpan,  lv2UnitScp
+        return sht2_lv2Score, smallIndexSpan, bigIndexSpan
 
     def addSheet3_surveyResultByYear(self):
         """
@@ -235,6 +243,9 @@ class Excel_Operation:
         # Step2: Set Index column
         shtCopyTo(self.sht0TestSurvey, self.sht3IndexCopyFromSvyScp, sht3_ResYear,
                   self.sht3IndexCopyFromSvyScp.split(":")[0])
+
+        print("Step2.1 删除多余行(党廉&纪检) - delete the row of left column redundant")
+        sht3_ResYear.range(self.sht0DeleteCopiedRowScp).api.EntireRow.Delete()
 
         print("\t 新增参与率统计")
         sht3OprAddPartRatio(self.sht3Mdl, self.sht3MdlPartRatioRowScp, sht3_ResYear, self.sht3PartitionInsertPoint)
@@ -304,7 +315,10 @@ class Excel_Operation:
         app4Depart.display_alerts = False
         app4Depart.api.CutCopyMode = False
         sht1Dept = deptResultExl.sheets.add(self.sht1NameRes)
+        # set Sheet 1 row 1:40 height = 14
+        sht1Dept.range("1:40").row_height = 14
         sht2Dept = deptResultExl.sheets.add(self.sht2NameGrade, after=sht1Dept)
+        sht2Dept.range("1:40").row_height = 14
         try:
             deptResultExl.sheets["Sheet1"].delete()
         except Exception as e:
@@ -331,8 +345,9 @@ class Excel_Operation:
             # Save Excel 保存文件名需要 加上部门Code
             deptCode = ""
             try:
-                deptCode = departCode[deptName]['departCode']
-            except:
+                deptCode = departCode[deptName][deptName]['departCode']
+            except Exception as e:
+                print("部门Code获取失败 - Failed to get departCode", e)
                 pass
             # departFilePath = self.sumSavePath.replace(".xlsx", f"_{deptName}_{deptCode}.xlsx")
             departFilePath = sumSavePathNoSuffix + f"_{deptCode}.xlsx"
@@ -376,7 +391,7 @@ class Excel_Operation:
         sht1_lv2Result.range("1:40").api.RowHeight = 14
         print("sheet1 无数据页面生成完成\n")
 
-        sht2_lv2Score, lv1UnitSpan, lv2UnitSpan = self.addSheet2_surveyGrade()
+        sht2_lv2Score, smallIndexSpan, bigIndexSpan = self.addSheet2_surveyGrade()
         sht2_lv2Score.range("1:40").api.RowHeight = 14
         print("sheet2 无数据页面生成完成\n")
 
@@ -388,7 +403,7 @@ class Excel_Operation:
         sht3_ResYear.range("1:40").api.RowHeight = 14
         print("sheet4 无数据页面生成完成")
 
-        return [sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitSpan, lv2UnitSpan]
+        return [sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, smallIndexSpan, bigIndexSpan]
 
     def fillAllData(self, sht1WithLv, shtList: list, departCode: dict, sumSavePathNoSuffix: str, basIcPrpt=None):
         """
@@ -400,7 +415,7 @@ class Excel_Operation:
         :param sht1WithLv: 
         :return: 
         """""
-        sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitSpan, lv2UnitScp = shtList
+        sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, smallIndexSpan, bigIndexSpan = shtList
         if basIcPrpt:
             print("使用已算出的参与率数据")
             # sht1WithLv = sht1WithLv
@@ -422,7 +437,7 @@ class Excel_Operation:
         print("sheet2 填充数据 - sheet2 fill data vertically")
         sht2_lv2Score.activate()
         sht2WithLv = getSht2WithLv(sht1_lv2Result, sht2_lv2Score, self.sht0TestSurvey, self.surveyWgtCol,
-                                   sht1WithLv, lv1UnitSpan, lv2UnitScp, departCode
+                                   sht1WithLv, smallIndexSpan, bigIndexSpan, departCode
                                    )
         sht2WithLvPtRt = combineSht2Ratio(sht2WithLv, basicParticipateRatio)
         # print("sht2WithLv：", sht2WithLvPtRt)
