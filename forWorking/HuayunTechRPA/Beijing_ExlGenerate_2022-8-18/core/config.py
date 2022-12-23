@@ -22,6 +22,7 @@ partyAnsExlPh1219 = r"Input\2022-12-19 正式+新需求\2022年度党建工作�
 peopleAnsExlPh1219 = r"Input\2022-12-19 正式+新需求\2022年度党建工作成效调研问卷-群众 .xlsx"
 surveyExlPh1219 = r"Input\2022-12-19 正式+新需求\党建表格输入配置表_2022-11-16_样式更改.xlsx"
 surveyExlPh1222 = r"Input\2022-12-19 正式+新需求\党建表格输入配置表_2022-12-22-名称修改.xlsx"
+surveyExlPh1223 = r"Input\2022-12-19 正式+新需求\党建表格输入配置表_2022-12-22-党廉纪检版.xlsx"
 
 # partyAnsExlPh = partyAnsExlPh0926
 # peopleAnsExlPh = peopleAnsExlPh0926
@@ -39,7 +40,8 @@ surveyExlPh1222 = r"Input\2022-12-19 正式+新需求\党建表格输入配置�
 peopleAnsExlPh = peopleAnsExlPh1219
 partyAnsExlPh = partyAnsExlPh1219
 # surveyExlPh = surveyExlPh1219
-surveyExlPh = surveyExlPh1222
+# surveyExlPh = surveyExlPh1222
+surveyExlPh = surveyExlPh1223
 
 savePath = r"D:\work\考核RPA_Exl\Output"
 fileYear = ""

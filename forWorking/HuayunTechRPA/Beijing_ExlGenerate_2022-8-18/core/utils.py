@@ -117,9 +117,10 @@ def getSht0DeleteCopiedRowScp(sht2_lv2Score, keywords: list) -> list:
     :param sht2_lv2Score:
     :return:
     """
+    unitLst = sht2_lv2Score.used_range.value
     row = 3
-    while True:
-        unit = sht2_lv2Score.range(f"A{row}").value
+    for entireRow in unitLst:
+        unit = entireRow[0]
         if unit in keywords:
             break
         row += 1

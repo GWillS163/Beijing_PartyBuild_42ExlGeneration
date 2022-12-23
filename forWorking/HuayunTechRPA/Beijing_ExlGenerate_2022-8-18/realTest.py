@@ -26,7 +26,8 @@ exlMain = Excel_Operation(
     sht3MdlTltStt, sht0SurLastCol, sht3ResTltStt,
     # Sheet4 生成配置:
     sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,  # , sht4DataRowRan
-    isGenDepartments  # 是否生成部门
+    isGenDepartments,  # 是否生成部门
+    excludeSht0UnitLst=[]
 
 )
 # outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,

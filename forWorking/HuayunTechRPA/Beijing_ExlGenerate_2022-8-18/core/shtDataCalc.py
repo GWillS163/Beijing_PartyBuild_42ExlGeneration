@@ -632,8 +632,22 @@ def addSht1Wgt2Sht1WithLv(sht1WithLv, sht1WgtLst: List[int]):
     return sht1WithLvWgt
 
 
+def reshapeWgtLstByScoreLength(sht1WithLv, sht1WgtLst):
+    """
+    重塑权重列表，使其与分数列表长度一致
+    :param sht1WithLv:
+    :param sht1WgtLst:
+    :return:
+    """
+    # 拿出其中一个lv3的分数列表长度
+    lv3ScoreLstLen = len(list(sht1WithLv.values())[0][list(sht1WithLv[list(sht1WithLv.keys())[0]].keys())[0]])
+    # 重塑权重列表
+    sht1WgtLst = sht1WgtLst[:lv3ScoreLstLen] if len(sht1WgtLst) > lv3ScoreLstLen else sht1WgtLst
+    return sht1WgtLst
+
+
 def getSht2WithLv(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1WithLv,
-                  lv1UnitSpan, lv2UnitSpan, departCode,
+                  lv1UnitSpan, lv2UnitSpan, departCode
 
                   ):
     """
@@ -652,6 +666,7 @@ def getSht2WithLv(sht1_lv2Result, sht2_lv2Score, sht0_survey, questionCol, sht1W
     # sht2WgtLst = getSht2WgtLst(sht2_lv2Score)
     # print(f"获得 sht2 权重: {sht2WgtLst}, weight")
     sht1WgtLst = getSht1WgtLst(sht1_lv2Result, sht0_survey, questionCol)
+    sht1WgtLst = reshapeWgtLstByScoreLength(sht1WithLv, sht1WgtLst)
     print(f"获得 sht1 权重: {sht1WgtLst}, weight")
     assert None not in sht1WgtLst, "权重列表中存在空值"
     sht1WithLvWgt = addSht1Wgt2Sht1WithLv(sht1WithLv, sht1WgtLst)

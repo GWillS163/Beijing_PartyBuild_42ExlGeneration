@@ -29,7 +29,8 @@ class Excel_Operation:
                  # Sheet4 配置:
                  sht4IndexFromMdl4Scp, sht4SumTitleFromMdlScp,  # ,sht4DataRowRan
                  # 是否生成部门文件
-                 isGenDepartments
+
+                 isGenDepartments, excludeSht0UnitLst
                  ):
         """
         param surveyExlPath: the path of the survey excel
@@ -41,7 +42,6 @@ class Excel_Operation:
         self.orgShtName = '行政机构组织'
         self.otherTitle = "其他人员"
         self.lv2AvgTitle = "二级单位成绩"
-        excludeSht0UnitLst = ["党廉", "纪检"]
         paramsCheckExist(surveyExlPath, partyAnsExlPh, peopleAnsExlPh)
 
         # self.surveyExlPath = surveyExlPath
@@ -71,13 +71,13 @@ class Excel_Operation:
         self.sht4NameScoreYear = sht4Name
 
         # 通用配置
-        self.deletedUnitList = excludeSht0UnitLst  # 删除的单位
+        self.skipUnitWords = excludeSht0UnitLst  # 删除的单位
         self.deptCopyHeight = 40  # 从总表复制到 各个部门表时的高度
 
         # Sheet0 survey表 数据获取 - Module Sheet 0 TestSurvey
         # 调查规则表中的问题列 规则列 问题类型列
         self.sht0DeleteCopiedRowScp, sht0LastValidRow = getSht0DeleteCopiedRowScp(
-            self.sht0TestSurvey, self.deletedUnitList)
+            self.sht0TestSurvey, self.skipUnitWords)
         self.surveyQuesCol, self.surveyRuleCol, \
             self.surveyQuesTypeCol, self.sht0QuestionScp = \
             autoGetSht0Params(self.sht0TestSurvey, sht0LastValidRow)
@@ -97,7 +97,6 @@ class Excel_Operation:
         self.unitCol = "B"
         self.contentCol = "D"
         self.skipCol = "A"
-        self.skipWords = ["党廉", "纪检"]
 
         self.sht2MdlPartRatioRowScp = "A3:C5"  # Sheet2 参与率部分的范围
         self.sht2PartitionInsertPoint = "A3"  # Sheet2 插入参与率的位置 无法自动获取
@@ -373,13 +372,22 @@ class Excel_Operation:
     def placeBarWithoutData(self) -> list:
         # Add Title & column
         sht1_lv2Result = self.addSheet1_surveyResult()
+        # set 1 to 40 row height
+        sht1_lv2Result.range("1:40").api.RowHeight = 14
         print("sheet1 无数据页面生成完成\n")
+
         sht2_lv2Score, lv1UnitSpan, lv2UnitSpan = self.addSheet2_surveyGrade()
+        sht2_lv2Score.range("1:40").api.RowHeight = 14
         print("sheet2 无数据页面生成完成\n")
+
         sht3_ResYear = self.addSheet3_surveyResultByYear()
+        sht3_ResYear.range("1:40").api.RowHeight = 14
         print("sheet3 无数据页面生成完成\n")
+
         sht4_surveyGradeByYear = self.addSheet4_surveyGradeByYear()
+        sht3_ResYear.range("1:40").api.RowHeight = 14
         print("sheet4 无数据页面生成完成")
+
         return [sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, lv1UnitSpan, lv2UnitSpan]
 
     def fillAllData(self, sht1WithLv, shtList: list, departCode: dict, sumSavePathNoSuffix: str, basIcPrpt=None):
