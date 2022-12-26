@@ -82,7 +82,7 @@ sht4IndexFromMdl4Scp = 'A4:B52'
 sht4SumTitleFromMdlScp = "T1:U3"
 
 isGenDepartments = True
-isOriginPlan = False
+isOriginPlan = False  # 是否跳过党廉
 
 if isOriginPlan:
     surveyExlPh = surveyExlPh1222
