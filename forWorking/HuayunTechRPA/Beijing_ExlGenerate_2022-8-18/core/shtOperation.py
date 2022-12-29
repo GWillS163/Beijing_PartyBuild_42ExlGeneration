@@ -3,7 +3,7 @@
 from .utils import *
 
 
-def shtCopyTo(sht1, sht1Scp, sht2, sht2Start, retryTimes=5):
+def shtCopyTo(sht1, sht1Scp, sht2, sht2Start, retryTimes=9):
     """
     将sht1中的数据复制到sht2中
     copy data and format from sht1 to sht2

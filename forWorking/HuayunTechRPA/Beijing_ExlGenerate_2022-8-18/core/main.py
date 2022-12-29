@@ -392,13 +392,11 @@ class Excel_Operation:
 
     def placeBarWithoutData(self) -> list:
         # Add Title & column
+        # global sht2_lv2Score, sht4_surveyGradeByYear, smallIndexSpan, bigIndexSpan
         sht1_lv2Result = self.addSheet1_surveyResult()
         # set 1 to 40 row height
         sht1_lv2Result.range("1:40").api.RowHeight = 14
         print("sheet1 无数据页面生成完成\n")
-
-        if not self.isOriginPlan:
-            return [sht1_lv2Result, "", "", "", "", ""]
 
         sht2_lv2Score, smallIndexSpan, bigIndexSpan = self.addSheet2_surveyGrade()
         sht2_lv2Score.range("1:40").api.RowHeight = 14
@@ -409,8 +407,14 @@ class Excel_Operation:
         print("sheet3 无数据页面生成完成\n")
 
         sht4_surveyGradeByYear = self.addSheet4_surveyGradeByYear()
-        sht3_ResYear.range("1:40").api.RowHeight = 14
+        sht4_surveyGradeByYear.range("1:40").api.RowHeight = 14
         print("sheet4 无数据页面生成完成")
+
+        if not self.isOriginPlan:
+            # delete sheet 2 & sheet 4
+            self.resultExl.sheets[self.sht2NameGrade].delete()
+            self.resultExl.sheets[self.sht4NameScoreYear].delete()
+            return [sht1_lv2Result, "", sht3_ResYear, "", "", ""]
 
         return [sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, smallIndexSpan, bigIndexSpan]
 
@@ -424,6 +428,7 @@ class Excel_Operation:
         :param sht1WithLv: 
         :return: 
         """
+        global sht2WithLv
         sht1_lv2Result, sht2_lv2Score, sht3_ResYear, sht4_surveyGradeByYear, smallIndexSpan, bigIndexSpan = shtList
 
         if basIcPrpt:
@@ -454,15 +459,16 @@ class Excel_Operation:
             # print("sht2WithLv：", sht2WithLvPtRt)
             sht2SetData(sht2_lv2Score, sht2WithLvPtRt, getTltColRange(self.sht2TitleCopyFromMdlScp, 1))
 
-            print("sheet3 填充数据 - sheet3 fill data vertically")
-            sht3_ResYear.activate()
-            sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2MeanStr)
-            # print("sht3WithLv：", sht3WithLv)
-            sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio, lv2MeanStr, lv1Name)
-            # print("sht3WithLvPtRt：", sht3WithLvPtRt)
-            sht3SetData(sht3_ResYear, sht3WithLvPtRt, self.sht3DataColRan, lv1Name)
-            # sht3 set conditional formatting partially
+        print("sheet3 填充数据 - sheet3 fill data vertically")
+        sht3_ResYear.activate()
+        sht3WithLv = getSht3WithLv(sht1WithLv, lv1Name, lv2MeanStr)
+        # print("sht3WithLv：", sht3WithLv)
+        sht3WithLvPtRt = combineSht3Ratio(sht3WithLv, basicParticipateRatio, lv2MeanStr, lv1Name)
+        # print("sht3WithLvPtRt：", sht3WithLvPtRt)
+        sht3SetData(sht3_ResYear, sht3WithLvPtRt, self.sht3DataColRan, lv1Name)
+        # sht3 set conditional formatting partially
 
+        if self.isOriginPlan:
             print("sheet4 填充横向数据 - Sheet4 fill data horizontally")
             sht4_surveyGradeByYear.activate()
             sht4Hie = getSht4Hierarchy(sht4_surveyGradeByYear)
