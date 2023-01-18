@@ -2876,6 +2876,7 @@ outputDir, sumSavePathNoSuffix = getSavePath(savePath, fileYear, fileName)
 
 exlMain = Excel_Operation(
     surveyExlPh, partyAnsExlPh, peopleAnsExlPh,
+
     surveyTestShtName, sht1ModuleName, sht2ModuleName, sht3ModuleName, sht4ModuleName,
     sht1Name, sht2Name, sht3Name, sht4Name,
 
@@ -2892,3 +2893,6 @@ exlMain = Excel_Operation(
 )
 # exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix, mockSht1WithLV=sht1WithLv)
 outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
+
+# open the output folder
+os.startfile(outputDir)
