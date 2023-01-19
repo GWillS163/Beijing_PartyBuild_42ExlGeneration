@@ -1,12 +1,12 @@
-import re
 import os
+import re
 import csv
 import time
 import datetime
 import xlwings as xw
 from typing import Any
-from typing import Dict
 from typing import List
+from typing import Dict
 from typing import Union
 from typing import Optional
 #  Author : Github: @GWillS163
@@ -1681,8 +1681,8 @@ def judgeAnswerGrade(answer, rule, quesType):
             return score
     return -100
 # Github: GWillS163
-# User: 駿清清 
-# Date: 12/10/2022 
+# User: 駿清清
+# Date: 12/10/2022
 # Time: 12:47
 
 def printShtWithLv(shtName, shtWithLv):
@@ -1777,8 +1777,8 @@ def printAutoParamSht4(sht4IndexFromSht2Scp, sht4SumTitleFromMdlScp,
     print(f"\tsht4SumTitleFromMdlScp: {sht4SumTitleFromMdlScp}")
     # print(f"\tsht4DataRowRan: {sht4DataRowRan}")
 # Github: GWillS163
-# User: 駿清清 
-# Date: 06/10/2022 
+# User: 駿清清
+# Date: 06/10/2022
 # Time: 20:57
 
 
@@ -2120,8 +2120,8 @@ def getSurveyData(sht0TestSurvey):
 
     return surveyData
 # Github: GWillS163
-# User: 駿清清 
-# Date: 11/10/2022 
+# User: 駿清清
+# Date: 11/10/2022
 # Time: 22:16
 
 
@@ -2431,7 +2431,7 @@ class Excel_Operation:
         self.sht2Mdl = self.surveyExl.sheets[sht2ModuleName]  # "调研成绩_输出模板"
         self.sht3Mdl = self.surveyExl.sheets[sht3ModuleName]  # "调研结果（2022年）_输出模板"
         self.sht4Mdl = self.surveyExl.sheets[sht4ModuleName]  # "调研成绩（2022年）_输出模板"
-        # basic output settings 
+        # basic output settings
         self.sht1NameRes = sht1Name
         self.sht2NameGrade = sht2Name
         self.sht3NameResYear = sht3Name
@@ -2648,18 +2648,7 @@ class Excel_Operation:
         deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan, 0)
 
         print("新建部门文件 - create new excel with xlwings")
-        # try 5 times to create new excel
-        for i in range(5):
-            try:
-                app4Depart = xw.App(visible=True, add_book=False)
-                break
-            except:
-                print("新建部门文件失败，重试 - Failed to create new excel, retry")
-                time.sleep(1)
-                continue
-        else:
-            print("新建部门文件失败，退出 - Failed to create new excel, exit")
-            return
+        app4Depart = xw.App(visible=True, add_book=False)
         deptResultExl = app4Depart.books.add()
         app4Depart.display_alerts = False
         app4Depart.api.CutCopyMode = False
@@ -2862,8 +2851,8 @@ class Excel_Operation:
               f"\n\033[32m{outputDir}\033[0m")
         return outputDir
 # Github: GWillS163
-# User: 駿清清 
-# Date: 29/09/2022 
+# User: 駿清清
+# Date: 29/09/2022
 # Time: 14:01
 
 # import sys
