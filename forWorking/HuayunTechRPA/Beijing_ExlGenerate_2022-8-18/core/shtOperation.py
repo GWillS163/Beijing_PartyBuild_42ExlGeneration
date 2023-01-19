@@ -472,3 +472,20 @@ def sht3OprAddPartRatio(mdl1Sht3, participateRowScp, sht3, insertPoint="A3"):
     :return:
     """
     genericAddParticipateRatio(mdl1Sht3, participateRowScp, sht3, insertPoint)
+
+
+def getSht2IndexScp4Depart(useAddress, offset=1):
+    """
+    获取 sht2 中的部门数据的范围, 并+1
+    :param useAddress: F1: KY3
+    :param offset: 1
+    :return:F1: KZ3
+    """
+    # get the range of sht2
+    sht2IndexScp = useAddress.split(":")
+    # get the col of sht2
+    sht2ColStr = re.findall(r"[A-Z]+", sht2IndexScp[1])[0]
+    sht2RowStr = re.findall(r"\d+", sht2IndexScp[1])[0]
+    sht2ColNew = getColLtr(getColNum(sht2ColStr) + offset)
+    sht2IndexScp = f"{sht2IndexScp[0]}:{sht2ColNew}{sht2RowStr}"
+    return sht2IndexScp

@@ -292,14 +292,14 @@ class Excel_Operation:
         global sht2Dept, sht2Sum, deptUnitSht2
         # 从汇总表 获取 部门分类区间
         sht1Sum = self.resultExl.sheets[self.sht1NameRes]
-        deptUnitSht1 = getDeptUnit(sht1Sum, self.sht1DeptTltRan, 0)
+        deptUnitSht1 = getDeptUnit(sht1Sum, self.sht1DeptTltRan, 1)
         if not self.isGenDepartments:
             print("选择未生成部门文件 - No department file generated")
             return
 
         if self.isOriginPlan:
             sht2Sum = self.resultExl.sheets[self.sht2NameGrade]
-            deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan, 0)
+            deptUnitSht2 = getDeptUnit(sht2Sum, self.sht2DeptTltRan, 1)
 
         print("新建部门文件 - create new excel with xlwings")
         # try 5 times to create new excel
@@ -334,6 +334,7 @@ class Excel_Operation:
         except Exception as e:
             pass
         print("从汇总表 复制 边栏")
+
         # 填充数据 - 保存 - 删除
         sht2BorderL, sht2BorderR = "G", "Z"
         departStt = time.time()
@@ -372,7 +373,7 @@ class Excel_Operation:
             # Method2
             borderWidth = getColNum(sht1BorderR) - getColNum(sht1BorderL)
             borderStart = getColNum(self.sht1TitleCopyTo[0])
-            borderEnd = getColLtr(borderStart + borderWidth)
+            borderEnd = getColLtr(borderStart + borderWidth + 1)  # 最后一列要包含，多加1
             sht1Dept.activate()
             sht1Dept.range(f"{self.sht1TitleCopyTo}:{borderEnd}{self.deptCopyHeight}").api.Delete()
 

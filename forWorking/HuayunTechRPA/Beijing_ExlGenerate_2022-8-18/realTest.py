@@ -34,3 +34,5 @@ exlMain = Excel_Operation(
 # outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix,
 #                         mockSht1WithLv=sht1WithLv, basIcPrPt=basIcPrPt)
 outputDir = exlMain.run(partyAnsExlPh, peopleAnsExlPh, outputDir, sumSavePathNoSuffix)
+
+os.startfile(outputDir)
